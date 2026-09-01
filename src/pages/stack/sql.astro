@@ -1,0 +1,104 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const joins = [
+  ["INNER JOIN", "양쪽 테이블에 모두 값이 있는 행만"],
+  ["LEFT JOIN", "왼쪽 테이블은 전부 + 오른쪽은 매칭되는 것만 (없으면 NULL)"],
+  ["RIGHT JOIN", "오른쪽 테이블은 전부 + 왼쪽은 매칭되는 것만"],
+];
+
+const clauses = [
+  ["WHERE", "행을 걸러내는 조건 (그룹화 전에 적용)"],
+  ["GROUP BY", "지정한 컬럼 값이 같은 행끼리 묶음"],
+  ["HAVING", "그룹화된 결과에 대한 조건 (그룹화 후에 적용)"],
+  ["ORDER BY", "정렬 — 기본 오름차순(ASC), 내림차순은 DESC"],
+  ["LIMIT / OFFSET", "결과 개수 제한 / 건너뛰기 — 페이지네이션에 사용"],
+];
+---
+
+<Layout
+  title="SQL 기본"
+  description="SELECT·INSERT·UPDATE·DELETE, JOIN 종류, GROUP BY, 트랜잭션 — 모든 쿼리 작업의 공통 문법."
+>
+  <div class="page-head">
+    <span class="page-head__kicker mono">기술 스택 · 08</span>
+    <h1>SQL 기본</h1>
+    <p class="lede">
+      <a href="/stack/postgresql/">PostgreSQL</a>뿐 아니라 어떤 관계형 DB를
+      만나도 통하는 공통 문법입니다. eGovFrame 프로젝트에서는 이 SQL을 Java
+      코드가 아니라 MyBatis Mapper XML 안에 작성합니다.
+    </p>
+  </div>
+
+  <div class="toc">
+    <p class="caps">이 페이지의 구성</p>
+    <ol>
+      <li><a href="#crud">CRUD 기본 문법</a></li>
+      <li><a href="#join">JOIN — 여러 테이블 엮기</a></li>
+      <li><a href="#clauses">자주 쓰는 절</a></li>
+      <li><a href="#transaction">트랜잭션</a></li>
+      <li><a href="#mybatis">MyBatis에서 SQL이 놓이는 자리</a></li>
+    </ol>
+  </div>
+
+  <article class="prose">
+    <h2 id="crud">CRUD 기본 문법</h2>
+    <div class="spec-sheet-wrap">
+      <table class="spec-sheet">
+        <tr><th class="mono">SELECT</th><td>조회 — <code>SELECT 컬럼 FROM 테이블 WHERE 조건</code></td></tr>
+        <tr><th class="mono">INSERT</th><td>삽입 — <code>INSERT INTO 테이블 (컬럼...) VALUES (값...)</code></td></tr>
+        <tr><th class="mono">UPDATE</th><td>수정 — <code>UPDATE 테이블 SET 컬럼=값 WHERE 조건</code></td></tr>
+        <tr><th class="mono">DELETE</th><td>삭제 — <code>DELETE FROM 테이블 WHERE 조건</code></td></tr>
+      </table>
+    </div>
+    <div class="callout callout--warn">
+      <p class="label">항상 조심</p>
+      <p>
+        <code>UPDATE</code>·<code>DELETE</code>에서 <code>WHERE</code>를 빠뜨리면
+        테이블 전체가 대상이 됩니다. 실행 전에 같은 조건으로
+        <code>SELECT</code>를 먼저 돌려 몇 건이 영향받는지 확인하는 습관을
+        들이세요.
+      </p>
+    </div>
+
+    <h2 id="join">JOIN — 여러 테이블 엮기</h2>
+    <p>
+      정규화된 테이블은 데이터가 여러 테이블에 나뉘어 있으므로, 조회할 때 다시
+      엮어야 하는 경우가 많습니다. 가장 자주 쓰는 세 가지입니다.
+    </p>
+    <div class="spec-sheet-wrap">
+      <table class="spec-sheet">
+        {joins.map(([name, desc]) => (
+          <tr><th class="mono">{name}</th><td>{desc}</td></tr>
+        ))}
+      </table>
+    </div>
+
+    <h2 id="clauses">자주 쓰는 절</h2>
+    <div class="spec-sheet-wrap">
+      <table class="spec-sheet">
+        {clauses.map(([name, desc]) => (
+          <tr><th class="mono">{name}</th><td>{desc}</td></tr>
+        ))}
+      </table>
+    </div>
+
+    <h2 id="transaction">트랜잭션</h2>
+    <p>
+      여러 개의 <code>INSERT</code>/<code>UPDATE</code>가 하나의 작업 단위로
+      묶여야 할 때(예: 위험지도를 갱신하면서 이력 테이블에도 동시에 기록) 씁니다.
+      <code>COMMIT</code>하면 모두 반영되고, 중간에 실패하면
+      <code>ROLLBACK</code>으로 전부 되돌립니다. Spring/eGovFrame에서는 이걸
+      직접 쓰기보다 <a href="/stack/spring/#aop"><code>@Transactional</code></a>
+      애노테이션이 자동으로 처리해줍니다.
+    </p>
+
+    <h2 id="mybatis">MyBatis에서 SQL이 놓이는 자리</h2>
+    <p>
+      eGovFrame은 SQL을 Java 코드에 문자열로 넣지 않고, <strong>Mapper XML</strong>
+      파일에 따로 작성합니다. Java의 Mapper 인터페이스 메서드 이름과, XML의
+      <code>&lt;select id="..."&gt;</code> 같은 태그의 id가 매칭되는 구조입니다.
+      쿼리가 안 맞는 것 같으면 Java 코드가 아니라 이 XML 파일부터 열어보세요.
+    </p>
+  </article>
+</Layout>

@@ -1,0 +1,79 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const formats = [
+  ["Shapefile (.shp)", "가장 흔한 벡터 포맷. 실제로는 .shp/.shx/.dbf 등 여러 파일 묶음"],
+  ["GeoPackage (.gpkg)", "파일 하나에 여러 레이어를 담는 최신 포맷"],
+  ["GeoJSON", "웹에서 주고받기 좋은 텍스트 기반 포맷"],
+  ["Raster (.tif 등)", "격자형 이미지 데이터 — 위성/항공 영상, DEM(수치표고모델)"],
+];
+---
+
+<Layout
+  title="QGIS"
+  description="공간 데이터를 눈으로 확인·편집하는 데스크탑 GIS 도구. 좌표계, 레이어, PostGIS 연결까지."
+>
+  <div class="page-head">
+    <span class="page-head__kicker mono">기술 스택 · 09</span>
+    <h1>QGIS</h1>
+    <p class="lede">
+      서버가 아니라 <strong>데스크탑 프로그램</strong>입니다. 산사태위험지도
+      원본 데이터를 눈으로 확인하고, 잘못된 부분을 고치고, DB로 들여보내기 전
+      검수하는 용도로 씁니다.
+    </p>
+  </div>
+
+  <div class="toc">
+    <p class="caps">이 페이지의 구성</p>
+    <ol>
+      <li><a href="#what">QGIS는 무엇을 하는 도구인가</a></li>
+      <li><a href="#formats">자주 다루는 파일 형식</a></li>
+      <li><a href="#connect">PostGIS에 직접 연결하기</a></li>
+      <li><a href="#workflow">이 프로젝트에서의 작업 흐름</a></li>
+    </ol>
+  </div>
+
+  <article class="prose">
+    <h2 id="what">QGIS는 무엇을 하는 도구인가</h2>
+    <p>
+      오픈소스 데스크탑 GIS(지리정보시스템) 프로그램입니다. 지도 위에 여러
+      <strong>레이어</strong>(벡터 도형층, 래스터 이미지층)를 겹쳐 보여주고, 각
+      도형(폴리곤·라인·포인트)을 클릭해 속성값을 확인·수정할 수 있습니다.
+      <a href="/stack/postgresql/#postgis">PostGIS</a>가 서버에 저장하는 데이터를
+      사람이 직접 눈으로 검수하는 창구라고 이해하면 됩니다.
+    </p>
+
+    <h2 id="formats">자주 다루는 파일 형식</h2>
+    <div class="spec-sheet-wrap">
+      <table class="spec-sheet">
+        {formats.map(([name, desc]) => (
+          <tr><th>{name}</th><td>{desc}</td></tr>
+        ))}
+      </table>
+    </div>
+    <p>
+      외부 기관(산림청, 지자체 등)에서 받는 원본 데이터는 대개 Shapefile입니다.
+      이걸 QGIS로 열어 <a href="/stack/postgresql/#crs">좌표계(EPSG)</a>가
+      프로젝트 표준과 맞는지 먼저 확인한 뒤 PostGIS로 들여보내는 것이 일반적인
+      순서입니다.
+    </p>
+
+    <h2 id="connect">PostGIS에 직접 연결하기</h2>
+    <p>
+      QGIS는 파일뿐 아니라 <strong>PostGIS 테이블을 레이어로 바로 불러올 수
+      있습니다</strong>. [레이어 추가 → PostGIS 레이어 추가]에서 DB
+      접속정보(호스트·포트·DB명·계정)를 등록하면, 테이블 목록이 뜨고 지도
+      위에서 바로 편집한 내용이 DB에 반영됩니다. 접속정보는
+      <a href="/stack/dbeaver/">DBeaver</a>에서 쓰는 것과 동일한 값을 씁니다.
+    </p>
+
+    <h2 id="workflow">이 프로젝트에서의 작업 흐름</h2>
+    <ol>
+      <li>산림청 등에서 원본 shp 데이터 수령</li>
+      <li>QGIS로 열어 좌표계·속성값(위험등급 등) 검수</li>
+      <li>필요하면 QGIS에서 직접 도형·속성 편집</li>
+      <li>PostGIS로 반입 (QGIS의 DB Manager 또는 <code>shp2pgsql</code> 도구 사용)</li>
+      <li>GeoServer가 해당 테이블을 읽어 지도 서비스로 노출</li>
+    </ol>
+  </article>
+</Layout>

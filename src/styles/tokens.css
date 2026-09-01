@@ -1,0 +1,104 @@
+/* Hallmark · genre: editorial · macrostructure: Index-First (home) / Long Document (content) · theme: Almanac
+ * enrichment: none (typography only) · nav: N3 Side-rail · footer: Ft3 Index columns
+ * anchor hue: 29 (brick / ledger-ink red) · motion scale: 0.85x (Almanac)
+ */
+
+:root {
+  /* ---- color: paper anchor hue 29 (warm brick-red), light mode ---- */
+  --color-paper:      oklch(97%  0.011 75);
+  --color-paper-2:    oklch(94%  0.013 75);
+  --color-paper-3:    oklch(91%  0.015 72);
+  --color-rule:       oklch(83%  0.016 62);
+  --color-neutral:    oklch(56%  0.013 60);
+  --color-muted:      oklch(42%  0.013 55);
+  --color-ink:        oklch(20%  0.015 45);
+  --color-accent:     oklch(46%  0.150 29);
+  --color-accent-ink: oklch(97%  0.010 75);
+  --color-focus:      oklch(56%  0.170 29);
+  --color-good:       oklch(52%  0.130 148);
+  --color-warn:       oklch(58%  0.150 75);
+
+  /* ---- type ---- */
+  --font-display: "Noto Serif KR", Georgia, "Nanum Myeongjo", serif;
+  --font-body:    "IBM Plex Sans KR", "IBM Plex Sans", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --text-xs:      0.75rem;
+  --text-sm:      0.875rem;
+  --text-base:    1rem;
+  --text-md:      1.125rem;
+  --text-lg:      1.375rem;
+  --text-xl:      1.75rem;
+  --text-2xl:     2.125rem;
+  --text-3xl:     2.625rem;
+  --text-4xl:     3.25rem;
+  --text-display: clamp(2.25rem, 1.4rem + 2.4vw, 3.5rem);
+
+  /* ---- space: 4pt scale ---- */
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 9rem;
+
+  /* ---- motion: Almanac scale 0.85x ---- */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 102ms;
+  --dur-short: 187ms;
+  --dur-long:  357ms;
+
+  /* ---- misc ---- */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --rule-hair: 1px;
+
+  --z-base:     1;
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-modal:    400;
+  --z-toast:    500;
+  --z-tooltip:  600;
+
+  --rail-w: 15rem;
+  --measure: 66ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-paper:      oklch(15% 0.010 50);
+    --color-paper-2:    oklch(19% 0.012 50);
+    --color-paper-3:    oklch(23% 0.014 50);
+    --color-rule:       oklch(32% 0.014 50);
+    --color-neutral:    oklch(60% 0.012 50);
+    --color-muted:      oklch(74% 0.010 50);
+    --color-ink:        oklch(94% 0.010 70);
+    --color-accent:     oklch(66% 0.140 30);
+    --color-accent-ink: oklch(14% 0.010 50);
+    --color-focus:      oklch(72% 0.150 30);
+    --color-good:       oklch(68% 0.130 148);
+    --color-warn:       oklch(72% 0.140 75);
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-paper:      oklch(15% 0.010 50);
+  --color-paper-2:    oklch(19% 0.012 50);
+  --color-paper-3:    oklch(23% 0.014 50);
+  --color-rule:       oklch(32% 0.014 50);
+  --color-neutral:    oklch(60% 0.012 50);
+  --color-muted:      oklch(74% 0.010 50);
+  --color-ink:        oklch(94% 0.010 70);
+  --color-accent:     oklch(66% 0.140 30);
+  --color-accent-ink: oklch(14% 0.010 50);
+  --color-focus:      oklch(72% 0.150 30);
+  --color-good:       oklch(68% 0.130 148);
+  --color-warn:       oklch(72% 0.140 75);
+}

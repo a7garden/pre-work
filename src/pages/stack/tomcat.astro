@@ -1,0 +1,87 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const dirs = [
+  ["bin/", "시작·종료 스크립트 (startup.sh, shutdown.sh)"],
+  ["conf/", "설정 — server.xml(포트·커넥터), context.xml, web.xml"],
+  ["webapps/", "실제 배포되는 war 파일 · 압축 해제된 애플리케이션"],
+  ["logs/", "catalina.out 등 — 문제 생기면 가장 먼저 보는 곳"],
+  ["lib/", "Tomcat 전역에서 쓰는 공용 jar 라이브러리"],
+];
+---
+
+<Layout
+  title="Tomcat"
+  description="서블릿 컨테이너/WAS 개념, war 배포 흐름, 주요 디렉터리와 로그 위치."
+>
+  <div class="page-head">
+    <span class="page-head__kicker mono">기술 스택 · 05</span>
+    <h1>Tomcat</h1>
+    <p class="lede">
+      <a href="/stack/spring/">Spring</a> 애플리케이션을 실제로 띄워서 돌리는
+      WAS(Web Application Server)입니다. 코드를 아무리 잘 짜도, 여기 배포되지 않으면
+      아무도 접속할 수 없습니다.
+    </p>
+  </div>
+
+  <div class="toc">
+    <p class="caps">이 페이지의 구성</p>
+    <ol>
+      <li><a href="#what">서블릿 컨테이너란</a></li>
+      <li><a href="#deploy">war 배포 흐름</a></li>
+      <li><a href="#dirs">주요 디렉터리</a></li>
+      <li><a href="#apache">Apache와의 관계</a></li>
+    </ol>
+  </div>
+
+  <article class="prose">
+    <h2 id="what">서블릿 컨테이너란</h2>
+    <p>
+      Tomcat은 HTTP 요청을 받아 Java 서블릿(그리고 그 위에 얹힌 Spring MVC)을
+      실행시켜주는 프로그램입니다. 브라우저가 보낸 요청을 받아 <code>web.xml</code>에
+      등록된 <code>DispatcherServlet</code>으로 넘기는 역할까지가 Tomcat의
+      몫이고, 그 이후 요청을 어떻게 처리할지는 <a href="/stack/spring/#mvc">Spring이
+      이어받습니다</a>. 기본 포트는 <code>8080</code>이지만, 실무에서는 앞단에
+      Apache를 두고 <code>80/443</code>으로 받은 요청을 내부적으로 Tomcat에
+      전달하는 구성이 흔합니다. 화면 파일인 <a href="/stack/jsp/">JSP</a>도
+      Tomcat이 서블릿으로 변환해 실행합니다.
+    </p>
+
+    <h2 id="deploy">war 배포 흐름</h2>
+    <p>
+      Java 웹 애플리케이션은 소스를 <strong>war(Web Application aRchive)</strong>
+      파일 하나로 빌드해서 배포합니다. 일반적인 흐름은 다음과 같습니다.
+    </p>
+    <ol>
+      <li>Maven/Gradle로 소스를 빌드해 <code>.war</code> 파일 생성</li>
+      <li>망분리 환경이면 승인을 거쳐 war 파일을 내부/외부 서버로 반입</li>
+      <li><code>webapps/</code> 디렉터리에 war 파일을 놓음 (Tomcat이 자동으로 압축 해제·배포)</li>
+      <li>필요시 Tomcat 재기동 — <code>shutdown.sh</code> → <code>startup.sh</code></li>
+      <li><code>logs/catalina.out</code>에서 정상 기동 여부 확인</li>
+    </ol>
+
+    <h2 id="dirs">주요 디렉터리</h2>
+    <div class="spec-sheet-wrap">
+      <table class="spec-sheet">
+        {dirs.map(([name, desc]) => (
+          <tr><th class="mono">{name}</th><td>{desc}</td></tr>
+        ))}
+      </table>
+    </div>
+    <div class="callout callout--warn">
+      <p class="label">문제 생기면 여기부터</p>
+      <p>
+        화면이 안 뜨거나 배포가 실패했을 때 가장 먼저 볼 곳은
+        <code>logs/catalina.out</code>입니다. 스택 트레이스 맨 위(가장 최근 에러)부터
+        읽는 습관을 들이면 원인을 빨리 좁힐 수 있습니다.
+      </p>
+    </div>
+
+    <h2 id="apache">Apache와의 관계</h2>
+    <p>
+      Tomcat 혼자서도 정적 파일(이미지, CSS)을 서빙할 수 있지만, 성능·보안·SSL
+      처리 목적으로 앞단에 <a href="/stack/apache/">Apache</a>를 두고 프록시하는
+      구성이 표준입니다. 자세한 연결 방식은 Apache 페이지에서 이어집니다.
+    </p>
+  </article>
+</Layout>

@@ -1,0 +1,52 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const items = [
+  { href: "/stack/egovframe/", title: "eGovFrame", desc: "전자정부 표준프레임워크 — 이 프로젝트 전체가 올라앉은 뼈대." },
+  { href: "/stack/spring/", title: "Spring", desc: "eGovFrame이 기반으로 삼는 Java 엔터프라이즈 프레임워크. DI·AOP·MVC." },
+  { href: "/stack/java/", title: "Java", desc: "백엔드 전체를 작성하는 언어. JVM·OOP·컬렉션 기초." },
+  { href: "/stack/jsp/", title: "JSP", desc: "Spring MVC 화면을 그리는 뷰 기술. 서블릿으로 변환되어 Tomcat이 실행." },
+  { href: "/stack/tomcat/", title: "Tomcat", desc: "Spring 애플리케이션을 war로 배포·구동하는 WAS." },
+  { href: "/stack/apache/", title: "Apache", desc: "Tomcat 앞단 웹서버. 정적 리소스 + 프록시." },
+  { href: "/stack/postgresql/", title: "PostgreSQL", desc: "업무 데이터 + PostGIS 공간 데이터를 담는 DB." },
+  { href: "/stack/sql/", title: "SQL 기본", desc: "SELECT·JOIN·트랜잭션 — 모든 쿼리 작업의 공통 문법." },
+  { href: "/stack/qgis/", title: "QGIS", desc: "공간 데이터를 눈으로 확인·편집하는 데스크탑 GIS 도구." },
+  { href: "/stack/svn/", title: "SVN", desc: "이 프로젝트의 형상관리 도구. 중앙집중형 버전관리." },
+  { href: "/stack/dbeaver/", title: "DBeaver", desc: "PostgreSQL에 접속해 데이터를 조회·편집하는 범용 DB 클라이언트." },
+];
+---
+
+<Layout
+  title="기술 스택"
+  description="Spring · Java · Tomcat · PostgreSQL · SQL · QGIS · Apache · SVN · eGovFrame · DBeaver — 기술별 핵심 개념과 이 프로젝트에서 쓰이는 방식."
+>
+  <div class="page-head">
+    <span class="page-head__kicker mono">실무 · 기술 스택</span>
+    <h1>기술 스택 학습 노트</h1>
+    <p class="lede">
+      산사태정보시스템 고도화 프로젝트에서 쓰는 기술을 정리한 노트입니다. 뼈대
+      (eGovFrame) → 프레임워크(Spring) → 언어(Java) → 화면(JSP) → 실행(Tomcat·Apache)
+      → 데이터(PostgreSQL·SQL·QGIS) → 형상관리·도구(SVN·DBeaver) 순으로 읽으면
+      시스템 구성이 한 흐름으로 이어집니다. 각 페이지는 서로 링크로 연결되어 있습니다.
+    </p>
+  </div>
+
+  <div class="index-groups">
+    <div class="index-group">
+      <p class="index-group__label">11개 기술</p>
+      <div class="index-group__list">
+        {items.map((item) => (
+          <a href={item.href}>
+            <div class="index-row">
+              <div>
+                <p class="index-row__title">{item.title}</p>
+                <p class="index-row__desc">{item.desc}</p>
+              </div>
+              <span class="index-row__arrow">→</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>

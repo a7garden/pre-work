@@ -1,0 +1,106 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const layers = [
+  ["Presentation", "화면·요청 처리", "Controller (Spring MVC)"],
+  ["Business", "업무 로직", "Service / ServiceImpl"],
+  ["Data Access", "DB 접근", "Mapper 인터페이스 + MyBatis XML (DAO 패턴)"],
+  ["Domain", "데이터 객체", "VO(Value Object) — 테이블 한 행에 대응하는 클래스"],
+];
+
+const commonComponents = [
+  ["게시판(Board)", "제목·내용·첨부파일이 있는 게시판 공통 기능"],
+  ["파일 업로드/다운로드", "첨부파일 저장·조회 공통 처리"],
+  ["로그인/세션", "인증·권한(EgovUserDetailsService 등)"],
+  ["코드 관리", "공통코드(콤보박스 등에 쓰이는 코드값) 조회"],
+  ["배치(Batch)", "정기 실행 작업 — Spring Batch 기반"],
+];
+---
+
+<Layout
+  title="eGovFrame"
+  description="전자정부 표준프레임워크의 목적, 계층 구조, 공통컴포넌트, Spring과의 관계를 정리했습니다."
+>
+  <div class="page-head">
+    <span class="page-head__kicker mono">기술 스택 · 01</span>
+    <h1>eGovFrame (전자정부 표준프레임워크)</h1>
+    <p class="lede">
+      이 프로젝트 전체가 올라앉은 뼈대입니다. Spring을 밑에 깔고, 공공기관 SI 사업에
+      필요한 공통 기능과 개발 규칙을 표준화해둔 프레임워크입니다.
+    </p>
+  </div>
+
+  <div class="toc">
+    <p class="caps">이 페이지의 구성</p>
+    <ol>
+      <li><a href="#why">왜 존재하는가</a></li>
+      <li><a href="#layers">계층 구조 (3-Tier)</a></li>
+      <li><a href="#common">공통컴포넌트</a></li>
+      <li><a href="#in-project">이 프로젝트에서 만나는 모습</a></li>
+    </ol>
+  </div>
+
+  <article class="prose">
+    <h2 id="why">왜 존재하는가</h2>
+    <p>
+      행정안전부·한국지능정보사회진흥원 계열에서 보급한 <strong>공공 정보화 사업
+      표준 개발 프레임워크</strong>입니다. 목적은 <a href="/si-track/#stage-1">마르미-III
+      방법론</a>이 산출물 형식을 표준화하듯, 이번엔 <mark>코드의 구조와 개발 방식</mark>을
+      표준화하는 것입니다. 그래야 A업체가 만든 시스템을 B업체가 유지보수하러 와도
+      낯설지 않습니다. 실제로는 <strong>Spring Framework 위에 공공 SI에 자주 필요한
+      기능(게시판, 파일업로드, 로그인 등)을 미리 만들어 얹은 것</strong>이라고
+      이해하면 됩니다.
+    </p>
+
+    <h2 id="layers">계층 구조 (3-Tier)</h2>
+    <p>
+      eGovFrame 프로젝트는 대부분 아래 네 계층으로 코드를 나눕니다. 화면 요청이
+      들어오면 위에서 아래로 내려가고, 결과는 아래에서 위로 올라옵니다.
+    </p>
+    <div class="spec-sheet-wrap">
+      <table class="spec-sheet">
+        <tr><th>계층</th><th>역할</th><th>대표 구성요소</th></tr>
+        {layers.map(([name, role, part]) => (
+          <tr><th>{name}</th><td>{role}</td><td class="muted">{part}</td></tr>
+        ))}
+      </table>
+    </div>
+    <p>
+      예를 들어 산사태위험지도 목록을 조회하는 요청이 들어오면:
+      <code>Controller</code>가 요청을 받아 →
+      <code>Service</code>가 "위험지도 목록을 조회한다"는 업무 로직을 처리하며 →
+      <code>Mapper</code>가 실제 SQL을 실행해 →
+      <code>VO</code>에 결과를 담아 다시 위로 올려보냅니다. 계층별 자세한 동작은
+      <a href="/stack/spring/">Spring 페이지</a>에서 이어집니다.
+    </p>
+
+    <h2 id="common">공통컴포넌트</h2>
+    <p>
+      매 프로젝트마다 반복해서 만들 필요 없도록 eGovFrame이 미리 제공하는 기능
+      모음입니다. 필요하면 가져다 쓰고, 프로젝트 특화 기능만 새로 짜면 됩니다.
+    </p>
+    <div class="spec-sheet-wrap">
+      <table class="spec-sheet">
+        {commonComponents.map(([name, desc]) => (
+          <tr><th>{name}</th><td>{desc}</td></tr>
+        ))}
+      </table>
+    </div>
+
+    <h2 id="in-project">이 프로젝트에서 만나는 모습</h2>
+    <p>
+      산사태정보시스템처럼 지도가 중심인 프로젝트에서는 eGovFrame의 표준 계층 구조
+      위에 <strong>공간 데이터 처리</strong>가 얹힙니다 — <code>Service</code>가
+      PostGIS 쿼리 결과를 받아 GeoJSON으로 변환하거나, <code>Controller</code>가
+      <a href="/infra/#stack">GeoServer의 WMS/WFS</a> 호출을 중계하는 식입니다.
+    </p>
+    <div class="callout">
+      <p class="label">코드에서 확인할 것</p>
+      <ul>
+        <li>패키지 구조가 <code>controller / service / service.impl / mapper / vo</code> 로 나뉘어 있는지</li>
+        <li>SQL이 Java 코드 안이 아니라 <strong>Mapper XML</strong>(MyBatis)에 있는지</li>
+        <li>공통 설정 파일(<code>context-common.xml</code> 등) 위치</li>
+      </ul>
+    </div>
+  </article>
+</Layout>

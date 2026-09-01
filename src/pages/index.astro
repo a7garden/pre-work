@@ -1,0 +1,106 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const brief = [
+  { k: "배치일", v: "2026.09.01(화)" },
+  { k: "근무 시간", v: "09:30–18:30" },
+  { k: "근무지", v: "서울 금천구 가산디지털1로 205" },
+];
+
+const groups = [
+  {
+    label: "01 · 실무",
+    items: [
+      {
+        href: "/infra/",
+        title: "프로젝트 인프라 노트",
+        desc: "산사태정보시스템의 망분리 구조 — 행정망/인터넷망이 갈리는 이유, 망연계 NEW→OUT 흐름, 망분리 환경의 운영 관행.",
+      },
+      {
+        href: "/stack/",
+        title: "기술 스택",
+        desc: "Spring · Java · Tomcat · PostgreSQL · SQL · QGIS · Apache · SVN · eGovFrame · DBeaver — 기술별 개념과 이 프로젝트에서 쓰이는 방식.",
+      },
+    ],
+  },
+  {
+    label: "02 · 예습 기록",
+    items: [
+      {
+        href: "/company/",
+        title: "기관 · 실습 조건",
+        desc: "㈜시선아이티가 어떤 회사인지, 근무 조건·지원비·평가 절차를 정리한 참고 자료.",
+      },
+      {
+        href: "/si-track/",
+        title: "SI 개발 트랙",
+        desc: "정보시스템 개발 및 구현(SI) 직무 4단계 — 마르미-III 방법론부터 통합 테스트·SP 인증까지.",
+      },
+      {
+        href: "/ai-track/",
+        title: "AI Chatbot 트랙",
+        desc: "AI Chatbot 개발 직무 — NLP·LLM 기초부터 RAG(검색 증강 생성) 파이프라인 구축까지.",
+      },
+      {
+        href: "/glossary/",
+        title: "핵심 용어 사전",
+        desc: "SI·AI 두 트랙에서 반복해서 등장하는 용어 32개를 네 갈래로 정리했습니다.",
+      },
+    ],
+  },
+];
+---
+
+<Layout
+  title="홈"
+  description="산림청 산사태정보시스템 고도화 프로젝트(㈜시선아이티) 실무를 다루는 개인 학습 노트."
+>
+  <div class="page-head">
+    <span class="page-head__kicker mono">산사태정보시스템 고도화 · 산림청 수주 · ㈜시선아이티</span>
+    <h1>업무하며 정리하는 실무 학습 노트</h1>
+    <p class="lede">
+      산림청 산사태정보시스템 고도화 프로젝트(㈜시선아이티)에서 다루는 eGovFrame ·
+      Spring · Tomcat · Apache · PostgreSQL(PostGIS) · GeoServer · QGIS 스택을 실무
+      환경에서 익히며 정리하는 노트입니다.
+    </p>
+  </div>
+
+  <div class="brief-grid">
+    {brief.map((b) => (
+      <div class="brief-cell">
+        <p class="k">{b.k}</p>
+        <p class="v tnum">{b.v}</p>
+      </div>
+    ))}
+  </div>
+
+  <div class="callout" style="margin-bottom: var(--space-2xl);">
+    <p class="label">읽는 순서</p>
+    <p>
+      실무 노트는 <strong>①프로젝트 인프라 노트 → ②기술 스택</strong> 순이며, 업무
+      중 새로 알게 된 내용이 생길 때마다 늘어납니다. 예습 기록은 갱신하지 않는 배경
+      자료입니다.
+    </p>
+  </div>
+
+  <div class="index-groups">
+    {groups.map((g) => (
+      <div class="index-group">
+        <p class="index-group__label">{g.label}</p>
+        <div class="index-group__list">
+          {g.items.map((item) => (
+            <a href={item.href}>
+              <div class="index-row">
+                <div>
+                  <p class="index-row__title">{item.title}</p>
+                  <p class="index-row__desc">{item.desc}</p>
+                </div>
+                <span class="index-row__arrow">→</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</Layout>
