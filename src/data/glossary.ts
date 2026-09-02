@@ -329,7 +329,7 @@ export const glossary: GlossaryTerm[] = [
     short: "HTML 요소에 붙이는 고유 이름표. 페이지 안에서 하나뿐이어야 한다.",
     long: "화면의 특정 위치에 이름을 붙여 두면, CSS는 그 자리만 꾸밀 수 있고 JavaScript는 그 자리를 찾아 내용을 채우거나 값을 읽을 수 있다. 가리킬 때 앞에 # 을 붙인다. 같은 id를 두 곳에 쓰면 JavaScript는 먼저 나온 하나만 찾으므로, 목록처럼 반복되는 자리에는 id 대신 class를 쓴다.",
     example: "<div id=\"listArea\"></div>\n\n/* CSS */      #listArea { min-height: 200px; }\n// JavaScript  $(\"#listArea\").html(data);\n//             document.getElementById(\"listArea\")",
-    related: ["css-selector", "name-attribute", "dom", "url-fragment"],
+    related: ["css-selector", "name-attribute", "dom", "url-fragment", "mybatis-placeholder"],
     see: [{ label: "id와 name 훈련", href: "/drills/id-and-name/" }],
   },
   {
@@ -501,6 +501,17 @@ export const glossary: GlossaryTerm[] = [
     short: "입력값이 SQL 문장 자체로 해석되어 데이터가 유출·조작되는 취약점.",
     long: "MyBatis의 #{ }는 값을 자리표시자로 바인딩해 안전하지만, ${ }는 문자열을 그대로 SQL에 붙인다. 정렬 컬럼명처럼 구조가 바뀌어야 하는 자리에서만 ${ }를 쓰고, 그때도 허용 목록으로 검증한다. 일반 입력값에 ${ }를 쓰면 그 자리가 곧 취약점이다.",
     related: ["mybatis", "mapper-xml", "prepared-statement"],
+  },
+  {
+    id: "mybatis-placeholder",
+    term: "#{ }",
+    aliases: ["${ }"],
+    category: "data",
+    short: "MyBatis에서 값을 꽂는 자리. #{ }는 값으로 바인딩되고, ${ }는 문장으로 치환된다.",
+    long: "화면의 #과는 아무 관계가 없다. 이름이 겹칠 뿐이다. #{ }는 자리표시자로 바뀌어 값이 문장 구조를 바꿀 수 없고, ${ }는 문자열을 SQL에 그대로 붙인다. 그래서 검색어 같은 일반 입력값에는 예외 없이 #{ }를 쓰고, 컬럼명이나 정렬 방향처럼 구조가 바뀌어야 하는 자리에만 ${ }를 쓰되 허용 목록으로 검증한다.",
+    example: "WHERE NTT_SJ LIKE '%' || #{searchKeyword} || '%'   -- 값\nORDER BY ${sortColumn} ${sortOrder}                 -- 문장",
+    related: ["sql-injection", "prepared-statement", "mybatis", "html-id"],
+    see: [{ label: "관련 훈련", href: "/drills/mybatis-binding/" }],
   },
   {
     id: "prepared-statement",
