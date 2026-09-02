@@ -1,12 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import RichText from "../components/RichText.astro";
 import { issues } from "../data/issues";
 import { notes } from "../data/notes";
 import { drills } from "../data/drills";
 import { glossary } from "../data/glossary";
 
-const seen = new Set<string>();
 const latest = issues[0];
 const earlier = issues.slice(1, 4);
 
@@ -33,7 +31,7 @@ const shelves = [
       <p class="today__dek">{latest.dek}</p>
       <p class="today__takeaway">
         <span class="mono">한 문장</span>
-        <span><RichText text={latest.takeaway} seen={seen} max={2} /></span>
+        <span>{latest.takeaway}</span>
       </p>
       <span class="today__go">읽기 시작 <span aria-hidden="true">→</span></span>
     </a>
