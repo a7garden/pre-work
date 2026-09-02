@@ -25,7 +25,7 @@ export const notes: Note[] = [
     summary:
       "Controller부터 JSP까지 요청 하나를 끝까지 추적하는 법. 자동 호출처럼 보이는 Spring의 연결 고리와 자주 보는 문법을 같이 정리한다.",
     updated: "2026.09.03",
-    minutes: 18,
+    minutes: 22,
     tags: ["Spring MVC", "JSP", "eGovFrame 3.8", "MyBatis"],
     sections: [
       {
@@ -209,26 +209,77 @@ public class NoticeServiceImpl extends EgovAbstractServiceImpl
         ],
       },
       {
-        title: "기호는 문맥으로 읽는다",
+        title: "기호는 문맥으로 읽는다 — # 과 @ 와 $",
         blocks: [
           {
+            type: "p",
+            text: "낯선 코드에서 사람을 가장 오래 붙잡는 것은 어려운 개념이 아니라 기호다. 같은 글자가 자리마다 완전히 다른 뜻을 갖기 때문인데, 문맥을 알면 규칙은 몇 줄로 끝난다.",
+          },
+          {
             type: "table",
-            caption: "같은 기호가 자리마다 다른 뜻을 갖는다",
-            head: ["보이는 곳", "기호", "뜻"],
+            caption: "@ — 대부분 \"이건 코드가 아니라 지시다\"라는 표시",
+            head: ["보이는 곳", "모습", "뜻"],
             rows: [
-              ["CSS", "#menu", "id가 menu인 요소를 선택한다"],
-              ["URL 끝", "…/list.do#reply", "같은 페이지 안 위치로 이동하는 fragment. 서버에 전송되지 않는다"],
-              ["MyBatis", "#{name}", "PreparedStatement 파라미터로 바인딩되는 값"],
-              ["MyBatis", "${name}", "SQL 문자열에 그대로 치환 — 검증 없이 쓰면 취약점"],
-              ["JSP", "${name}", "EL 표현식. 서버가 값으로 바꿔 내보낸다"],
-              ["JavaScript", "`${name}`", "템플릿 리터럴. 브라우저에서 실행된다"],
+              ["Java", "@Controller, @RequestMapping", "어노테이션. 실행되지 않고 프레임워크가 읽어서 해석한다"],
+              ["JSP 맨 위", "<%@ page %>, <%@ taglib %>", "지시자. 이 페이지를 어떻게 번역할지 Tomcat에 알린다"],
+              ["CSS", "@media, @import", "at-rule. 규칙 자체에 조건이나 지시를 건다"],
+              ["Maven properties", "@key@", "빌드 시점에 설정값으로 치환되는 자리"],
+            ],
+          },
+          {
+            type: "p",
+            text: "# 은 두 세계로 갈린다. 화면 쪽에서는 언제나 id 속성을 가리키고, MyBatis에서는 값을 바인딩하는 자리를 뜻한다. 둘은 아무 관계가 없다.",
+          },
+          {
+            type: "table",
+            caption: "# — 화면에서는 id를 가리키고, SQL에서는 값을 꽂는다",
+            head: ["보이는 곳", "모습", "뜻"],
+            rows: [
+              ["HTML", "id=\"listArea\"", "이 자리에 붙인 고유 이름표. # 은 붙지 않는다"],
+              ["CSS", "#listArea { }", "id가 listArea인 요소만 골라 꾸민다"],
+              ["JavaScript", "$(\"#listArea\").html(…)", "그 이름표를 찾아 안쪽 내용을 갈아 끼운다"],
+              ["URL 끝", "…/list.do#reply", "같은 페이지의 id=\"reply\" 로 이동. 서버에 전송되지 않는다"],
+              ["MyBatis", "#{searchKeyword}", "PreparedStatement 파라미터로 바인딩되는 값"],
               ["shell", "# 주석", "그 줄은 실행하지 않는다"],
             ],
           },
           {
             type: "callout",
+            title: "\"화면 특정 위치에 내용이 들어간다\"의 정체",
+            text: "빈 <div id=\"listArea\"></div> 를 자리로 만들어 두고, JavaScript가 #listArea 로 그 자리를 찾아 서버가 보낸 HTML을 통째로 넣는 것이다. id 속성은 자리에 붙인 이름표일 뿐이고, # 은 그 이름표를 부르는 방법이다. 레거시 화면에서 페이지가 새로 고쳐지지 않는데 목록만 바뀐다면 거의 예외 없이 이 구조다.",
+          },
+          {
+            type: "p",
+            text: "여기서 한 겹 더 들어가면 실무에서 가장 자주 물리는 지점이 나온다. 입력칸에는 id 속성과 name 속성이 나란히 붙어 있고 값이 같은 경우가 많아 하나는 없어도 될 것처럼 보이지만, id는 브라우저 안에서만 쓰이고 name만 서버로 간다. Controller가 VO를 채우는 기준도 name이다.",
+          },
+          {
+            type: "code",
+            language: "jsp",
+            caption: "같은 자리에 붙은 두 이름",
+            content: '<input type="text" id="searchKeyword" name="searchKeyword"\n       value="\${searchVO.searchKeyword}" />\n\n<!-- id   → $("#searchKeyword").val()  로 화면이 찾는 이름 -->\n<!-- name → @ModelAttribute 가 VO 필드에 채우는 이름  -->\n<!-- value → 검색 후에도 입력값이 남아 있게 하는 되돌림 -->',
+          },
+          {
+            type: "link",
+            href: "/drills/id-and-name/",
+            label: "관련 훈련",
+            title: "id와 name — 화면이 찾는 이름, 서버가 받는 이름",
+            detail: "검색 화면 하나를 줄 단위로 읽고 두 이름의 경로를 갈라 본다 · 8분",
+          },
+          {
+            type: "table",
+            caption: "$ — 모양은 같고 실행 시점이 다르다",
+            head: ["보이는 곳", "모습", "뜻"],
+            rows: [
+              ["JSP", "${resultList}", "EL. 서버가 HTML을 만들 때 값으로 바뀌어 사라진다"],
+              ["MyBatis", "${sortColumn}", "SQL 문자열에 그대로 치환 — 검증 없이 쓰면 취약점"],
+              ["JavaScript", "`${name}`", "템플릿 리터럴. 브라우저에서 실행된다"],
+              ["jQuery", "$(\"…\")", "라이브러리 이름 자체. 위 셋과 아무 관계가 없다"],
+            ],
+          },
+          {
+            type: "callout",
             title: "막히면 이렇게 검색한다",
-            text: "URL을 보면 @RequestMapping의 문자열을 찾고, JSP의 ${name}을 보면 addAttribute(\"name\")이나 @ModelAttribute(\"name\")를 찾는다. Service 메서드를 보면 구현체와 Mapper id를 찾는다. 파일 이름보다 문자열 하나를 기준으로 전역 검색하는 습관이 훨씬 강력하다.",
+            text: "URL을 보면 @RequestMapping의 문자열을 찾고, JSP의 ${name}을 보면 addAttribute(\"name\")이나 @ModelAttribute(\"name\")를 찾는다. $(\"#name\")을 보면 같은 파일 안에서 id=\"name\"을 찾는다. 파일 이름보다 문자열 하나를 기준으로 전역 검색하는 습관이 훨씬 강력하다.",
           },
         ],
       },

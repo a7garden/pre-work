@@ -24,6 +24,83 @@ export type Issue = {
 
 export const issues: Issue[] = [
   {
+    no: 5,
+    date: "2026.09.07",
+    weekday: "월",
+    title: "# 은 자리를 가리킨다",
+    dek: "화면 어딘가에 내용이 새로 그려진다면 그 자리에는 id가 붙어 있다. 그리고 서버로 가는 이름은 따로 있다.",
+    minutes: 9,
+    tags: ["id", "name", "jQuery", "DOM"],
+    takeaway: "id 속성은 브라우저가 찾는 이름, name 속성은 서버가 받는 이름이다.",
+    next: "AJAX로 갈아 끼운 목록에서 버튼이 죽는 이유와, 이벤트를 다시 거는 방법",
+    blocks: [
+      {
+        type: "p",
+        text: "코드를 읽다 보면 기호에서 먼저 막힌다. @ 는 대체로 \"이건 실행되는 코드가 아니라 프레임워크에게 주는 지시\"라는 표시라 정리가 쉬운 편이다. 어려운 쪽은 # 인데, 화면과 SQL에서 완전히 다른 일을 하기 때문이다.",
+      },
+      {
+        type: "p",
+        text: "화면 쪽에서 # 은 언제나 하나를 가리킨다 — id 속성이다. HTML에서 어떤 자리에 이름표를 붙여 두면, CSS는 #이름 으로 그 자리만 꾸미고 JavaScript는 같은 문법으로 그 자리를 찾아 내용을 바꾼다. 이름표를 붙일 때는 # 을 쓰지 않고, 부를 때만 붙인다는 점이 헷갈리는 지점이다.",
+      },
+      {
+        type: "code",
+        language: "html",
+        caption: "이름표를 붙이는 쪽과 부르는 쪽",
+        content: '<!-- 붙일 때: # 없음 -->\n<div id="listArea"></div>\n\n/* 부를 때: CSS */\n#listArea { min-height: 200px; }\n\n// 부를 때: JavaScript\n$("#listArea").html(data);\ndocument.getElementById("listArea");',
+      },
+      {
+        type: "callout",
+        title: "특정 위치에 내용이 들어간다는 말의 정체",
+        text: "빈 div 를 자리로 만들어 두고, 스크립트가 그 이름을 찾아 안쪽을 서버가 보낸 HTML로 통째로 교체하는 것이다. 페이지는 새로 고쳐지지 않고 그 자리만 바뀐다. 레거시 화면에서 목록만 갱신되는 구조는 거의 전부 이것이다.",
+      },
+      {
+        type: "p",
+        text: "여기까지는 화면 안의 이야기다. 그런데 입력칸을 보면 id 속성 옆에 name 속성이 같은 값으로 나란히 붙어 있다. 중복처럼 보이지만 둘은 서로 다른 방향을 향한다. id는 브라우저 안에서만 쓰이고, 서버까지 가는 것은 name뿐이다.",
+      },
+      {
+        type: "flow",
+        caption: "검색어 한 글자가 지나가는 두 갈래",
+        steps: [
+          { label: "입력칸", detail: 'id="searchKeyword" name="searchKeyword"' },
+          { label: "id 쪽", detail: '$("#searchKeyword") — 화면이 값을 읽고 쓴다' },
+          { label: "name 쪽", detail: "form 전송 · serialize() 가 이 이름으로 싣는다" },
+          { label: "Controller", detail: "@ModelAttribute 가 name 기준으로 VO를 채운다" },
+          { label: "Mapper", detail: "#{searchKeyword} — 여기의 # 은 전혀 다른 뜻" },
+        ],
+      },
+      {
+        type: "quiz",
+        question: "입력칸에 id만 있고 name이 없다. 화면에서 타이핑은 되는데 검색이 걸러지지 않는다. 서버는 이 값을 받았을까?",
+        options: [
+          "받았다. id로도 전송된다",
+          "받지 못했다. 전송 대상은 name이 붙은 것뿐이다",
+          "받았지만 VO 필드가 없어 버려졌다",
+          "브라우저 설정에 따라 다르다",
+        ],
+        answer: 1,
+        explain: "form 전송도 jQuery의 serialize() 도 name을 기준으로 값을 모은다. name이 없으면 그 입력칸은 아예 포함되지 않는다. 서버는 받은 적이 없으므로 오류도 나지 않고, 로그에도 흔적이 없다 — 그래서 원인 찾기가 오래 걸린다.",
+      },
+      {
+        type: "link",
+        href: "/drills/id-and-name/",
+        label: "오늘의 훈련",
+        title: "id와 name — 화면이 찾는 이름, 서버가 받는 이름",
+        detail: "검색 화면 한 편을 줄 단위로 읽고 두 이름의 경로를 갈라 본다 · 8분",
+      },
+      {
+        type: "terms",
+        title: "오늘의 용어",
+        ids: ["html-id", "name-attribute", "css-selector", "dom", "url-fragment"],
+      },
+      {
+        type: "callout",
+        title: "오늘 회사에서 해 볼 것",
+        text: "담당 화면의 JSP를 열고 두 목록을 만들어 본다. 하나는 name이 붙은 입력칸 전부 — 이것이 서버로 가는 전부다. 다른 하나는 스크립트 안의 $(\"#…\") 전부 — 이것이 화면이 건드리는 자리다. 두 목록을 나란히 놓으면 그 화면이 무엇을 보내고 무엇을 바꾸는지가 정리된다.",
+      },
+    ],
+  },
+
+  {
     no: 4,
     date: "2026.09.04",
     weekday: "금",

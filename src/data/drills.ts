@@ -488,6 +488,135 @@ import org.springframework.transaction.annotation.Transactional;`,
       },
     ],
   },
+
+  {
+    id: "id-and-name",
+    no: 7,
+    title: "id와 name — 화면이 찾는 이름, 서버가 받는 이름",
+    goal: "화면의 값이 어디로 들어가고 어디로 나가는지를 속성 하나로 구분한다.",
+    level: 2,
+    minutes: 8,
+    tags: ["id", "name", "jQuery", "@ModelAttribute"],
+    blocks: [
+      {
+        type: "p",
+        text: "JSP 화면을 열면 같은 입력칸에 id와 name이 나란히 붙어 있고, 값도 똑같은 경우가 많다. 그래서 둘 중 하나는 없어도 될 것처럼 보인다. 실제로는 서로 다른 두 세계가 각각 쓰는 이름이다. id 속성은 브라우저 안에서만, name 속성은 서버까지 간다.",
+      },
+      {
+        type: "table",
+        caption: "같은 자리에 붙은 두 이름의 역할",
+        head: ["", "id", "name"],
+        rows: [
+          ["누가 쓰는가", "CSS와 JavaScript — 브라우저 안", "서버 — 전송되는 데이터의 키"],
+          ["가리키는 문법", "# (선택자)", "없음. 전송될 때 키로 쓰인다"],
+          ["없으면", "화면 조작이 안 된다", "값이 서버에 도착하지 않는다"],
+          ["중복", "허용되지 않는다 (하나뿐이어야 한다)", "허용된다 (체크박스 여러 개 등)"],
+          ["Controller에서", "보이지 않는다", "@ModelAttribute가 VO 필드에 채운다"],
+        ],
+      },
+      {
+        type: "codeRead",
+        language: "jsp",
+        caption: "게시판 검색 화면 (요약)",
+        question: "검색어를 입력하고 버튼을 눌렀을 때, 그 글자는 어떤 이름으로 서버에 도착하는가?",
+        code: `<form id="searchForm" name="searchForm"
+      action="<c:url value='/cop/bbs/selectBoardList.do'/>" method="post">
+  <input type="text"   id="searchKeyword" name="searchKeyword"
+         value="\${searchVO.searchKeyword}" />
+  <input type="hidden" id="pageIndex"     name="pageIndex"
+         value="\${searchVO.pageIndex}" />
+  <button type="button" onclick="fn_search();">검색</button>
+</form>
+
+<div id="listArea">
+  <c:forEach var="result" items="\${resultList}"> ... </c:forEach>
+</div>
+
+<script>
+function fn_search() {
+    $("#pageIndex").val(1);
+    $("#searchForm").submit();
+}
+
+function fn_reload() {
+    $.ajax({
+        url  : "<c:url value='/cop/bbs/selectBoardListAjax.do'/>",
+        data : $("#searchForm").serialize(),
+        success : function(html) {
+            $("#listArea").html(html);
+        }
+    });
+}
+</script>`,
+        notes: [
+          {
+            lines: "1-2",
+            title: "form에 붙은 두 이름",
+            body: "id=\"searchForm\"은 아래 스크립트가 $(\"#searchForm\")으로 찾기 위한 것이고, name은 오래된 문법($ 없이 document.searchForm으로 접근)의 잔재다. 요즘 코드에서는 form의 name이 없어도 대개 문제가 없지만, 레거시 화면에서는 둘 다 붙여 두는 것이 관례다.",
+          },
+          {
+            lines: "3-4",
+            title: "값이 서버로 가는 이름은 name이다",
+            body: "Controller의 @ModelAttribute(\"searchVO\") BoardVO 가 채우는 기준은 name=\"searchKeyword\"이고, VO에 setSearchKeyword()가 있어야 값이 들어간다. id를 아무리 정확히 써도 서버는 id를 보지 않는다. value의 EL은 반대 방향 — 검색 후에도 입력칸에 글자가 남아 있게 하는 자리다.",
+          },
+          {
+            lines: "5-6",
+            title: "hidden 필드는 화면과 서버 사이를 왕복하는 값이다",
+            body: "사용자에게는 보이지 않지만 name이 있으므로 전송된다. 페이지 번호처럼 화면이 기억해야 하는 값을 이렇게 실어 보낸다. 이 값이 PaginationInfo의 currentPageNo가 된다.",
+          },
+          {
+            lines: "10-12",
+            title: "여기가 내용이 들어갈 자리다",
+            body: "id=\"listArea\"는 이 div에 붙인 이름표일 뿐, 그 자체로는 아무 일도 하지 않는다. 아래 스크립트가 이 이름을 찾아 안쪽을 통째로 갈아 끼울 때 비로소 의미가 생긴다. 화면 어딘가에 내용이 새로 그려진다면, 그 자리에는 거의 항상 id가 붙어 있다.",
+          },
+          {
+            lines: "16",
+            title: "# 은 id를 가리키는 문법이다",
+            body: "$(\"#pageIndex\")는 id가 pageIndex인 요소를 찾는다는 뜻이고, .val(1)은 그 입력칸의 값을 1로 바꾼다. 검색 버튼을 누르면 항상 1페이지부터 보이는 이유가 이 한 줄이다.",
+          },
+          {
+            lines: "23",
+            title: "serialize()가 모으는 것은 name뿐이다",
+            body: "form 안을 훑어 searchKeyword=값&pageIndex=값 형태의 문자열을 만든다. 이때 기준은 name이다. 여기서 id와 name의 차이가 눈에 보이게 드러난다 — name이 없는 입력칸은 이 문자열에 아예 포함되지 않는다.",
+          },
+          {
+            lines: "25",
+            title: "이 줄이 화면을 바꾼다",
+            body: ".html(html)은 #listArea 안쪽을 서버가 보낸 HTML 조각으로 통째로 교체한다. 페이지는 새로 고쳐지지 않고 그 자리만 바뀐다. 이렇게 바뀐 것은 브라우저의 DOM이지 JSP 파일이 아니므로, 개발자도구에서 보이는 구조와 소스가 다를 수 있다.",
+          },
+        ],
+      },
+      {
+        type: "quiz",
+        question: "동료가 새 검색 조건을 추가하며 <input type=\"text\" id=\"searchCondition\" /> 만 넣었다. 화면에서 입력은 되는데 검색 결과가 전혀 걸러지지 않는다. 원인은?",
+        options: [
+          "VO에 searchCondition 필드가 없어서",
+          "name 속성이 없어 값이 서버로 전송되지 않아서",
+          "Mapper XML에 조건절이 없어서",
+          "id 이름이 VO 필드명과 달라서",
+        ],
+        answer: 1,
+        explain: "name이 없는 입력칸은 form 전송에도 serialize()에도 포함되지 않는다. 서버는 그 값을 받은 적이 없으므로 VO 필드도 Mapper 조건절도 정상인데 결과만 그대로다. 오류 로그가 남지 않아 원인을 찾기 어려운 대표적인 경우다. VO 필드와 Mapper 조건절은 그 다음에 확인한다.",
+      },
+      {
+        type: "quiz",
+        question: "$(\"#listArea\").html(html) 로 목록을 새로 그린 뒤, 목록 안 버튼의 클릭이 동작하지 않는다. 가장 그럴듯한 이유는?",
+        options: [
+          "id가 중복되어서",
+          "교체된 요소는 이전에 걸어 둔 클릭 이벤트를 갖고 있지 않아서",
+          "serialize()가 실패해서",
+          "EL이 값을 못 찾아서",
+        ],
+        answer: 1,
+        explain: "화면 로드 시점에 $(\"#btn\").click(...) 으로 이벤트를 걸었다면, 그 이벤트는 그때 존재하던 요소에 붙는다. .html()로 안쪽을 통째로 교체하면 그 요소들은 사라지고 이벤트가 없는 새 요소가 들어온다. 레거시 화면에서 AJAX 갱신 후 버튼이 죽는 전형적인 증상이며, 갱신 후 다시 걸거나 부모에 위임하는 방식으로 푼다.",
+      },
+      {
+        type: "callout",
+        title: "화면을 읽을 때의 순서",
+        text: "먼저 form 안에서 name이 붙은 입력칸을 모두 찾는다 — 그것이 서버로 가는 전부다. 그 다음 스크립트에서 $(\"#...\") 를 찾는다 — 그것이 화면이 건드리는 자리다. 두 목록을 나란히 놓으면 이 화면이 무엇을 보내고 무엇을 바꾸는지가 한눈에 정리된다.",
+      },
+    ],
+  },
 ];
 
 export const drillById = (id: string) => drills.find((d) => d.id === id);
