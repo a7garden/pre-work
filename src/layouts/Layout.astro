@@ -1,14 +1,17 @@
 ---
 import NavRail from "../components/NavRail.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import TermLayer from "../components/TermLayer.astro";
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description: string;
+  /** 읽기 화면에서 상단 진행 막대를 보여 준다 */
+  progress?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, progress = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -18,17 +21,43 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
     <title>{title} · 실무 학습 노트</title>
+    <script is:inline>
+      (function () {
+        try {
+          var mode = localStorage.getItem("wess-theme");
+          if (mode && mode !== "auto") document.documentElement.setAttribute("data-theme", mode);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
+    {progress && <div class="read-progress" id="read-progress" aria-hidden="true"><i></i></div>}
+    <a class="skip-link" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <NavRail />
       <div class="content-col">
-        <main>
+        <main id="main">
           <slot />
         </main>
         <SiteFooter />
       </div>
     </div>
+    <TermLayer />
+
+    {progress && (
+      <script>
+        const bar = document.querySelector<HTMLElement>("#read-progress i");
+        const update = () => {
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          const ratio = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+          if (bar) bar.style.transform = `scaleX(${ratio})`;
+        };
+        update();
+        window.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update);
+      </script>
+    )}
   </body>
 </html>

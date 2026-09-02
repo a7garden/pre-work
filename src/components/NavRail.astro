@@ -1,21 +1,43 @@
 ---
+import { issues } from "../data/issues";
+
 const path = Astro.url.pathname;
+const latest = issues[0];
 
 const groups = [
   {
-    label: "실무",
+    label: "매일",
     links: [
-      { href: "/infra/", title: "프로젝트 인프라 노트" },
-      { href: "/stack/", title: "기술 스택" },
+      { href: "/", title: "오늘" },
+      { href: "/daily/", title: "데일리 아카이브" },
     ],
   },
   {
-    label: "예습 기록",
+    label: "훈련과 노트",
+    links: [
+      { href: "/drills/", title: "코드 읽기 훈련" },
+      { href: "/notes/", title: "학습 노트" },
+    ],
+  },
+  {
+    label: "레퍼런스",
+    links: [
+      { href: "/framework/", title: "표준프레임워크 3.8" },
+      { href: "/stack/", title: "기술 스택" },
+      { href: "/infra/", title: "프로젝트 인프라" },
+      { href: "/glossary/", title: "용어 사전" },
+    ],
+  },
+  {
+    label: "플랫폼",
+    links: [{ href: "/authoring/", title: "저작 방법" }],
+  },
+  {
+    label: "아카이브",
     links: [
       { href: "/company/", title: "기관 · 실습 조건" },
       { href: "/si-track/", title: "SI 개발 트랙" },
       { href: "/ai-track/", title: "AI Chatbot 트랙" },
-      { href: "/glossary/", title: "핵심 용어 사전" },
     ],
   },
 ];
@@ -26,11 +48,11 @@ function isActive(href: string) {
 }
 ---
 
-<nav class="nav-rail" aria-label="예습서 전체 메뉴">
+<nav class="nav-rail" aria-label="사이트 전체 메뉴">
   <div class="nav-rail__brand">
-    <a href="/" class="nav-rail__mark">실무 학습 노트</a>
-    <p class="nav-rail__sub">㈜시선아이티 · 산사태정보시스템 고도화</p>
-    <span class="nav-rail__dday mono" id="dday-badge">D-1 · 09.01 개시</span>
+    <a href="/" class="nav-rail__mark">pre-work</a>
+    <p class="nav-rail__sub">출근길 10분, 실무 코드를 읽는 힘</p>
+    <a class="nav-rail__dday mono" href={`/daily/${latest.no}/`}>제{latest.no}호 · {latest.date}</a>
   </div>
 
   <div class="nav-rail__groups">
@@ -47,13 +69,13 @@ function isActive(href: string) {
   </div>
 
   <div class="nav-rail__foot">
-    <span class="mono" style="font-size: var(--text-xs); color: var(--color-muted);">2026.09.01–12.31</span>
+    <span class="mono" style="font-size: var(--text-xs); color: var(--color-muted);">notes grow here</span>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="화면 밝기 전환">AUTO</button>
   </div>
 </nav>
 
 <div class="nav-top">
-  <a href="/" class="nav-top__mark">실무 학습 노트</a>
+  <a href="/" class="nav-top__mark">pre-work</a>
   <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-sheet">MENU</button>
 </div>
 <div class="nav-sheet" id="nav-sheet">
@@ -91,23 +113,6 @@ function isActive(href: string) {
 
 <script>
   (function () {
-    const start = new Date("2026-09-01T00:00:00+09:00");
-    const end = new Date("2026-12-31T23:59:59+09:00");
-    const now = new Date();
-    const badge = document.getElementById("dday-badge");
-    if (badge) {
-      const oneDay = 24 * 60 * 60 * 1000;
-      if (now < start) {
-        const diff = Math.ceil((start.getTime() - now.getTime()) / oneDay);
-        badge.textContent = `D-${diff} · 09.01 개시`;
-      } else if (now <= end) {
-        const day = Math.ceil((now.getTime() - start.getTime()) / oneDay) + 1;
-        badge.textContent = `실습 ${day}일차 진행 중`;
-      } else {
-        badge.textContent = "실습 기간 종료";
-      }
-    }
-
     const KEY = "wess-theme";
     const btn = document.getElementById("theme-toggle");
     const root = document.documentElement;

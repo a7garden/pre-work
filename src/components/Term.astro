@@ -1,0 +1,20 @@
+---
+import { termById } from "../data/glossary";
+
+interface Props {
+  id: string;
+  /** 사전에 없는 id면 조용히 평문으로 떨어진다 */
+  label?: string;
+}
+
+const { id, label } = Astro.props;
+const term = termById(id);
+---
+
+{term ? (
+  <button type="button" class="term" data-term={id} aria-label={`${term.term} 뜻 보기`}>
+    <slot>{label ?? term.term}</slot>
+  </button>
+) : (
+  <slot>{label}</slot>
+)}

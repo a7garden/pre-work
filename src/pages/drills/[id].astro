@@ -1,0 +1,71 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Blocks from "../../components/Blocks.astro";
+import { drills } from "../../data/drills";
+
+export function getStaticPaths() {
+  return drills.map((drill, index) => ({
+    params: { id: drill.id },
+    props: { drill, next: drills[index + 1] ?? null },
+  }));
+}
+
+const { drill, next } = Astro.props;
+const seen = new Set<string>();
+const levelLabel: Record<number, string> = { 1: "읽기", 2: "추적", 3: "판단" };
+---
+
+<Layout title={drill.title} description={drill.goal} progress>
+  <article class="drill">
+    <a class="back-link mono" href="/drills/">← 모든 훈련</a>
+
+    <header class="drill__head">
+      <p class="drill__stamp mono">
+        <span>DRILL {String(drill.no).padStart(2, "0")}</span>
+        <span data-level={drill.level}>{levelLabel[drill.level]}</span>
+        <span>{drill.minutes}분</span>
+      </p>
+      <h1>{drill.title}</h1>
+      <p class="drill__goal">{drill.goal}</p>
+      <div class="tag-list">{drill.tags.map((tag) => <span>{tag}</span>)}</div>
+    </header>
+
+    <div class="doc">
+      <Blocks blocks={drill.blocks} seen={seen} />
+    </div>
+
+    <div class="drill__finish">
+      <button type="button" class="primary-action" id="drill-done">이 훈련 완료 표시</button>
+      {next && (
+        <a class="text-action" href={`/drills/${next.id}/`}>다음 훈련 · {next.title} <span aria-hidden="true">→</span></a>
+      )}
+    </div>
+  </article>
+</Layout>
+
+<script define:vars={{ id: drill.id }}>
+  const KEY = "pw-read";
+  const btn = document.getElementById("drill-done");
+  const load = () => {
+    try {
+      return JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    } catch (e) {
+      return [];
+    }
+  };
+  const key = `drill-${id}`;
+  const paint = () => {
+    if (btn && load().includes(key)) btn.textContent = "완료함 · 다시 누르면 해제";
+  };
+  paint();
+  btn?.addEventListener("click", () => {
+    const read = load();
+    const at = read.indexOf(key);
+    if (at >= 0) read.splice(at, 1);
+    else read.push(key);
+    try {
+      localStorage.setItem(KEY, JSON.stringify(read));
+    } catch (e) {}
+    if (btn) btn.textContent = at >= 0 ? "이 훈련 완료 표시" : "완료함 · 다시 누르면 해제";
+  });
+</script>

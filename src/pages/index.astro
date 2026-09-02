@@ -1,106 +1,125 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import RichText from "../components/RichText.astro";
+import { issues } from "../data/issues";
+import { notes } from "../data/notes";
+import { drills } from "../data/drills";
+import { glossary } from "../data/glossary";
 
-const brief = [
-  { k: "배치일", v: "2026.09.01(화)" },
-  { k: "근무 시간", v: "09:30–18:30" },
-  { k: "근무지", v: "서울 금천구 가산디지털1로 205" },
-];
+const seen = new Set<string>();
+const latest = issues[0];
+const earlier = issues.slice(1, 4);
 
-const groups = [
-  {
-    label: "01 · 실무",
-    items: [
-      {
-        href: "/infra/",
-        title: "프로젝트 인프라 노트",
-        desc: "산사태정보시스템의 망분리 구조 — 행정망/인터넷망이 갈리는 이유, 망연계 NEW→OUT 흐름, 망분리 환경의 운영 관행.",
-      },
-      {
-        href: "/stack/",
-        title: "기술 스택",
-        desc: "Spring · Java · Tomcat · PostgreSQL · SQL · QGIS · Apache · SVN · eGovFrame · DBeaver — 기술별 개념과 이 프로젝트에서 쓰이는 방식.",
-      },
-    ],
-  },
-  {
-    label: "02 · 예습 기록",
-    items: [
-      {
-        href: "/company/",
-        title: "기관 · 실습 조건",
-        desc: "㈜시선아이티가 어떤 회사인지, 근무 조건·지원비·평가 절차를 정리한 참고 자료.",
-      },
-      {
-        href: "/si-track/",
-        title: "SI 개발 트랙",
-        desc: "정보시스템 개발 및 구현(SI) 직무 4단계 — 마르미-III 방법론부터 통합 테스트·SP 인증까지.",
-      },
-      {
-        href: "/ai-track/",
-        title: "AI Chatbot 트랙",
-        desc: "AI Chatbot 개발 직무 — NLP·LLM 기초부터 RAG(검색 증강 생성) 파이프라인 구축까지.",
-      },
-      {
-        href: "/glossary/",
-        title: "핵심 용어 사전",
-        desc: "SI·AI 두 트랙에서 반복해서 등장하는 용어 32개를 네 갈래로 정리했습니다.",
-      },
-    ],
-  },
+const shelves = [
+  { href: "/framework/", label: "레퍼런스", title: "표준프레임워크 3.8 구조", detail: "환경 · 레이어 · 폴더 · 설정 · 관용구" },
+  { href: "/drills/", label: "훈련", title: `코드 읽기 훈련 ${drills.length}편`, detail: "코드를 먼저 읽고 스스로 답한다" },
+  { href: "/glossary/", label: "사전", title: `용어 ${glossary.length}개`, detail: "본문 어디서나 밑줄에 마우스를 올린다" },
 ];
 ---
 
 <Layout
-  title="홈"
-  description="산림청 산사태정보시스템 고도화 프로젝트(㈜시선아이티) 실무를 다루는 개인 학습 노트."
+  title="오늘"
+  description="출근길 10분, 실무 코드를 읽는 힘을 기르는 개인 학습 플랫폼입니다."
 >
-  <div class="page-head">
-    <span class="page-head__kicker mono">산사태정보시스템 고도화 · 산림청 수주 · ㈜시선아이티</span>
-    <h1>업무하며 정리하는 실무 학습 노트</h1>
-    <p class="lede">
-      산림청 산사태정보시스템 고도화 프로젝트(㈜시선아이티)에서 다루는 eGovFrame ·
-      Spring · Tomcat · Apache · PostgreSQL(PostGIS) · GeoServer · QGIS 스택을 실무
-      환경에서 익히며 정리하는 노트입니다.
-    </p>
-  </div>
-
-  <div class="brief-grid">
-    {brief.map((b) => (
-      <div class="brief-cell">
-        <p class="k">{b.k}</p>
-        <p class="v tnum">{b.v}</p>
+  <header class="today-head">
+    <p class="today-head__eyebrow mono">오늘 읽을 것</p>
+    <a class="today" href={`/daily/${latest.no}/`}>
+      <div class="today__stamp mono">
+        <span>제{latest.no}호</span>
+        <span>{latest.date} ({latest.weekday})</span>
+        <span>{latest.minutes}분</span>
       </div>
-    ))}
-  </div>
+      <h1>{latest.title}</h1>
+      <p class="today__dek">{latest.dek}</p>
+      <p class="today__takeaway">
+        <span class="mono">한 문장</span>
+        <span><RichText text={latest.takeaway} seen={seen} max={2} /></span>
+      </p>
+      <span class="today__go">읽기 시작 <span aria-hidden="true">→</span></span>
+    </a>
+  </header>
 
-  <div class="callout" style="margin-bottom: var(--space-2xl);">
-    <p class="label">읽는 순서</p>
-    <p>
-      실무 노트는 <strong>①프로젝트 인프라 노트 → ②기술 스택</strong> 순이며, 업무
-      중 새로 알게 된 내용이 생길 때마다 늘어납니다. 예습 기록은 갱신하지 않는 배경
-      자료입니다.
-    </p>
-  </div>
-
-  <div class="index-groups">
-    {groups.map((g) => (
-      <div class="index-group">
-        <p class="index-group__label">{g.label}</p>
-        <div class="index-group__list">
-          {g.items.map((item) => (
-            <a href={item.href}>
-              <div class="index-row">
-                <div>
-                  <p class="index-row__title">{item.title}</p>
-                  <p class="index-row__desc">{item.desc}</p>
-                </div>
-                <span class="index-row__arrow">→</span>
-              </div>
-            </a>
-          ))}
-        </div>
+  <section class="workspace-section" aria-labelledby="earlier-heading">
+    <div class="section-title">
+      <div>
+        <p class="mono">지난 호</p>
+        <h2 id="earlier-heading">놓친 편이 있다면</h2>
       </div>
-    ))}
-  </div>
+      <a class="text-action" href="/daily/">전체 아카이브 <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="recent-list">
+      {earlier.map((issue) => (
+        <a href={`/daily/${issue.no}/`}>
+          <span class="recent-list__category mono">제{issue.no}호</span>
+          <span class="recent-list__title">{issue.title}</span>
+          <span class="recent-list__tags mono">{issue.date} · {issue.minutes}분</span>
+          <span class="recent-list__arrow" aria-hidden="true">→</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="workspace-section" aria-labelledby="shelf-heading">
+    <div class="section-title">
+      <div>
+        <p class="mono">언제든 펼쳐 보는 곳</p>
+        <h2 id="shelf-heading">기준이 되는 세 페이지</h2>
+      </div>
+      <span class="section-title__meta mono">reference</span>
+    </div>
+    <div class="step-cards">
+      {shelves.map((shelf, index) => (
+        <a class="step-card" href={shelf.href}>
+          <span class="step-card__number mono">0{index + 1}</span>
+          <div>
+            <p class="step-card__label">{shelf.label}</p>
+            <h3>{shelf.title}</h3>
+            <p>{shelf.detail}</p>
+          </div>
+          <span class="step-card__arrow" aria-hidden="true">↗</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="workspace-section" aria-labelledby="notes-heading">
+    <div class="section-title">
+      <div>
+        <p class="mono">깊게 읽는 글</p>
+        <h2 id="notes-heading">학습 노트</h2>
+      </div>
+      <a class="text-action" href="/notes/">모든 노트 <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="recent-list">
+      {notes.map((note) => (
+        <a href={`/notes/${note.slug}/`}>
+          <span class="recent-list__category">{note.category}</span>
+          <span class="recent-list__title">{note.title}</span>
+          <span class="recent-list__tags mono">{note.minutes}분</span>
+          <span class="recent-list__arrow" aria-hidden="true">→</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <aside class="loop">
+    <div class="loop__col">
+      <p class="mono">이 사이트가 도는 방식</p>
+      <ol class="loop__steps">
+        <li><strong>낮</strong><span>회사에서 막힌 것, 모르고 넘어간 단어를 메모한다</span></li>
+        <li><strong>밤</strong><span>집에서 한 편으로 정리해 다음 호로 추가한다</span></li>
+        <li><strong>아침</strong><span>출근길에 읽고, 회사에서 한 가지만 확인해 본다</span></li>
+      </ol>
+    </div>
+    <div class="loop__col">
+      <p class="mono">추가하는 곳</p>
+      <ul class="loop__files">
+        <li><code>src/data/issues.ts</code><span>데일리 한 편</span></li>
+        <li><code>src/data/drills.ts</code><span>코드 읽기 훈련</span></li>
+        <li><code>src/data/glossary.ts</code><span>용어 — 본문에 자동 연결됨</span></li>
+        <li><code>src/data/notes.ts</code><span>길게 정리한 노트</span></li>
+      </ul>
+      <a class="text-action" href="/authoring/">저작 방법 보기 <span aria-hidden="true">→</span></a>
+    </div>
+  </aside>
 </Layout>

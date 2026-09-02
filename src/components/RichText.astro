@@ -1,0 +1,15 @@
+---
+import Term from "./Term.astro";
+import { annotate } from "../lib/annotate";
+
+interface Props {
+  text: string;
+  seen?: Set<string>;
+  exclude?: string[];
+  max?: number;
+}
+
+const { text, seen, exclude, max } = Astro.props;
+const parts = annotate(text, { seen, exclude, max });
+---
+{parts.map((part) => (part.kind === "term" ? <Term id={part.id}>{part.value}</Term> : part.value))}

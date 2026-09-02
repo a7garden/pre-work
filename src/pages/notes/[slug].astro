@@ -1,0 +1,76 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Blocks from "../../components/Blocks.astro";
+import RichText from "../../components/RichText.astro";
+import { notes } from "../../data/notes";
+
+export function getStaticPaths() {
+  return notes.map((note, index) => ({
+    params: { slug: note.slug },
+    props: { note, next: notes[index + 1] ?? null },
+  }));
+}
+
+const { note, next } = Astro.props;
+const seen = new Set<string>();
+---
+
+<Layout title={note.title} description={note.summary} progress>
+  <article class="note-page">
+    <a class="back-link mono" href="/notes/">← 모든 노트</a>
+    <header class="note-page__head">
+      <div class="note-page__meta">
+        <span>{note.category}</span>
+        <span class="mono">updated {note.updated} · {note.minutes} min</span>
+      </div>
+      <h1>{note.title}</h1>
+      <p><RichText text={note.summary} seen={seen} /></p>
+      <div class="tag-list" aria-label="태그">
+        {note.tags.map((tag) => <span>{tag}</span>)}
+      </div>
+    </header>
+
+    <nav class="note-toc" aria-label="이 노트의 목차">
+      <span class="mono">ON THIS PAGE</span>
+      <ol>
+        {note.sections.map((section, index) => (
+          <li><a href={`#section-${index + 1}`}>{section.title}</a></li>
+        ))}
+      </ol>
+    </nav>
+
+    <div class="doc note-prose">
+      {note.sections.map((section, index) => (
+        <section id={`section-${index + 1}`}>
+          <h2>{section.title}</h2>
+          <Blocks blocks={section.blocks} seen={seen} />
+        </section>
+      ))}
+    </div>
+
+    {note.sources && (
+      <section class="note-sources">
+        <h2>공식 참고 자료</h2>
+        <ul>
+          {note.sources.map((source) => (
+            <li>
+              <a href={source.href} target="_blank" rel="noreferrer">
+                {source.label} <span aria-hidden="true">↗</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {next && (
+      <nav class="issue__nav" aria-label="다음 노트">
+        <span></span>
+        <a href={`/notes/${next.slug}/`} class="issue__nav-link issue__nav-link--next">
+          <span class="mono">다음 노트 →</span>
+          <span>{next.title}</span>
+        </a>
+      </nav>
+    )}
+  </article>
+</Layout>

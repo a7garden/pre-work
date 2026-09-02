@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 
 const items = [
+  { href: "/framework/", title: "표준프레임워크 3.8 구조", desc: "환경 · 실행환경 레이어 · 폴더 · 설정 파일 · 코드 관용구를 한 페이지로." },
   { href: "/stack/egovframe/", title: "eGovFrame", desc: "전자정부 표준프레임워크 — 이 프로젝트 전체가 올라앉은 뼈대." },
   { href: "/stack/spring/", title: "Spring", desc: "eGovFrame이 기반으로 삼는 Java 엔터프라이즈 프레임워크. DI·AOP·MVC." },
   { href: "/stack/java/", title: "Java", desc: "백엔드 전체를 작성하는 언어. JVM·OOP·컬렉션 기초." },
@@ -33,7 +34,7 @@ const items = [
 
   <div class="index-groups">
     <div class="index-group">
-      <p class="index-group__label">11개 기술</p>
+      <p class="index-group__label">12개 항목</p>
       <div class="index-group__list">
         {items.map((item) => (
           <a href={item.href}>

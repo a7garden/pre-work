@@ -1,38 +1,16 @@
 ---
+const links = [
+  { href: "/daily/", label: "데일리" },
+  { href: "/notes/", label: "노트" },
+  { href: "/drills/", label: "훈련" },
+  { href: "/framework/", label: "3.8 구조" },
+  { href: "/glossary/", label: "용어" },
+  { href: "/authoring/", label: "저작" },
+];
 ---
 <footer class="foot-index">
-  <div class="foot-index__col">
-    <p class="caps">실무</p>
-    <ul>
-      <li><a href="/infra/">프로젝트 인프라 노트</a></li>
-      <li><a href="/stack/">기술 스택</a></li>
-    </ul>
-  </div>
-  <div class="foot-index__col">
-    <p class="caps">SI 트랙</p>
-    <ul>
-      <li><a href="/si-track/#stage-1">1단계 · 개발환경</a></li>
-      <li><a href="/si-track/#stage-2">2단계 · 설계</a></li>
-      <li><a href="/si-track/#stage-3">3단계 · 구현</a></li>
-      <li><a href="/si-track/#stage-4">4단계 · 품질관리</a></li>
-    </ul>
-  </div>
-  <div class="foot-index__col">
-    <p class="caps">AI Chatbot 트랙</p>
-    <ul>
-      <li><a href="/ai-track/#stage-1">1단계 · 기초 이론</a></li>
-      <li><a href="/ai-track/#stage-2">2단계 · RAG 구현</a></li>
-    </ul>
-  </div>
-  <div class="foot-index__col">
-    <p class="caps">예습 기록</p>
-    <ul>
-      <li><a href="/company/">기관 · 실습 조건</a></li>
-      <li><a href="/glossary/">핵심 용어 사전</a></li>
-    </ul>
-  </div>
-  <div class="foot-index__meta">
-    <span>㈜시선아이티 · 서울 금천구 가산디지털1로 205, KCC웰츠밸리 1302호</span>
-    <span>산림청 산사태정보시스템 고도화 프로젝트 실무를 다루는 비공식 학습 노트입니다.</span>
-  </div>
+  <span><strong>pre-work</strong> · 실무에서 마주친 것을 다음의 이해로 연결하는 개인 노트</span>
+  <nav class="foot-index__links" aria-label="빠른 이동">
+    {links.map((l) => <a href={l.href}>{l.label}</a>)}
+  </nav>
 </footer>

@@ -1,0 +1,38 @@
+---
+interface Props {
+  question: string;
+  code?: { language: string; content: string };
+  options: string[];
+  answer: number;
+  explain: string;
+  index?: number;
+}
+
+const { question, code, options, answer, explain, index } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 8);
+---
+
+<div class="quiz" data-quiz data-answer={answer} data-quiz-id={uid}>
+  <p class="quiz__q">
+    {index !== undefined && <span class="quiz__n mono">{String(index).padStart(2, "0")}</span>}
+    {question}
+  </p>
+
+  {code && (
+    <pre class="quiz__code"><code>{code.content}</code></pre>
+  )}
+
+  <div class="quiz__options" role="group" aria-label="보기">
+    {options.map((option, i) => (
+      <button type="button" class="quiz__option" data-quiz-option={i}>
+        <span class="quiz__key mono">{String.fromCharCode(65 + i)}</span>
+        <span>{option}</span>
+      </button>
+    ))}
+  </div>
+
+  <div class="quiz__explain" data-quiz-explain hidden>
+    <p class="quiz__verdict mono" data-quiz-verdict></p>
+    <p>{explain}</p>
+  </div>
+</div>

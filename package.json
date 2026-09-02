@@ -9,7 +9,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "new:issue": "node scripts/new-issue.mjs"
   },
   "dependencies": {
     "astro": "^7.2.9"

@@ -1,0 +1,10 @@
+[
+  {
+    "date": "2026-09-03",
+    "scope": "app",
+    "macrostructure": "Workbench (workspace) / Long Document (notes)",
+    "theme": "Cobalt",
+    "enrichment": "none",
+    "brief": "Minimal, Codex-like personal knowledge workspace for eGovFrame and Spring learning notes"
+  }
+]

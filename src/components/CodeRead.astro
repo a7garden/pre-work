@@ -1,0 +1,85 @@
+---
+interface Note {
+  lines: string;
+  title: string;
+  body: string;
+}
+
+interface Props {
+  language: string;
+  caption: string;
+  code: string;
+  question?: string;
+  notes: Note[];
+}
+
+const { language, caption, code, question, notes } = Astro.props;
+
+function parseRange(range: string): [number, number] {
+  const [from, to] = range.split("-").map((n) => Number.parseInt(n.trim(), 10));
+  return [from, Number.isFinite(to) ? to : from];
+}
+
+const ranges = notes.map((note) => parseRange(note.lines));
+const lines = code.replace(/\n$/, "").split("\n");
+
+/** 각 줄이 몇 번 해설에 속하는지 미리 계산해 둔다 */
+const owners = lines.map((_, i) => {
+  const n = i + 1;
+  return ranges.findIndex(([from, to]) => n >= from && n <= to);
+});
+const uid = Math.random().toString(36).slice(2, 8);
+---
+
+<figure class="cr" data-coderead>
+  <figcaption class="cr__head">
+    <span class="cr__caption">{caption}</span>
+    <span class="cr__lang mono">{language}</span>
+  </figcaption>
+
+  {question && (
+    <p class="cr__question"><span class="mono">Q</span>{question}</p>
+  )}
+
+  <div class="cr__body">
+    <div class="cr__code" role="group" aria-label={`${caption} 소스 코드`}>
+      {lines.map((line, i) => {
+        const owner = owners[i];
+        const isFirst = owner >= 0 && owners[i - 1] !== owner;
+        return owner >= 0 ? (
+          <button
+            type="button"
+            class="cr__line cr__line--noted"
+            data-cr-target={`${uid}-${owner}`}
+            aria-controls={`${uid}-${owner}`}
+            aria-expanded="false"
+          >
+            <span class="cr__num mono">{i + 1}</span>
+            <code>{line || " "}</code>
+            {isFirst && <span class="cr__dot" aria-hidden="true">{owner + 1}</span>}
+          </button>
+        ) : (
+          <div class="cr__line">
+            <span class="cr__num mono">{i + 1}</span>
+            <code>{line || " "}</code>
+          </div>
+        );
+      })}
+    </div>
+
+    <div class="cr__notes">
+      <p class="cr__notes-hint mono">번호가 붙은 줄을 누르면 해설이 열립니다</p>
+      {notes.map((note, i) => (
+        <div class="cr__note" id={`${uid}-${i}`} data-cr-note hidden>
+          <p class="cr__note-head">
+            <span class="cr__note-idx mono">{i + 1}</span>
+            <span>{note.title}</span>
+            <span class="cr__note-lines mono">L{note.lines}</span>
+          </p>
+          <p class="cr__note-body">{note.body}</p>
+        </div>
+      ))}
+      <button type="button" class="cr__all mono" data-cr-all>전체 해설 펼치기</button>
+    </div>
+  </div>
+</figure>

@@ -1,26 +1,28 @@
-/* Hallmark · genre: editorial · macrostructure: Index-First (home) / Long Document (content) · theme: Almanac
- * enrichment: none (typography only) · nav: N3 Side-rail · footer: Ft3 Index columns
- * anchor hue: 29 (brick / ledger-ink red) · motion scale: 0.85x (Almanac)
+/* Hallmark · pre-emit critique: P5 H4 E5 S5 R5 V4
+ * genre: modern-minimal · macrostructure: Workbench (workspace) / Long Document (notes)
+ * design-system: design.md · theme: Cobalt · nav: N3 documentation rail · footer: Ft2 inline
+ * tone: minimal developer workspace · anchor hue: 258 (cobalt) · contrast: pass (40–41)
+ * slop: pass (42–49) · mobile: pass (34, 49–57)
  */
 
 :root {
-  /* ---- color: paper anchor hue 29 (warm brick-red), light mode ---- */
-  --color-paper:      oklch(97%  0.011 75);
-  --color-paper-2:    oklch(94%  0.013 75);
-  --color-paper-3:    oklch(91%  0.015 72);
-  --color-rule:       oklch(83%  0.016 62);
-  --color-neutral:    oklch(56%  0.013 60);
-  --color-muted:      oklch(42%  0.013 55);
-  --color-ink:        oklch(20%  0.015 45);
-  --color-accent:     oklch(46%  0.150 29);
-  --color-accent-ink: oklch(97%  0.010 75);
-  --color-focus:      oklch(56%  0.170 29);
+  /* ---- color: cool neutral paper with a restrained cobalt signal ---- */
+  --color-paper:      oklch(98.5% 0.003 255);
+  --color-paper-2:    oklch(96.5% 0.006 255);
+  --color-paper-3:    oklch(93.5% 0.009 255);
+  --color-rule:       oklch(88% 0.009 255);
+  --color-neutral:    oklch(52% 0.016 255);
+  --color-muted:      oklch(43% 0.014 255);
+  --color-ink:        oklch(22% 0.018 255);
+  --color-accent:     oklch(49% 0.180 258);
+  --color-accent-ink: oklch(99% 0.003 255);
+  --color-focus:      oklch(58% 0.190 258);
   --color-good:       oklch(52%  0.130 148);
   --color-warn:       oklch(58%  0.150 75);
 
   /* ---- type ---- */
-  --font-display: "Noto Serif KR", Georgia, "Nanum Myeongjo", serif;
-  --font-body:    "IBM Plex Sans KR", "IBM Plex Sans", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body:    -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   --text-xs:      0.75rem;
@@ -55,8 +57,8 @@
   --dur-long:  357ms;
 
   /* ---- misc ---- */
-  --radius-sm: 3px;
-  --radius-md: 6px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
   --rule-hair: 1px;
 
   --z-base:     1;
@@ -67,38 +69,38 @@
   --z-toast:    500;
   --z-tooltip:  600;
 
-  --rail-w: 15rem;
-  --measure: 66ch;
+  --rail-w: 16rem;
+  --measure: 72ch;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-paper:      oklch(15% 0.010 50);
-    --color-paper-2:    oklch(19% 0.012 50);
-    --color-paper-3:    oklch(23% 0.014 50);
-    --color-rule:       oklch(32% 0.014 50);
-    --color-neutral:    oklch(60% 0.012 50);
-    --color-muted:      oklch(74% 0.010 50);
-    --color-ink:        oklch(94% 0.010 70);
-    --color-accent:     oklch(66% 0.140 30);
-    --color-accent-ink: oklch(14% 0.010 50);
-    --color-focus:      oklch(72% 0.150 30);
+    --color-paper:      oklch(16% 0.012 255);
+    --color-paper-2:    oklch(20% 0.014 255);
+    --color-paper-3:    oklch(25% 0.016 255);
+    --color-rule:       oklch(33% 0.016 255);
+    --color-neutral:    oklch(65% 0.014 255);
+    --color-muted:      oklch(76% 0.012 255);
+    --color-ink:        oklch(95% 0.006 255);
+    --color-accent:     oklch(70% 0.160 258);
+    --color-accent-ink: oklch(16% 0.012 255);
+    --color-focus:      oklch(76% 0.170 258);
     --color-good:       oklch(68% 0.130 148);
     --color-warn:       oklch(72% 0.140 75);
   }
 }
 
 :root[data-theme="dark"] {
-  --color-paper:      oklch(15% 0.010 50);
-  --color-paper-2:    oklch(19% 0.012 50);
-  --color-paper-3:    oklch(23% 0.014 50);
-  --color-rule:       oklch(32% 0.014 50);
-  --color-neutral:    oklch(60% 0.012 50);
-  --color-muted:      oklch(74% 0.010 50);
-  --color-ink:        oklch(94% 0.010 70);
-  --color-accent:     oklch(66% 0.140 30);
-  --color-accent-ink: oklch(14% 0.010 50);
-  --color-focus:      oklch(72% 0.150 30);
+  --color-paper:      oklch(16% 0.012 255);
+  --color-paper-2:    oklch(20% 0.014 255);
+  --color-paper-3:    oklch(25% 0.016 255);
+  --color-rule:       oklch(33% 0.016 255);
+  --color-neutral:    oklch(65% 0.014 255);
+  --color-muted:      oklch(76% 0.012 255);
+  --color-ink:        oklch(95% 0.006 255);
+  --color-accent:     oklch(70% 0.160 258);
+  --color-accent-ink: oklch(16% 0.012 255);
+  --color-focus:      oklch(76% 0.170 258);
   --color-good:       oklch(68% 0.130 148);
   --color-warn:       oklch(72% 0.140 75);
 }

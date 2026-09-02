@@ -1,0 +1,210 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Blocks from "../components/Blocks.astro";
+import type { Block } from "../data/blocks";
+
+const seen = new Set<string>();
+
+type Spec = { type: string; what: string; source: string; demo: Block[] };
+
+const specs: Spec[] = [
+  {
+    type: "p",
+    what: "평범한 문단. 사전에 등록된 용어는 자동으로 밑줄이 붙고, 같은 용어는 한 페이지에 한 번만 연결된다.",
+    source: `{ type: "p", text: "Controller가 반환한 문자열은 ViewResolver를 거쳐 파일 경로가 된다." }`,
+    demo: [{ type: "p", text: "Controller가 반환한 문자열은 ViewResolver를 거쳐 파일 경로가 된다." }],
+  },
+  {
+    type: "list",
+    what: "불릿 목록. ordered: true 를 주면 번호 목록이 된다.",
+    source: `{ type: "list", ordered: true, items: ["첫째 항목", "둘째 항목"] }`,
+    demo: [{ type: "list", ordered: true, items: ["먼저 URL을 잡는다.", "그 다음 Controller를 연다."] }],
+  },
+  {
+    type: "callout",
+    what: "강조 상자. tone 은 note(기본) · warn · good 중 하나.",
+    source: `{ type: "callout", tone: "warn", title: "제목", text: "본문" }`,
+    demo: [{ type: "callout", tone: "warn", title: "확인할 것", text: "예외를 잡아 삼키면 롤백 신호가 프록시까지 가지 않는다." }],
+  },
+  {
+    type: "code",
+    what: "해설이 필요 없는 코드 조각. caption 은 생략할 수 있다.",
+    source: `{ type: "code", language: "java", caption: "제목", content: "..." }`,
+    demo: [{ type: "code", language: "java", caption: "이름으로 주입", content: '@Resource(name = "noticeService")\nprivate NoticeService noticeService;' }],
+  },
+  {
+    type: "codeRead",
+    what: "코드 읽기 훈련의 핵심. 줄 번호에 해설을 붙이면 그 줄이 눌러지는 버튼이 된다. lines 는 \"3\" 또는 \"3-5\" 형식.",
+    source: `{
+  type: "codeRead",
+  language: "java",
+  caption: "제목",
+  question: "코드를 읽고 답할 질문",
+  code: "...",
+  notes: [{ lines: "1-2", title: "해설 제목", body: "해설 본문" }],
+}`,
+    demo: [
+      {
+        type: "codeRead",
+        language: "java",
+        caption: "예시 — 줄을 눌러 보세요",
+        question: "이 메서드가 응답하는 주소는?",
+        code: '@RequestMapping("/notice")\npublic class NoticeController {\n  @RequestMapping("/list.do")\n  public String list() { return "notice/list"; }\n}',
+        notes: [
+          { lines: "1", title: "클래스 매핑", body: "이 안의 모든 메서드 주소 앞에 /notice 가 붙는다." },
+          { lines: "3", title: "메서드 매핑", body: "합쳐서 /notice/list.do 가 된다." },
+        ],
+      },
+    ],
+  },
+  {
+    type: "quiz",
+    what: "객관식 자가 점검. answer 는 0부터 세는 보기 번호.",
+    source: `{
+  type: "quiz",
+  question: "질문",
+  options: ["보기 A", "보기 B"],
+  answer: 1,
+  explain: "왜 그 답인지",
+}`,
+    demo: [
+      {
+        type: "quiz",
+        question: "return \"notice/list\" 가 가리키는 것은?",
+        options: ["notice/list.do 라는 주소", "ViewResolver가 경로를 완성할 뷰 이름"],
+        answer: 1,
+        explain: "prefix와 suffix가 앞뒤에 붙어 실제 JSP 경로가 된다.",
+      },
+    ],
+  },
+  {
+    type: "flow",
+    what: "화살표로 이어지는 단계. 요청 흐름이나 절차에 쓴다.",
+    source: `{ type: "flow", caption: "설명", steps: [{ label: "단계", detail: "부연" }] }`,
+    demo: [
+      {
+        type: "flow",
+        caption: "예시 흐름",
+        steps: [
+          { label: "브라우저", detail: "GET /notice/list.do" },
+          { label: "Controller", detail: "요청을 받는다" },
+          { label: "JSP", detail: "화면을 만든다" },
+        ],
+      },
+    ],
+  },
+  {
+    type: "tree",
+    what: "주석이 달린 폴더 트리. depth 로 들여쓰기 단계를 준다.",
+    source: `{ type: "tree", rows: [{ path: "pom.xml", note: "설명", depth: 0 }] }`,
+    demo: [
+      {
+        type: "tree",
+        rows: [
+          { path: "src/main/webapp/WEB-INF/", depth: 0 },
+          { path: "web.xml", note: "탐색의 출발점", depth: 1 },
+          { path: "jsp/", note: "화면", depth: 1 },
+        ],
+      },
+    ],
+  },
+  {
+    type: "table",
+    what: "비교표. 각 행의 첫 칸은 자동으로 머리글이 된다.",
+    source: `{ type: "table", head: ["항목", "3.8", "5.0"], rows: [["JDK", "1.8", "17 이상"]] }`,
+    demo: [
+      {
+        type: "table",
+        head: ["항목", "3.8", "5.0"],
+        rows: [
+          ["JDK", "1.8", "17 이상"],
+          ["Servlet", "javax.servlet", "jakarta.servlet"],
+        ],
+      },
+    ],
+  },
+  {
+    type: "terms",
+    what: "사전 항목을 카드로 펼친다. 데일리의 오늘의 용어가 이것이다.",
+    source: `{ type: "terms", title: "오늘의 용어", ids: ["el", "jstl"] }`,
+    demo: [{ type: "terms", title: "오늘의 용어", ids: ["el", "jstl"] }],
+  },
+  {
+    type: "link",
+    what: "다른 페이지로 넘기는 카드. 데일리에서 훈련으로 보낼 때 쓴다.",
+    source: `{ type: "link", href: "/drills/...", label: "오늘의 훈련", title: "제목", detail: "부연" }`,
+    demo: [
+      {
+        type: "link",
+        href: "/drills/url-to-controller/",
+        label: "오늘의 훈련",
+        title: "URL 하나로 Controller 찾아가기",
+        detail: "실제 공통컴포넌트 코드를 줄 단위로 읽는다 · 6분",
+      },
+    ],
+  },
+];
+
+const files = [
+  ["src/data/issues.ts", "데일리 한 편", "배열 맨 앞에 추가한다. 목록·상세·이전다음·홈이 전부 따라온다."],
+  ["src/data/drills.ts", "코드 읽기 훈련", "코드 + 줄별 해설 + 객관식 하나면 한 편이 된다."],
+  ["src/data/glossary.ts", "용어", "추가하는 순간 사이트 전체 본문에서 자동으로 연결된다."],
+  ["src/data/notes.ts", "긴 노트", "여러 절로 나뉘는 정리용 글."],
+];
+---
+
+<Layout
+  title="저작 방법"
+  description="새 글을 추가할 때 쓰는 블록 종류와 실제 렌더링 결과를 나란히 보여 주는 안내 페이지입니다."
+  progress
+>
+  <div class="page-head">
+    <span class="page-head__kicker mono">플랫폼 · 저작</span>
+    <h1>내일 아침 읽을 것을 오늘 밤에 추가하기</h1>
+    <p class="lede">
+      이 사이트의 모든 글은 블록 배열이다. 아래 열한 가지 중에서 고르면 화면은 알아서 만들어진다.
+      각 항목은 왼쪽에 쓰는 코드, 오른쪽에 실제 결과를 함께 둔다.
+    </p>
+  </div>
+
+  <div class="doc">
+    <section>
+      <h2>어디에 추가하는가</h2>
+      <div class="b-table">
+        <div class="b-table__scroll">
+          <table>
+            <thead><tr><th>파일</th><th>무엇</th><th>메모</th></tr></thead>
+            <tbody>
+              {files.map(([f, what, note]) => (
+                <tr><th class="mono">{f}</th><td>{what}</td><td>{note}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <aside class="b-callout b-callout--note">
+        <strong>새 호를 쓰는 가장 빠른 길</strong>
+        <p>터미널에서 <code>npm run new:issue</code> 를 실행하면 다음 호 번호와 오늘 날짜가 채워진 뼈대가 issues.ts 맨 앞에 삽입된다. 제목과 블록만 채우면 된다.</p>
+      </aside>
+      <aside class="b-callout b-callout--warn">
+        <strong>실무 코드를 그대로 옮기지 않는다</strong>
+        <p>회사 저장소의 코드·테이블명·서버 주소·계정은 이 사이트에 넣지 않는다. 구조만 남기고 이름을 바꿔 각색한다. 이 저장소는 공개 페이지로 배포된다.</p>
+      </aside>
+    </section>
+
+    {specs.map((spec) => (
+      <section>
+        <h2><code class="mono">{spec.type}</code></h2>
+        <p>{spec.what}</p>
+        <figure class="b-code">
+          <figcaption><span>쓰는 코드</span><code>ts</code></figcaption>
+          <pre><code>{spec.source}</code></pre>
+        </figure>
+        <p class="authoring__result mono">이렇게 보인다</p>
+        <div class="authoring__demo">
+          <Blocks blocks={spec.demo} seen={seen} />
+        </div>
+      </section>
+    ))}
+  </div>
+</Layout>

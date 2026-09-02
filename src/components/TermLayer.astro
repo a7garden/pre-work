@@ -1,0 +1,127 @@
+---
+import { termTooltipData } from "../data/glossary";
+---
+
+<div class="term-pop" id="term-pop" role="dialog" aria-live="polite" hidden>
+  <p class="term-pop__cat mono"></p>
+  <p class="term-pop__term"></p>
+  <p class="term-pop__short"></p>
+  <a class="term-pop__more mono" href="/glossary/">사전에서 자세히 <span aria-hidden="true">→</span></a>
+</div>
+
+<script id="term-data" type="application/json" set:html={JSON.stringify(termTooltipData)} is:inline />
+
+<script>
+  type Entry = { t: string; s: string; c: string };
+
+  const raw = document.getElementById("term-data")?.textContent ?? "{}";
+  const dict: Record<string, Entry> = JSON.parse(raw);
+
+  /* GitHub Pages는 /pre-work/ 하위에 배포된다. 빌드 후 sed가 HTML의 절대경로만
+     고쳐 주므로, 스크립트가 만드는 링크는 레일 로고의 href에서 접두어를 얻는다. */
+  const base =
+    document.querySelector<HTMLAnchorElement>(".nav-rail__mark")?.getAttribute("href") ?? "/";
+
+  const pop = document.getElementById("term-pop");
+  if (pop) {
+    const elCat = pop.querySelector<HTMLElement>(".term-pop__cat")!;
+    const elTerm = pop.querySelector<HTMLElement>(".term-pop__term")!;
+    const elShort = pop.querySelector<HTMLElement>(".term-pop__short")!;
+    const elMore = pop.querySelector<HTMLAnchorElement>(".term-pop__more")!;
+
+    let anchor: HTMLElement | null = null;
+    let pinned = false;
+    let hoverTimer: number | undefined;
+
+    const canHover = window.matchMedia("(hover: hover)").matches;
+
+    function place(target: HTMLElement) {
+      const r = target.getBoundingClientRect();
+      pop!.hidden = false;
+      pop!.style.visibility = "hidden";
+      const pw = pop!.offsetWidth;
+      const ph = pop!.offsetHeight;
+      const gutter = 12;
+
+      let left = r.left + r.width / 2 - pw / 2;
+      left = Math.max(gutter, Math.min(left, window.innerWidth - pw - gutter));
+
+      const above = r.top > ph + gutter;
+      const top = above ? r.top - ph - 8 : r.bottom + 8;
+
+      pop!.style.left = `${Math.round(left + window.scrollX)}px`;
+      pop!.style.top = `${Math.round(top + window.scrollY)}px`;
+      pop!.dataset.side = above ? "above" : "below";
+      pop!.style.visibility = "visible";
+    }
+
+    function open(target: HTMLElement, pin: boolean) {
+      const id = target.dataset.term;
+      const entry = id ? dict[id] : undefined;
+      if (!entry || !id) return;
+
+      elCat.textContent = entry.c;
+      elTerm.textContent = entry.t;
+      elShort.textContent = entry.s;
+      elMore.href = `${base}glossary/#${id}`;
+
+      anchor?.removeAttribute("data-open");
+      anchor = target;
+      target.setAttribute("data-open", "true");
+      pinned = pin;
+      pop!.dataset.pinned = pin ? "true" : "false";
+      place(target);
+    }
+
+    function close() {
+      window.clearTimeout(hoverTimer);
+      pop!.hidden = true;
+      anchor?.removeAttribute("data-open");
+      anchor = null;
+      pinned = false;
+    }
+
+    document.addEventListener("pointerover", (event) => {
+      if (!canHover || pinned) return;
+      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-term]");
+      if (!target) return;
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => open(target, false), 90);
+    });
+
+    document.addEventListener("pointerout", (event) => {
+      if (!canHover || pinned) return;
+      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-term]");
+      if (!target || target !== anchor) return;
+      const to = event.relatedTarget as Node | null;
+      if (to && (pop!.contains(to) || target.contains(to))) return;
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(close, 160);
+    });
+
+    pop.addEventListener("pointerenter", () => window.clearTimeout(hoverTimer));
+    pop.addEventListener("pointerleave", () => {
+      if (!pinned) hoverTimer = window.setTimeout(close, 120);
+    });
+
+    document.addEventListener("click", (event) => {
+      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-term]");
+      if (target) {
+        event.preventDefault();
+        if (pinned && target === anchor) close();
+        else open(target, true);
+        return;
+      }
+      if (pinned && !pop!.contains(event.target as Node)) close();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !pop!.hidden) close();
+    });
+
+    window.addEventListener("scroll", () => {
+      if (anchor && !pop!.hidden) place(anchor);
+    }, { passive: true });
+    window.addEventListener("resize", close);
+  }
+</script>

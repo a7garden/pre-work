@@ -1,0 +1,63 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { issues } from "../../data/issues";
+
+const total = issues.reduce((n, i) => n + i.minutes, 0);
+---
+
+<Layout
+  title="데일리 아카이브"
+  description="출근길에 한 편씩 읽는 실무 학습 뉴스레터의 전체 목록입니다."
+>
+  <header class="workspace-head">
+    <div>
+      <p class="workspace-head__eyebrow mono">DAILY</p>
+      <h1>데일리 아카이브</h1>
+      <p>한 편은 10분 안쪽입니다. 지하철에서 한 편, 회사에서 한 가지만 확인해 보는 흐름으로 만들었습니다.</p>
+    </div>
+    <div class="workspace-head__meta mono">{issues.length}개 호 · 누적 {total}분</div>
+  </header>
+
+  <ol class="issue-list">
+    {issues.map((issue) => (
+      <li>
+        <a href={`/daily/${issue.no}/`} data-read-mark={`issue-${issue.no}`}>
+          <span class="issue-list__no mono">제{issue.no}호</span>
+          <div class="issue-list__main">
+            <p class="issue-list__title">{issue.title}</p>
+            <p class="issue-list__dek">{issue.dek}</p>
+            <div class="tag-list">{issue.tags.map((tag) => <span>{tag}</span>)}</div>
+          </div>
+          <div class="issue-list__meta mono">
+            <span>{issue.date} ({issue.weekday})</span>
+            <span>{issue.minutes}분</span>
+            <span class="issue-list__read" data-read-badge>읽음</span>
+          </div>
+        </a>
+      </li>
+    ))}
+  </ol>
+
+  <aside class="note-add-guide">
+    <div>
+      <p class="mono">다음 호 쓰기</p>
+      <h2>오늘 회사에서 막힌 것이 내일 아침의 한 편이 됩니다</h2>
+      <p>배열 맨 앞에 객체 하나를 추가하면 목록·상세·이전다음 이동·홈 화면이 전부 따라옵니다. 블록 종류와 예시는 저작 안내에 정리해 두었습니다.</p>
+    </div>
+    <a class="note-add-guide__file" href="/authoring/"><code>src/data/issues.ts</code></a>
+  </aside>
+</Layout>
+
+<script>
+  /* 읽은 호를 기억해 목록에 표시한다 — 이 브라우저 안에서만 남는다 */
+  const KEY = "pw-read";
+  let read: string[] = [];
+  try {
+    read = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+  } catch (e) {
+    read = [];
+  }
+  document.querySelectorAll<HTMLElement>("[data-read-mark]").forEach((el) => {
+    if (read.includes(el.dataset.readMark!)) el.dataset.read = "true";
+  });
+</script>
