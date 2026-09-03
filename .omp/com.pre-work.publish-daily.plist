@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.pre-work.publish-daily</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/won/.bun/bin/omp</string>
+        <string>--model</string>
+        <string>zai/glm-5.3:max</string>
+        <string>--auto-approve</string>
+        <string>-p</string>
+        <string>@.omp/publish-daily-issue.md</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Volumes/MERCURY/PROJECTS/pre-work</string>
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Hour</key>
+            <integer>0</integer>
+            <key>Minute</key>
+            <integer>5</integer>
+        </dict>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/tmp/pre-work-publish-daily.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/pre-work-publish-daily.stderr.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/won/.local/share/fnm/aliases/default/bin:/Users/won/.bun/bin:/opt/homebrew/bin:/Users/won/.resend/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/won</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>KeepAlive</key>
+    <false/>
+</dict>
+</plist>
