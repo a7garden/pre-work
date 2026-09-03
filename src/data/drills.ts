@@ -617,6 +617,235 @@ function fn_reload() {
       },
     ],
   },
+  {
+    id: "rulebot-bottleneck",
+    no: 8,
+    title: "느린 챗봇 코드에서 병목 짚기",
+    goal: "요청 경로의 코드에서 시간이 새는 자리를 찾아낸다.",
+    level: 2,
+    minutes: 7,
+    tags: ["챗봇", "성능", "N+1"],
+    blocks: [
+      {
+        type: "p",
+        text: "1회 호출에 수 초가 걸린다는 룰베이스 챗봇의 워크플로우 핸들러다. 이름은 바꿨지만 구조는 흔한 모습이다. 규칙 자체는 문제가 아니다 — 규칙 매칭은 밀리초짜리 일이다. 시간이 새는 자리를 다섯 곳 찾아 본다.",
+      },
+      {
+        type: "codeRead",
+        language: "java",
+        caption: "워크플로우 핸들러 (구조 각색)",
+        question: "요청마다 반복되는 비싼 작업은 무엇이고, 반복문 안에서 몇 번이고 일어나는 일은 무엇인가?",
+        code: `public AnswerResponse handle(String question) {
+    // 1. 규칙 엔진 준비
+    RuleEngine engine = RuleEngine.fromXml("rules/chatbot-rules.xml");
+
+    // 2. 형태소 분석기 준비
+    MorphAnalyzer analyzer = new MorphAnalyzer("ko.dic");
+
+    // 3. 의도 판정
+    Intent intent = engine.match(analyzer.tokens(question));
+
+    // 4. 업무 안내 조회
+    List<Guide> guides = new ArrayList<>();
+    for (String bizCode : intent.bizCodes()) {
+        Connection conn = DriverManager.getConnection(url, user, pw);
+        guides.addAll(dao.selectByBiz(conn, bizCode));
+        conn.close();
+    }
+
+    // 5. 감사 로그 기록
+    auditDao.insertLog(question, intent);
+
+    return template.render(intent, guides);
+}`,
+        notes: [
+          {
+            lines: "3",
+            title: "규칙 파일을 요청마다 읽고 파싱한다",
+            body: "fromXml은 디스크 읽기와 파싱을 요청마다 반복한다. 규칙이 수천 개면 이 한 줄이 수백 밀리초가 된다. 규칙은 서버가 뜰 때 한 번 읽어 메모리에 두는 것이 원칙이다.",
+          },
+          {
+            lines: "6",
+            title: "형태소 분석기도 요청마다 새로 초기화한다",
+            body: "사전(ko.dic) 로딩은 수백 밀리초 단위의 비싼 작업이다. 이것도 기동 시 한 번 초기화해 재사용한다. 분석기 초기화를 요청 경로에 두는 것만으로 응답이 느려진다.",
+          },
+          {
+            lines: "15",
+            title: "반복문 안에서 매번 새 접속",
+            body: "getConnection은 접속 수립 자체가 수십~수백 밀리초다. bizCodes가 5개면 5번 접속한다. 커넥션 풀에서 빌려 쓰도록 바꾸는 것이 정석이다.",
+          },
+          {
+            lines: "12-19",
+            title: "건수만큼 반복되는 조회 — N+1",
+            body: "코드별 개별 조회를 반복문으로 돌리면 N+1회가 된다. 하나의 IN 조건으로 묶어 한 번에 읽는 편이 낫다. N+1의 진짜 비용은 쿼리가 아니라 그만큼의 접속과 왕복이다.",
+          },
+          {
+            lines: "22",
+            title: "감사 로그가 동기로 기록된다",
+            body: "공공 시스템에서 감사 로그는 필수다. 다만 응답 지연에 포함할 필요는 없어서, 메시지 큐나 배치로 비동기화하는 것이 표준적인 최적화다. 지연에 포함되어야 하는지는 요구사항으로 확인한다.",
+          },
+        ],
+      },
+      {
+        type: "quiz",
+        question: "가장 먼저 손볼 두 자리는?",
+        options: [
+          "규칙 파일 압축과 DB 증설",
+          "로딩·초기화의 기동 시점 이동과 커넥션 풀 도입",
+          "로그 삭제와 코드 정리",
+          "LLM으로의 교체",
+        ],
+        answer: 1,
+        explain: "3·6번 줄의 요청마다 초기화와 15번 줄의 요청마다 접속이 가장 큰 누수다. 규칙·분석기는 기동 시 한 번, 접속은 풀에서 빌려 쓴다. 나머지는 측정 후 순서를 정한다.",
+      },
+      {
+        type: "callout",
+        title: "측정 없이 고치지 않는다",
+        text: "이 코드에서 병목 다섯 곳을 짚었다지만, 실제 7초의 주범이 어디인지는 로그로 확인해야 안다. 고친 순서대로 구간 시간이 어떻게 줄어드는지 기록해 두면 다음 최적화의 근거가 된다.",
+      },
+    ],
+  },
+
+  {
+    id: "normalization-detect",
+    no: 9,
+    title: "정규형을 깨는 컬럼 짚기",
+    goal: "하나로 합쳐진 테이블에서 종속 관계를 읽고 나눠야 할 경계를 찾는다.",
+    level: 2,
+    minutes: 8,
+    tags: ["정규화", "DDL", "설계"],
+    blocks: [
+      {
+        type: "p",
+        text: "세미나 신청을 담은 테이블이다. 일단 만들어 쓰기 편하게 컬럼을 다 몰아넣었다. 각 컬럼이 \"무엇이 정하는가\"를 따져 보면, 이 테이블이 사실 세 개를 한 방에 넣은 것임이 보인다.",
+      },
+      {
+        type: "codeRead",
+        language: "sql",
+        caption: "세미나 신청 테이블 DDL",
+        question: "사번이 정하는 컬럼, 세미나코드가 정하는 컬럼, 부서코드가 정하는 컬럼으로 나눈다면 경계는 어디인가?",
+        code: `CREATE TABLE TB_SEMINAR_APP (
+  APP_SEQ     NUMBER(10)  NOT NULL,   -- 신청번호 (PK)
+  EMP_ID      VARCHAR(10) NOT NULL,   -- 사번
+  SEMINAR_ID  VARCHAR(10) NOT NULL,   -- 세미나코드
+  EMP_NM      VARCHAR(50),            -- 사번이 정한다
+  DEPT_CD     VARCHAR(4),             -- 사번이 정한다
+  DEPT_NM     VARCHAR(50),            -- DEPT_CD가 정한다
+  SEMINAR_NM  VARCHAR(100),           -- 세미나코드가 정한다
+  SEMINAR_DT  DATE,                   -- 세미나코드가 정한다
+  APPLY_DT    DATE NOT NULL           -- 신청 자체의 사실
+);`,
+        notes: [
+          {
+            lines: "5-6",
+            title: "사번이 정하는 컬럼들 — 사원의 사실",
+            body: "EMP_NM과 DEPT_CD는 신청과 무관하게 사원의 속성이다. 이들은 사원 테이블에 살아야 하고, 신청 테이블에는 사번만 남는다.",
+          },
+          {
+            lines: "7",
+            title: "부서명은 부서코드가 정한다 — 이행 종속",
+            body: "키가 아닌 DEPT_CD가 키가 아닌 DEPT_NM을 결정하는 것은 3NF 위반이다. 부서 테이블을 두고 부서코드만 갖고 있으면, 조직 개편에 따른 이름 변경도 한 곳에서 끝난다.",
+          },
+          {
+            lines: "8-9",
+            title: "세미나코드가 정하는 컬럼들 — 세미나의 사실",
+            body: "세미나명과 일자는 신청이 0건이어도 존재하는 사실이다. 이 테이블에 있으면 아직 신청자가 없는 세미나를 등록할 수 없다(삽입 이상). 세미나 테이블로 분리한다.",
+          },
+          {
+            lines: "10",
+            title: "신청 자체의 사실만 남는다",
+            body: "누가(사번) 무엇을(세미나코드) 언제 신청했는가(APPLY_DT). 이것이 이 테이블의 본업이다. 분리 후 이 테이블은 사실 한 건을 한 행에 담는다.",
+          },
+        ],
+      },
+      {
+        type: "quiz",
+        question: "사원 1명이 세미나 10개에 신청하면, 이 설계에서 EMP_NM은 몇 행에 저장되는가?",
+        options: ["1행", "3행", "10행", "저장되지 않는다"],
+        answer: 2,
+        explain: "10행이다. 그래서 사원 이름이 바뀌면 10행을 모두 고쳐야 하고(수정 이상), 한 행만 빠뜨리면 데이터가 서로 다른 진실을 말하게 된다. 사원 테이블로 분리하면 1행이다.",
+      },
+      {
+        type: "callout",
+        title: "현장에서 쓰는 순서",
+        text: "컬럼마다 \"무엇이 이 값을 정하는가\"를 물어 본다. 같은 답이 나오는 컬럼끼리 묶인다 — 그 묶음이 곧 테이블 경계다. 경계가 그려지면 분리는 기계적인 작업이다.",
+      },
+    ],
+  },
+
+  {
+    id: "aiml-category",
+    no: 10,
+    title: "AIML 카테고리 읽어 내기",
+    goal: "패턴·템플릿·srai 재호출 구조를 읽고 어떤 입력이 어떤 답으로 가는지 추적한다.",
+    level: 1,
+    minutes: 5,
+    tags: ["AIML", "챗봇", "패턴 매칭"],
+    blocks: [
+      {
+        type: "p",
+        text: "AIML에서 규칙의 단위는 카테고리다 — pattern(사용자 입력의 모양)과 template(응답)의 쌍. 아래 세 카테고리가 있다. 사용자가 \"언제까지야\"라고 입력하면 무엇이 일어나는지 따라가 본다.",
+      },
+      {
+        type: "codeRead",
+        language: "xml",
+        caption: "규칙 세 개 — 입력은 어디로 가는가",
+        question: "\"언제까지야\" 입력이 최종적으로 보여주는 응답 문장은 무엇인가?",
+        code: `<category>
+  <pattern>기한 알려줘</pattern>
+  <template>
+    <srai>기간 문의</srai>
+  </template>
+</category>
+
+<category>
+  <pattern>언제까지야</pattern>
+  <template>
+    <srai>기간 문의</srai>
+  </template>
+</category>
+
+<category>
+  <pattern>기간 문의</pattern>
+  <template>담당 업무명을 말씀해 주세요.</template>
+</category>`,
+        notes: [
+          {
+            lines: "8-14",
+            title: "\"언제까지야\"가 걸리는 자리",
+            body: "두 번째 카테고리의 패턴과 일치한다. 그런데 템플릿이 응답 문장이 아니라 <srai>다 — 다른 카테고리를 다시 부르라는 표지다.",
+          },
+          {
+            lines: "16-20",
+            title: "최종 도착점",
+            body: "srai는 \"기간 문의\" 패턴의 카테고리를 실행한 것과 같다. 최종 응답은 그 템플릿인 \"담당 업무명을 말씀해 주세요.\"다. 표현이 여럿이어도 답은 한 곳에서 관리된다.",
+          },
+          {
+            lines: "4",
+            title: "srai의 함정",
+            body: "srai가 서로를 계속 부르면 재귀 무한루프가 된다. 엔진이 재귀 한도로 막아 주지만, 규칙을 짤 때는 호출 방향이 항상 한쪽으로 흐르게 짜는 수밖에 없다.",
+          },
+        ],
+      },
+      {
+        type: "quiz",
+        question: "\"언제까지야\"를 입력하면 사용자가 보는 화면은?",
+        options: [
+          "\"기간 문의\"라는 문장",
+          "\"담당 업무명을 말씀해 주세요.\"",
+          "\"기한 알려줘\"라는 문장",
+          "아무 응답도 없다",
+        ],
+        answer: 1,
+        explain: "srai를 타고 \"기간 문의\" 카테고리까지 간 뒤 그 템플릿이 응답한다. 중간 패턴(\"기간 문의\")은 문장으로 보이지 않는다 — 관리용 규칙의 이름이다.",
+      },
+      {
+        type: "callout",
+        title: "이 구조의 의미",
+        text: "규칙을 늘리는 대신 표현을 줄여 한 곳으로 모은다. 규칙 수가 통제되면 관리 포인트도 하나다 — 전문가 시스템이 규칙 폭증으로 무너진 교훈(제2차 AI 겨울)을 피하는 가장 단순한 수법이다.",
+      },
+    ],
+  },
 ];
 
 export const drillById = (id: string) => drills.find((d) => d.id === id);
