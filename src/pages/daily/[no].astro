@@ -17,8 +17,14 @@ export function getStaticPaths() {
 
 const { issue, newer, older } = Astro.props;
 const seen = new Set<string>();
----
 
+/* 같은 시리즈의 호들 — 오래된 순으로 나열해 읽는 순서를 보여 준다 */
+const seriesIssues = issue.series
+  ? issues.filter((i) => i.series === issue.series).sort((a, b) => a.no - b.no)
+  : [];
+const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
+
+---
 <Layout title={`제${issue.no}호 · ${issue.title}`} description={issue.dek} progress>
   <article class="issue">
     <a class="back-link mono" href="/daily/">← 데일리 아카이브</a>
@@ -31,13 +37,32 @@ const seen = new Set<string>();
       </p>
       <h1>{issue.title}</h1>
       <p class="issue__dek">{issue.dek}</p>
-      <div class="tag-list">{issue.tags.map((tag) => <span>{tag}</span>)}</div>
+      <div class="tag-list">
+        {issue.series && <span class="issue__series-chip mono">{issue.series}</span>}
+        {issue.tags.map((tag) => <a href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>)}
+      </div>
     </header>
 
     <p class="issue__takeaway">
       <span class="mono">오늘 남길 한 문장</span>
       <strong><span><RichText text={issue.takeaway} seen={seen} /></span></strong>
     </p>
+
+    {issue.series && (
+      <aside class="issue__series">
+        <p class="mono">시리즈 · {issue.series} ({seriesPart}/{seriesIssues.length})</p>
+        <ol>
+          {seriesIssues.map((s) => (
+            <li aria-current={s.no === issue.no ? "page" : undefined}>
+              <a href={`/daily/${s.no}/`}>
+                <span class="mono">제{s.no}호</span>
+                <span>{s.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </aside>
+    )}
 
     <div class="doc issue__body">
       <Blocks blocks={issue.blocks} seen={seen} />

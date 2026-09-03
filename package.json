@@ -7,15 +7,19 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
     "new:issue": "node scripts/new-issue.mjs"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.19",
     "astro": "^7.2.9"
   },
   "allowScripts": {
     "esbuild": true
+  },
+  "devDependencies": {
+    "pagefind": "1.4"
   }
 }

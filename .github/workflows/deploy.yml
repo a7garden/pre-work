@@ -25,6 +25,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx astro build
+      - name: Build full-text search index
+        run: npx pagefind --site dist
       - name: Rewrite root-absolute paths for project subpath
         run: |
           find dist -name '*.html' -exec sed -i 's|href="/|href="/pre-work/|g; s|src="/|src="/pre-work/|g' {} +
