@@ -787,7 +787,7 @@ export const glossary: GlossaryTerm[] = [
     short: "공공 정보화 사업에서 단계별 산출물의 종류와 양식을 정의한 표준 개발 방법론.",
     long: "표준프레임워크가 코드 구조를 표준화한다면, 마르미는 문서와 절차를 표준화한다. 분석·설계·구현·시험 각 단계에서 무엇을 언제 제출하는지가 정해져 있다.",
     related: ["waterfall", "sdlc", "egovframe"],
-    see: [{ label: "SI 트랙 1단계", href: "/si-track/#stage-1" }],
+    see: [{ label: "SI 프로젝트가 이 순서로 가는 이유", href: "/daily/8/" }],
   },
 
   /* ─────────────────────────── java ─────────────────────────── */
@@ -1139,7 +1139,6 @@ export const glossary: GlossaryTerm[] = [
     category: "process",
     short: "학교·기관·학생이 3자 협약을 맺고 진행하는 정식 학사 절차형 현장실습.",
     related: ["si"],
-    see: [{ label: "기관 · 실습 조건", href: "/company/#coop" }],
   },
 
   /* ─────────────────────────── ai ─────────────────────────── */

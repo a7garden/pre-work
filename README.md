@@ -19,7 +19,7 @@
 | `/framework/` | 표준프레임워크 3.8 구조 해부 |
 | `/glossary/` | 용어 사전 — 본문의 점선 밑줄과 같은 데이터 |
 | `/authoring/` | 저작 방법 — 블록 종류와 실제 렌더링을 나란히 |
-| `/notes/` `/stack/` `/infra/` | 길게 정리한 노트와 기술별 참고 |
+| `/stack/` `/infra/` | 기술별 참고 — 뉴스레터가 인용하는 배경 자료 |
 
 ## 새 글 추가하기
 
@@ -35,8 +35,7 @@ npm run new:issue -- 2026-09-07
 | `src/data/issues.ts` | 데일리 한 편 |
 | `src/data/drills.ts` | 코드 읽기 훈련 |
 | `src/data/glossary.ts` | 용어 — 추가하면 사이트 전체 본문에 자동 연결 |
-| `src/data/notes.ts` | 긴 노트 |
-| `src/data/blocks.ts` | 위 넷이 공유하는 블록 타입 정의 |
+| `src/data/blocks.ts` | 위 셋이 공유하는 블록 타입 정의 |
 
 블록 종류와 예시는 `/authoring/` 페이지에서 코드와 결과를 나란히 볼 수 있다.
 자세한 저작 규칙은 [CONTENT.md](CONTENT.md)를 본다.

@@ -1,12 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { issues } from "../data/issues";
-import { notes } from "../data/notes";
 import { drills } from "../data/drills";
 import { glossary } from "../data/glossary";
 
 const latest = issues[0];
-const earlier = issues.slice(1, 4);
+const earlier = issues.slice(1, 6);
 
 const shelves = [
   { href: "/framework/", label: "레퍼런스", title: "표준프레임워크 3.8 구조", detail: "환경 · 레이어 · 폴더 · 설정 · 관용구" },
@@ -80,26 +79,6 @@ const shelves = [
     </div>
   </section>
 
-  <section class="workspace-section" aria-labelledby="notes-heading">
-    <div class="section-title">
-      <div>
-        <p class="mono">깊게 읽는 글</p>
-        <h2 id="notes-heading">학습 노트</h2>
-      </div>
-      <a class="text-action" href="/notes/">모든 노트 <span aria-hidden="true">→</span></a>
-    </div>
-    <div class="recent-list">
-      {notes.map((note) => (
-        <a href={`/notes/${note.slug}/`}>
-          <span class="recent-list__category">{note.category}</span>
-          <span class="recent-list__title">{note.title}</span>
-          <span class="recent-list__tags mono">{note.minutes}분</span>
-          <span class="recent-list__arrow" aria-hidden="true">→</span>
-        </a>
-      ))}
-    </div>
-  </section>
-
   <aside class="loop">
     <div class="loop__col">
       <p class="mono">이 사이트가 도는 방식</p>
@@ -115,7 +94,6 @@ const shelves = [
         <li><code>src/data/issues.ts</code><span>데일리 한 편</span></li>
         <li><code>src/data/drills.ts</code><span>코드 읽기 훈련</span></li>
         <li><code>src/data/glossary.ts</code><span>용어 — 본문에 자동 연결됨</span></li>
-        <li><code>src/data/notes.ts</code><span>길게 정리한 노트</span></li>
       </ul>
       <a class="text-action" href="/authoring/">저작 방법 보기 <span aria-hidden="true">→</span></a>
     </div>
