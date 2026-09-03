@@ -1080,6 +1080,15 @@ export const glossary: GlossaryTerm[] = [
     related: ["monolith", "docker", "api-gateway", "rest-api"],
   },
   {
+    id: "distributed-monolith",
+    term: "분산 모놀리스",
+    aliases: ["distributed monolith"],
+    category: "infra",
+    short: "서비스로 잘게 나눴지만 함께 배포해야 하는 가짜 MSA.",
+    long: "코드 저장소는 나뉘었는데 하나의 데이터베이스와 긴밀한 호출 사슬로 묶여 있어, 작은 변경에도 여러 서비스의 동시 배포가 필요하다. 네트워크 비용과 운영 복잡도만 커진 상태로, 잘 굴러가던 모놀리스보다 나쁘다. 경계는 기술 계층이 아니라 업무 능력 위에 그어야 한다.",
+    related: ["msa", "monolith", "bounded-context"],
+  },
+  {
     id: "api-gateway",
     term: "API Gateway",
     category: "infra",
@@ -1348,6 +1357,15 @@ export const glossary: GlossaryTerm[] = [
     short: "같은 개념이라도 업무 영역마다 다른 모델과 언어를 갖는 명시적 경계.",
     long: "\"사용자\"라는 단어가 급여와 출결에서 가리키는 속성이 다르듯, 컨텍스트마다 모델이 따로 존재한다. 경계 안에서 용어는 하나로 통일하고, 경계 사이는 정해진 계약으로만 왕래한다. 마이크로서비스의 서비스 경계는 대부분 이 경계 위에 놓인다.",
     related: ["business-logic", "msa", "modular-monolith"],
+  },
+  {
+    id: "strangler-fig",
+    term: "스트랭글러 패턴",
+    aliases: ["Strangler Fig", "교살자 무화과", "strangler pattern"],
+    category: "process",
+    short: "한 번에 갈아타지 않고 겉부터 조금씩 새 시스템으로 덮어가는 전환 방식.",
+    long: "기존 시스템 앞에 요청을 가르는 문을 세우고, 옮길 기능부터 새 서비스로 돌린다. 무화과 덩굴이 받쳐 준 나무를 감싸 결국 대체하듯 옛 시스템이 조금씩 줄어든다. 언제 멈춰도 시스템이 온전하므로 대규모 재작성보다 실패 확률이 낮다.",
+    related: ["msa", "monolith", "api-gateway"],
   },
   {
     id: "tribal-knowledge",
