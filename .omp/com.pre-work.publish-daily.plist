@@ -6,15 +6,10 @@
     <string>com.pre-work.publish-daily</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/won/.bun/bin/omp</string>
-        <string>--model</string>
-        <string>zai/glm-5.3:max</string>
-        <string>--auto-approve</string>
-        <string>-p</string>
-        <string>@.omp/publish-daily-issue.md</string>
+        <string>/bin/zsh</string>
+        <string>-c</string>
+        <string>export RESEND_API_KEY="$(cat "$HOME/.config/resend/key")" &amp;&amp; exec /Users/won/.bun/bin/omp --model zai/glm-5.3:max --auto-approve -p @.omp/publish-daily-issue.md</string>
     </array>
-    <key>WorkingDirectory</key>
-    <string>/Volumes/MERCURY/PROJECTS/pre-work</string>
     <key>StartCalendarInterval</key>
     <array>
         <dict>

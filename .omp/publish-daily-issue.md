@@ -148,7 +148,7 @@ printf '# pre-work — 발간 요약\n\n발간 대상 없음 (%s)\n' "$(date +%F
 
 `send-email` 스킬을 로드하고 그 지침에 따라 보낸다.
 
-- **수신:** `a7garden`
+- **수신:** `a7garden@icloud.com` (사용자 확인 완료, 2026-09-04)
 - **제목:** `[pre-work] 제{no}호 발간 — {제목}`
 - **본문:** 요약 파일 내용 + 라이브 URL
 
