@@ -1,15 +1,9 @@
 ---
-import Term from "./Term.astro";
-import { annotate } from "../lib/annotate";
-
+/** 본문 문자열을 그대로 렌더링한다 — 이스케이프는 Astro가 맡는다. */
 interface Props {
   text: string;
-  seen?: Set<string>;
-  exclude?: string[];
-  max?: number;
 }
 
-const { text, seen, exclude, max } = Astro.props;
-const parts = annotate(text, { seen, exclude, max });
+const { text } = Astro.props;
 ---
-{parts.map((part) => (part.kind === "term" ? <Term id={part.id}>{part.value}</Term> : part.value))}
+<Fragment>{text}</Fragment>

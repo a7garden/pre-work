@@ -1,26 +1,19 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { issues } from "../data/issues";
-import { drills } from "../data/drills";
-import { glossary } from "../data/glossary";
 
 const latest = issues[0];
-const earlier = issues.slice(1, 6);
-
-const shelves = [
-  { href: "/framework/", label: "레퍼런스", title: "표준프레임워크 3.8 구조", detail: "환경 · 레이어 · 폴더 · 설정 · 관용구" },
-  { href: "/drills/", label: "훈련", title: `코드 읽기 훈련 ${drills.length}편`, detail: "코드를 먼저 읽고 스스로 답한다" },
-  { href: "/glossary/", label: "사전", title: `용어 ${glossary.length}개`, detail: "본문 어디서나 밑줄에 마우스를 올린다" },
-];
+const rest = issues.slice(1);
+const total = issues.reduce((n, i) => n + i.minutes, 0);
 ---
 
 <Layout
   title="오늘"
-  description="일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 뉴스레터입니다."
+  description="일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 읽거리입니다."
 >
   <header class="today-head">
     <p class="today-head__eyebrow mono">오늘 읽을 것</p>
-    <a class="today" href={`/daily/${latest.no}/`}>
+    <a class="today" href={`/read/${latest.no}/`}>
       <div class="today__stamp mono">
         <span>제{latest.no}호</span>
         <span>{latest.date} ({latest.weekday})</span>
@@ -36,66 +29,55 @@ const shelves = [
     </a>
   </header>
 
-  <section class="workspace-section" aria-labelledby="earlier-heading">
+  <section class="workspace-section" aria-labelledby="archive-heading">
     <div class="section-title">
       <div>
-        <p class="mono">지난 호</p>
-        <h2 id="earlier-heading">놓친 편이 있다면</h2>
+        <p class="mono">아카이브</p>
+        <h2 id="archive-heading">그동안의 호</h2>
       </div>
-      <a class="text-action" href="/daily/">전체 아카이브 <span aria-hidden="true">→</span></a>
+      <span class="section-title__meta mono">{issues.length}개 호 · 누적 {total}분</span>
     </div>
-    <div class="recent-list">
-      {earlier.map((issue) => (
-        <a href={`/daily/${issue.no}/`}>
-          <span class="recent-list__category mono">제{issue.no}호</span>
-          <span class="recent-list__title">{issue.title}</span>
-          <span class="recent-list__tags mono">{issue.date} · {issue.minutes}분</span>
-          <span class="recent-list__arrow" aria-hidden="true">→</span>
-        </a>
+    <ol class="issue-list">
+      {rest.map((issue) => (
+        <li>
+          <a href={`/read/${issue.no}/`} data-read-mark={`issue-${issue.no}`}>
+            <span class="issue-list__no mono">제{issue.no}호</span>
+            <div class="issue-list__main">
+              <p class="issue-list__title">{issue.title}</p>
+              <p class="issue-list__dek">{issue.dek}</p>
+              <div class="tag-list">{issue.tags.map((tag) => <span>{tag}</span>)}</div>
+            </div>
+            <div class="issue-list__meta mono">
+              <span>{issue.date} ({issue.weekday})</span>
+              <span>{issue.minutes}분</span>
+              <span class="issue-list__read" data-read-badge>읽음</span>
+            </div>
+          </a>
+        </li>
       ))}
-    </div>
+    </ol>
   </section>
 
-  <section class="workspace-section" aria-labelledby="shelf-heading">
-    <div class="section-title">
-      <div>
-        <p class="mono">언제든 펼쳐 보는 곳</p>
-        <h2 id="shelf-heading">기준이 되는 세 페이지</h2>
-      </div>
-      <span class="section-title__meta mono">reference</span>
+  <aside class="note-add-guide">
+    <div>
+      <p class="mono">칼럼 요청</p>
+      <h2>읽고 싶은 주제를 이슈로 던지면 칼럼이 됩니다</h2>
+      <p>요청은 누구나 할 수 있습니다. 주제를 선별해 발행 대기를 붙이면 자정 파이프라인이 칼럼으로 발행해 배포합니다.</p>
     </div>
-    <div class="step-cards">
-      {shelves.map((shelf, index) => (
-        <a class="step-card" href={shelf.href}>
-          <span class="step-card__number mono">0{index + 1}</span>
-          <div>
-            <p class="step-card__label">{shelf.label}</p>
-            <h3>{shelf.title}</h3>
-            <p>{shelf.detail}</p>
-          </div>
-          <span class="step-card__arrow" aria-hidden="true">↗</span>
-        </a>
-      ))}
-    </div>
-  </section>
-
-  <aside class="loop">
-    <div class="loop__col">
-      <p class="mono">이 뉴스레터가 도는 방식</p>
-      <ol class="loop__steps">
-        <li><strong>요청</strong><span>읽고 싶은 주제를 GitHub 이슈로 던진다 — 누구나</span></li>
-        <li><strong>승인</strong><span>발행 대기를 붙여 다음 칼럼으로 확정한다</span></li>
-        <li><strong>발행</strong><span>자정 파이프라인이 칼럼으로 발행해 배포한다</span></li>
-      </ol>
-    </div>
-    <div class="loop__col">
-      <p class="mono">함께 읽는 곳</p>
-      <ul class="loop__files">
-        <li><code>/drills/</code><span>코드 읽기 훈련 — 줄을 눌러 해설을 연다</span></li>
-        <li><code>/glossary/</code><span>용어 사전 — 본문 어디서나 연결된다</span></li>
-        <li><code>/rss.xml</code><span>구독 — 매일 아침 한 편</span></li>
-      </ul>
-      <a class="text-action" href="https://github.com/a7garden/pre-work/issues/new?template=publish.yml">칼럼 요청하기 <span aria-hidden="true">→</span></a>
-    </div>
+    <a class="note-add-guide__file" href="https://github.com/a7garden/pre-work/issues/new?template=publish.yml">GitHub 이슈로 요청하기</a>
   </aside>
 </Layout>
+
+<script>
+  /* 읽은 호를 기억해 목록에 표시한다 — 이 브라우저 안에서만 남는다 */
+  const KEY = "pw-read";
+  let read: string[] = [];
+  try {
+    read = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+  } catch (e) {
+    read = [];
+  }
+  document.querySelectorAll<HTMLElement>("[data-read-mark]").forEach((el) => {
+    if (read.includes(el.dataset.readMark!)) el.dataset.read = "true";
+  });
+</script>

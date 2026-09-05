@@ -53,8 +53,7 @@ const skeleton = `
     takeaway: "오늘 하루 머리에 남기고 싶은 한 문장.",
     next: "내일 이어서 볼 것",
     blocks: [
-      { type: "p", text: "여기서부터 쓴다. 사전에 있는 용어는 자동으로 연결된다." },
-      { type: "terms", title: "오늘의 용어", ids: [] },
+      { type: "p", text: "여기서부터 쓴다." },
       {
         type: "callout",
         title: "오늘 해 볼 것",

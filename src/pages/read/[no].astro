@@ -16,7 +16,6 @@ export function getStaticPaths() {
 }
 
 const { issue, newer, older } = Astro.props;
-const seen = new Set<string>();
 
 /* 같은 시리즈의 호들 — 오래된 순으로 나열해 읽는 순서를 보여 준다 */
 const seriesIssues = issue.series
@@ -27,7 +26,7 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
 ---
 <Layout title={`제${issue.no}호 · ${issue.title}`} description={issue.dek} progress>
   <article class="issue">
-    <a class="back-link mono" href="/daily/">← 데일리 아카이브</a>
+    <a class="back-link mono" href="/">← 전체 목록</a>
 
     <header class="issue__head">
       <p class="issue__stamp mono">
@@ -45,7 +44,7 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
 
     <p class="issue__takeaway">
       <span class="mono">오늘 남길 한 문장</span>
-      <strong><span><RichText text={issue.takeaway} seen={seen} /></span></strong>
+      <strong><span><RichText text={issue.takeaway} /></span></strong>
     </p>
 
     {issue.series && (
@@ -54,7 +53,7 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
         <ol>
           {seriesIssues.map((s) => (
             <li aria-current={s.no === issue.no ? "page" : undefined}>
-              <a href={`/daily/${s.no}/`}>
+              <a href={`/read/${s.no}/`}>
                 <span class="mono">제{s.no}호</span>
                 <span>{s.title}</span>
               </a>
@@ -65,7 +64,7 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
     )}
 
     <div class="doc issue__body">
-      <Blocks blocks={issue.blocks} seen={seen} />
+      <Blocks blocks={issue.blocks} />
     </div>
 
     {issue.next && (
@@ -77,13 +76,13 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
 
     <nav class="issue__nav" aria-label="다른 호로 이동">
       {older ? (
-        <a href={`/daily/${older.no}/`} class="issue__nav-link">
+        <a href={`/read/${older.no}/`} class="issue__nav-link">
           <span class="mono">← 제{older.no}호</span>
           <span>{older.title}</span>
         </a>
       ) : <span></span>}
       {newer ? (
-        <a href={`/daily/${newer.no}/`} class="issue__nav-link issue__nav-link--next">
+        <a href={`/read/${newer.no}/`} class="issue__nav-link issue__nav-link--next">
           <span class="mono">제{newer.no}호 →</span>
           <span>{newer.title}</span>
         </a>

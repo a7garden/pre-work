@@ -59,11 +59,6 @@ export const issues: Issue[] = [
         "text": "일자리 질문에 대한 그의 태도도 기록해 둔다. 기계화가 노동을 대체한 사례와 오히려 일자리를 늘린 사례가 공존하므로 장기 결과는 아무도 모른다. 제시된 구분은 이것이다 — 논리를 기계적으로 조립하는 일만 좋아했다면 힘든 시기다. 무언가를 만드는 일 자체를 좋아한다면, 프로그래밍의 즐거운 몰입은 연간 2,000시간 중 25~200시간 정도이고 나머지 고된 반복은 기계에 넘길 수 있게 됐다는 낙관이 가능하다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": ["sandbox", "model-routing", "cve"]
-      },
-      {
         "type": "quiz",
         "question": "GUI 중심 도구가 에이전트 작업에 불리한 이유는?",
         "options": [
@@ -133,11 +128,6 @@ export const issues: Issue[] = [
         ]
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": ["innovators-dilemma", "conway-law"]
-      },
-      {
         "type": "quiz",
         "question": "각자 타당해 보인 AI 구현 PR들이 결합하자 문제가 된 이유는?",
         "options": [
@@ -205,11 +195,6 @@ export const issues: Issue[] = [
           ["사람이 정하는 것", "원하는 결과", "방향과 병합", "설계와 문법"],
           ["잘 맞는 일", "개인 도구, 시험", "신규 프로젝트", "안전이 중요한 시스템"]
         ]
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": ["vibe-coding", "prompt-engineering", "unit-test"]
       },
       {
         "type": "quiz",
@@ -283,11 +268,6 @@ export const issues: Issue[] = [
           ["실력의 초점", "문법과 구현 속도", "목적 설정, 구조 판단, 병합 기준"],
           ["피로의 종류", "손목과 집중", "끊기지 않는 판단"]
         ]
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": ["agent-harness", "multi-agent", "ai-agent"]
       },
       {
         "type": "quiz",
@@ -414,27 +394,13 @@ export const issues: Issue[] = [
       },
       {
         "type": "p",
-        "text": "이런 공간 조건은 일반 인덱스로 못 한다. 도형의 경계 상자를 나무로 묶은 GiST 인덱스가 공간 조회의 표준이고, 이것이 없으면 지도 조회는 전부 표 전체 읽기가 된다. 그리고 도형 컬럼은 두 종류다 — 평면 계산이 빠른 geometry와, 경위도를 구면으로 계산해 미터를 정확히 내는 geography. 화면 쪽은 OpenLayers가 공공 SI의 표준에 가깝다. WMS·WFS·타일을 모두 소비하고 한국 좌표계 같은 비표준 투영도 다룬다. 가벼운 Leaflet이 대안이지만 좌표계 지원이 좁다. 데이터 교환은 요즘 GeoPackage(SQLite 한 파일)로 모으는 흐름이고, Shapefile은 컬럼명 10자 제한 같은 낡은 규약이 남아 레거시 호환용으로 남는다."
+        "text": "이런 공간 조건은 일반 인덱스로 못 한다. 도형의 경계 상자를 나무로 묶은 GiST 인덱스가 공간 조회의 표준이고, 이것이 없으면 지도 조회는 전부 표 전체 읽기가 된다. 그리고 도형 컬럼은 두 종류다 — 평면 계산이 빠른 geometry와, 경위도를 구면으로 계산해 미터를 정확히 내는 geography. 화면 쪽은 OpenLayers가 국내 지도 시스템의 사실상 표준이다. WMS·WFS·타일을 모두 소비하고 한국 좌표계 같은 비표준 투영도 다룬다. 가벼운 Leaflet이 대안이지만 좌표계 지원이 좁다. 데이터 교환은 요즘 GeoPackage(SQLite 한 파일)로 모으는 흐름이고, Shapefile은 컬럼명 10자 제한 같은 낡은 규약이 남아 레거시 호환용으로 남는다."
       },
       {
         "type": "callout",
         "title": "좌표계 지옥 — \"지도가 조금 밀려요\"",
         "tone": "warn",
         "text": "GPS는 4326(경위도, 단위가 '도'), 국토 도면은 5186(미터)을 쓴다. 변환(ST_Transform) 없이 섞으면 수십~수백 미터 어긋난다. 지도 장애 보고의 상당수가 기능 버그가 아니라 좌표계 혼용이다. 좌표가 이상하면 SRID부터 확인한다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "wms-wfs",
-          "geoserver",
-          "postgis",
-          "gist-index",
-          "geometry-geography",
-          "srid",
-          "geojson",
-          "openlayers"
-        ]
       },
       {
         "type": "callout",
@@ -488,17 +454,6 @@ export const issues: Issue[] = [
         "title": "부족 지식의 절벽",
         "tone": "warn",
         "text": "레거시 시스템의 핵심 운영 지식이 특정 사람의 머리에만 있으면, 그 사람이 떠나는 순간 배치 순서·우회로·\"원래 그렇게 쓰는 것\"이 한꺼번에 사라진다. 대화로 시작해 기록으로 굳은 지식만이 이 절벽을 넘는다. 짧은 대화가 쓸모 있는 이유는 좋은 말이어서가 아니라, 아직 문서가 안 된 것들이 거기서 처음 말로 나오기 때문이다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "rule-based-chatbot",
-          "msa",
-          "business-logic",
-          "normalization",
-          "bm25"
-        ]
       },
       {
         "type": "callout",
@@ -566,16 +521,7 @@ export const issues: Issue[] = [
           "버그 트래킹"
         ],
         "answer": 2,
-        "explain": "Gap 분석은 기준선(요구사항정의서)과 결과물 사이의 차이를 찾는 작업이다. 찾아낸 차이는 재구현하거나, 발주기관과 협의해 범위를 조정하는 방식으로 보완한다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "unit-test",
-          "integration-test",
-          "gap-analysis"
-        ]
+        "explain": "Gap 분석은 기준선(요구사항정의서)과 결과물 사이의 차이를 찾는 작업이다. 찾아낸 차이는 재구현하거나, 요구사항 협의로 범위를 조정하는 방식으로 보완한다."
       },
       {
         "type": "callout",
@@ -667,16 +613,6 @@ export const issues: Issue[] = [
         "text": "핵심은 결정과 실행을 분리하는 것이다. 언제 위임할지는 라우터가 정하고, 실제 답변 방식은 워커 모델이 정한다. 워커를 교체해도 분기 기준은 유지된다. 다만 네트워크 왕복이 큰 작업에는 오히려 직접 처리하는 편이 낫다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "ai-agent",
-          "hook",
-          "context-window",
-          "model-routing"
-        ]
-      },
-      {
         "type": "quiz",
         "question": "짧은 파일을 경량 모델에 보내지 않고 직접 읽는 이유는?",
         "options": [
@@ -765,17 +701,6 @@ export const issues: Issue[] = [
       {
         "type": "p",
         "text": "체스 기보의 다음 수를 맞히는 모델과 여러 수를 탐색해 승률을 높이는 엔진은 행동이 다르다. 둘 다 토큰을 한 개씩 출력할 수 있지만, 내부에 학습된 목표와 절차가 같다고 볼 수 없다. 이 구분은 환각을 줄이는 대응을 설계할 때도 출발점이 된다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "llm",
-          "pre-training",
-          "post-training",
-          "rlvr",
-          "rlhf"
-        ]
       },
       {
         "type": "quiz",
@@ -899,17 +824,6 @@ export const issues: Issue[] = [
         "explain": "권고문은 무시될 수 있지만, 실행 전 훅은 검사 결과로 호출을 차단할 수 있다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "ai-agent",
-          "skill",
-          "hook",
-          "mcp",
-          "llm"
-        ]
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
         "text": "사용 중인 에이전트 설정에서 반복되는 절차 하나를 골라 모듈로 분리하고, 실행 전에 검사해야 할 조건 한 가지를 훅 규칙으로 적는다."
@@ -991,17 +905,6 @@ export const issues: Issue[] = [
         ],
         "answer": 1,
         "explain": "k1이 단어 빈도의 증가를 일정 수준으로 수렴시킨다. b는 문서 길이를 보정하고, IDF는 단어의 희귀도를 반영한다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "bm25",
-          "tf-idf",
-          "hybrid-search",
-          "vector-db",
-          "rag"
-        ]
       },
       {
         "type": "link",
@@ -1098,16 +1001,6 @@ export const issues: Issue[] = [
         "text": "표가 말해 주듯 암호화 DNS는 완전한 프라이버시가 아니다. 리졸버 운영자는 여전히 모든 조회를 보고, 기록하고, 팔 수도 있다. 그래서 문제는 '누구를 믿을 것인가'가 되고, Quad9처럼 비영리로 기록 보존 정책을 명시한 운영자가 자리를 잡는 이유도 여기 있다. Mullvad의 접기 결정도 같은 논리다 — 이미 잘하는 자를 복제하지 않는 것도 아키텍처 판단이다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "dns",
-          "dns-resolver",
-          "doh",
-          "dot"
-        ]
-      },
-      {
         "type": "quiz",
         "question": "DoH로 바꾼 뒤에도 여전히 조회 도메인 목록을 그대로 볼 수 있는 자는?",
         "options": [
@@ -1188,17 +1081,6 @@ export const issues: Issue[] = [
         "text": "공격 기술은 파일 업로드에서 시작된다. 변형된 이미지 파일(BMP)을 올리면 처리 과정에서 서버의 임의 파일을 읽고, 그 안의 비밀 설정값으로 실행 권한까지 가져간다. 사용자가 올린 파일을 다루는 코드 경로는 별도의 위협 모델로 취급해야 한다는 교훈이다. 확장자와 Content-Type은 클라이언트가 적어 보내는 문자열일 뿐이다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "cve",
-          "cvss",
-          "dependency",
-          "magic-bytes",
-          "waf"
-        ]
-      },
-      {
         "type": "list",
         "items": [
           "의존성의 전용 보안 릴리스는 점수가 없어도 긴급으로 본다 — 점수 매기기는 늦게 온다",
@@ -1226,13 +1108,6 @@ export const issues: Issue[] = [
         "label": "Rietta Inc.",
         "title": "Government Rails Site Hit Hours After CVE Patch",
         "detail": "패치 완료에서 첫 공격까지 8시간 1분. 타임라인과 실무 수칙이 이 글의 전부다."
-      },
-      {
-        "type": "link",
-        "href": "/drills/upload-validation/",
-        "label": "오늘의 훈련",
-        "title": "업로드 파일 검증 코드 읽기",
-        "detail": "확장자 검사와 매직 바이트 검사의 차이를 줄 단위로 읽는다 · 6분"
       },
       {
         "type": "callout",
@@ -1325,17 +1200,6 @@ export const issues: Issue[] = [
         "text": "이번 취약점은 샌드박스 안까지 온 공격이다. 샌드박스 덕에 '코드가 실행됐다'와 '컴퓨터가 넘어갔다'는 다른 단계지만, KEV 등재는 그 완충이 실전에서 이미 시험 중이라는 뜻이기도 하다. 사용자가 할 수 있는 방어는 성의 있어 보이지 않는다 — 업데이트. 크로미엄 기반 브라우저(크롬, 엣지 등)는 같은 엔진을 공유하므로 함께 대상이다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "cve",
-          "type-confusion",
-          "sandbox",
-          "chromium",
-          "cisa-kev"
-        ]
-      },
-      {
         "type": "quiz",
         "question": "이번 취약점 설명에 '샌드박스 내부에서 임의 코드 실행'이라고 명시한 이유는?",
         "options": [
@@ -1409,7 +1273,7 @@ export const issues: Issue[] = [
       },
       {
         "type": "p",
-        "text": "복원 필터는 세션에서 인증 정보를 꺼내 요청에 얹고, 마지막 인가 필터는 경로와 권한을 대조해 통과시키거나 막는다. 로그인 폼 제출은 전용 필터가 가로채고, 사용자 조회는 인증 관리자가 데이터베이스 조회 구현체에 맡긴다. \"누구인가\"의 판정과 \"무엇을 허용할까\"의 판정이 이렇게 갈라져 있다. 설정 파일의 모드 값 하나로 세션 기반 인증과 보안 프레임워크 기반 인증 중 하나를 고르는 관행(공공 SI의 표준프레임워크가 대표적)도 같은 틀 안에 있다."
+        "text": "복원 필터는 세션에서 인증 정보를 꺼내 요청에 얹고, 마지막 인가 필터는 경로와 권한을 대조해 통과시키거나 막는다. 로그인 폼 제출은 전용 필터가 가로채고, 사용자 조회는 인증 관리자가 데이터베이스 조회 구현체에 맡긴다. \"누구인가\"의 판정과 \"무엇을 허용할까\"의 판정이 이렇게 갈라져 있다. 설정 파일의 모드 값 하나로 인증 방식을 고르는 관행도 같은 틀 안에 있다."
       },
       {
         "type": "code",
@@ -1424,17 +1288,6 @@ export const issues: Issue[] = [
       {
         "type": "p",
         "text": "세션 이야기도 짚자. 로그인의 실체는 JSESSIONID 쿠키와 서버 메모리의 짝이다. 그래서 서버를 재시작하면 로그인이 풀리고, 서버를 여러 대로 늘리면 세션 공유 문제가 생긴다. 타임아웃은 웹 애플리케이션 배포 설정(web.xml의 session-timeout)에서 분 단위로 정한다 — setMaxInactiveInterval은 초 단위라 혼동 주의. 로그인 성공 시 세션을 새로 발급하는 방어(세션 고정 대비)는 프레임워크 기본이지만, 실패 횟수 잠금은 기본이 아니라 이벤트를 받아 직접 만드는 부분이다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "filter-chain",
-          "spring-security",
-          "session",
-          "csrf",
-          "session-fixation"
-        ]
       },
       {
         "type": "quiz",
@@ -1479,7 +1332,7 @@ export const issues: Issue[] = [
     "blocks": [
       {
         "type": "p",
-        "text": "19호까지 따라가 봤다면 WAR 하나가 온전한 모놀리스라서, 기능 하나만 바뀌어도 전체가 망연계 절차를 다시 건너야 한다는 점을 알 것이다. 그 배포가 유독 무겁게 느껴진다면 원인의 절반은 구조다. \"모놀리스를 쪼개자\"는 제안이 설계 회의에 나왔다면, 찬성이든 반대든 먼저 물어야 할 질문은 \"정말 아픈 곳이 어디냐\"다. 대답이 \"배포할 때마다 전체가 같이 갈린다\", \"한 팀의 변경이 다른 팀을 무너뜨린다\"라면 쪼개는 게 맞다. 반대로 \"최신 기술이라서\"라면 지금이 이득이다. MSA는 업그레이드가 아니라 고통에 대한 응답이다."
+        "text": "19호까지 따라가 봤다면 WAR 하나가 온전한 모놀리스라서, 기능 하나만 바뀌어도 전체를 다시 배포해야 한다는 점을 알 것이다. 그 배포가 유독 무겁게 느껴진다면 원인의 절반은 구조다. \"모놀리스를 쪼개자\"는 제안이 설계 회의에 나왔다면, 찬성이든 반대든 먼저 물어야 할 질문은 \"정말 아픈 곳이 어디냐\"다. 대답이 \"배포할 때마다 전체가 같이 갈린다\", \"한 팀의 변경이 다른 팀을 무너뜨린다\"라면 쪼개는 게 맞다. 반대로 \"최신 기술이라서\"라면 지금이 이득이다. MSA는 업그레이드가 아니라 고통에 대한 응답이다."
       },
       {
         "type": "flow",
@@ -1542,17 +1395,6 @@ export const issues: Issue[] = [
         "text": "자르는 방법도 중요하다. \"1년짜리 MSA 전환 프로젝트\"는 대부분 실패한다. 표준 절차는 스트랭글러 패턴이다 — 기존 시스템 앞에 요청을 가르는 문을 세우고, 옮길 기능부터 새 서비스로 돌린다. 무화과 덩굴이 받쳐 준 나무를 감싸 대체하듯 모놀리스는 조금씩 줄어들고, 언제 멈춰도 시스템은 온전하다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "msa",
-          "bounded-context",
-          "distributed-monolith",
-          "strangler-fig",
-          "modular-monolith"
-        ]
-      },
-      {
         "type": "quiz",
         "question": "서비스 셋으로 쪼갰다. 그런데 기능 하나를 고치면 세 팀이 같이 배포해야 한다. 가장 유력한 원인은?",
         "options": [
@@ -1596,7 +1438,7 @@ export const issues: Issue[] = [
     "blocks": [
       {
         "type": "p",
-        "text": "챗봇 응답이 느릴 때 원인 후보 목록에는 \"망분리 홉당 지연\"이 늘 오른다. 오늘은 그 홉의 정체를 파낸다. 공공기관이 인터넷망과 업무망을 나눈 건 2007년의 망분리 지침부터 이어진 표준이었고, 실무에서 겪는 절차 대부분이 여기서 나왔다."
+        "text": "챗봇 응답이 느릴 때 원인 후보 목록에는 \"네트워크 홉당 지연\"이 늘 오른다. 오늘은 그 홉의 정체를 파낸다. 보안이 중요한 조직은 내부망과 외부망을 나눈다. 한국 공공부문에서는 2007년 망분리 지침부터 표준이었고, 개발자가 실무에서 겪는 절차 대부분이 여기서 나온다."
       },
       {
         "type": "p",
@@ -1663,16 +1505,6 @@ export const issues: Issue[] = [
       {
         "type": "p",
         "text": "개발자의 하루에 비치면 이렇다. 라이브러리는 외부에서 내려받아 내부 저장소에 올려 두고 그것만 쓴다. 소스와 파일의 반출입은 결재를 거친다. 배포는 내부 CI가 WAR를 만들고, 저장소에 보관하고, 반출 승인을 받아 전송한 뒤 WAS를 다시 띄운다. \"배포가 밀린다\"는 말의 뒤에는 이 절차 전체가 서 있다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "network-separation",
-          "network-linkage",
-          "n2sf",
-          "one-way-transfer"
-        ]
       },
       {
         "type": "quiz",
@@ -1771,25 +1603,6 @@ export const issues: Issue[] = [
         ]
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "normalization",
-          "normal-form",
-          "functional-dependency",
-          "update-anomaly",
-          "denormalization",
-          "pk-fk"
-        ]
-      },
-      {
-        "type": "link",
-        "href": "/drills/normalization-detect/",
-        "label": "오늘의 훈련",
-        "title": "정규형을 깨는 컬럼 짚기",
-        "detail": "종속 관계를 DDL에서 읽고 나눠야 할 경계를 찾는다 · 8분"
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
         "text": "담당 테이블 하나의 컬럼 목록을 훑고, 컬럼마다 \"무엇이 이 값을 정하는가\"를 한 줄씩 적어 본다. 근거가 같은 컬럼끼리 묶이면 그 묶음이 사실상 테이블 경계다."
@@ -1877,16 +1690,6 @@ export const issues: Issue[] = [
         "explain": "진실의 원천은 하나여야 한다. 화면의 사전 검사는 편의이지 규칙이 아니므로, 규칙은 서버 한 곳에 두고 화면은 표시·편의 검증만 남긴다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "business-logic",
-          "bounded-context",
-          "service-annotation",
-          "msa"
-        ]
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
         "text": "담당 업무의 규칙 하나를 고르고 그것이 지금 몇 개의 파일에 적혀 있는지 센다. 한 곳이면 잘 사는 것이고, 둘 이상이면 어느 쪽이 진짜인지 메모해 둔다 — 수정 요청이 오는 날의 지도가 된다."
@@ -1962,21 +1765,9 @@ export const issues: Issue[] = [
         "text": "그리고 이 원리는 서버를 넘어 퍼졌다. 화면을 기능 단위로 쪼개는 마이크로 프론트엔드(ThoughtWorks 2016년 등장, 2019년 Adopt), LLM 에이전트를 작은 역할로 쪼개는 멀티 에이전트 구성 — 언론이 \"멀티 에이전트 AI는 새로운 마이크로서비스\"라고 부르는 것 — 까지. 공통 원소는 넷이다: 명시적 경계, 한 가지 책임, 계약, 독립 교체."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "msa",
-          "monolith",
-          "soa",
-          "conway-law",
-          "modular-monolith",
-          "micro-frontend"
-        ]
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
-        "text": "맡은 업무를 \"나중에 독립된 서비스가 될 만한 덩어리\"로 묶어 본다. 묶음의 기준은 화면이 아니라 비즈니스 역량이다 — 민원 접수, 게시판, 인증. 모놀리스 안에서 이 경계가 긋혀 있으면 그것이 분리를 위한 준비 운동이다."
+        "text": "맡은 업무를 \"나중에 독립된 서비스가 될 만한 덩어리\"로 묶어 본다. 묶음의 기준은 화면이 아니라 비즈니스 역량이다 — 주문 접수, 게시판, 인증. 모놀리스 안에서 이 경계가 긋혀 있으면 그것이 분리를 위한 준비 운동이다."
       }
     ],
     "next": "비즈니스 로직은 어디에 사는가",
@@ -2058,16 +1849,6 @@ export const issues: Issue[] = [
         ]
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "docker",
-          "monolith",
-          "msa",
-          "war"
-        ]
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
         "text": "지금 다루는 시스템이 WAR 하나로 도는지, 여러 서비스로 나뉘어 있는지 확인해 본다. Docker로 감싸져 있어도 서비스가 하나뿐이면 그것은 여전히 모놀리스다."
@@ -2127,17 +1908,6 @@ export const issues: Issue[] = [
         "text": "같은 말을 반복하지 않는다. 재질문은 2~3회로 제한하고, 명확화 선택지를 제시하고, 그래도 안 되면 사람에게 넘긴다. \"상담원 연결\" 옵션을 처음부터 보여 주면 봇 이탈이 늘지 않고 오히려 신뢰가 올랐다는 운영 보고가 여럿이다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "rule-conflict",
-          "golden-dataset",
-          "fallback",
-          "containment-rate",
-          "rule-based-chatbot"
-        ]
-      },
-      {
         "type": "quiz",
         "question": "봇이 질문을 이해하지 못해 재질문을 세 번 반복했다. 업계 표준에 가까운 다음 동작은?",
         "options": [
@@ -2162,7 +1932,7 @@ export const issues: Issue[] = [
     "no": 13,
     "date": "2026.08.18",
     "weekday": "화",
-    "title": "규칙이냐 모델이냐, 공공기관의 답",
+    "title": "규칙이냐 모델이냐, 실패 비용이 정한다",
     "dek": "LLM은 그럴듯하고 규칙은 정확하다. 문제는 어느 쪽의 실패가 더 비싸냐다.",
     "minutes": 8,
     "tags": [
@@ -2202,7 +1972,7 @@ export const issues: Issue[] = [
           ],
           [
             "자원",
-            "CPU로 충분 — 망분리 서버에 그대로",
+            "CPU로 충분 — 내부망 서버에 그대로",
             "GPU·외부 연결이 흔한 전제"
           ],
           [
@@ -2214,22 +1984,11 @@ export const issues: Issue[] = [
       },
       {
         "type": "p",
-        "text": "공공기관의 조건이 각각 어느 칸에 걸리는지 보면 된다. 잘못된 안내가 곧行정 불이익이 되는 환경에서는 \"왜 그 답을 했는지 재현 가능\"이 특혜가 아니라 요구사항이다. 미 연방 감사원(GAO)의 AI 책무성 프레임워크처럼, 규제 환경의 감사 요구는 데이터·성능·모니터링을 문서와 로그로 증명하라고 한다. 망분리 환경의 CPU 전용 서버에서는 모델을 띄우는 것 자체가 비용이다."
+        "text": "틀리면 안 되는 답이 필요한 환경 — 행정 안내, 금융, 의료 — 가 각각 어느 칸에 걸리는지 보면 된다. 잘못된 안내가 곧行정 불이익이 되는 환경에서는 \"왜 그 답을 했는지 재현 가능\"이 특혜가 아니라 요구사항이다. 미 연방 감사원(GAO)의 AI 책무성 프레임워크처럼, 규제 환경의 감사 요구는 데이터·성능·모니터링을 문서와 로그로 증명하라고 한다. 네트워크가 분리된 내부망의 CPU 전용 서버에서는 모델을 띄우는 것 자체가 비용이다."
       },
       {
         "type": "p",
         "text": "그래서 업계의 흐름은 규칙 대 모델의 승부가 아니라 배치다. 결정론적인 규칙이 시스템의 안전 영역을 지배하고(gating), 모델은 근거 문서를 붙여 답하는 자리(9호의 RAG)와 표현을 다듬는 자리를 맡는다. 챗봇 엔진 진영에서도 \"비즈니스 로직은 결정론적 Flow에, 유연한 표현은 모델에\"라는 설계가 표준화되어 간다. 룰베이스는 구식이 아니라 안전 영역의 이름이다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "rule-based-chatbot",
-          "hallucination",
-          "rag",
-          "llm",
-          "ai-agent"
-        ]
       },
       {
         "type": "link",
@@ -2241,7 +2000,7 @@ export const issues: Issue[] = [
       {
         "type": "callout",
         "title": "오늘 해 볼 것",
-        "text": "챗봇이 답하는 질문을 두 통으로 나눠 본다. \"틀리면 행정 처리에 문제\" 통과 \"표현만 부드러우면 충분\" 통. 첫 번째 통이 규칙으로 답하고 있는지 확인한다 — 그것이 이런 시스템을 규칙으로 만드는 이유다."
+        "text": "챗봇이 답하는 질문을 두 통으로 나눠 본다. \"틀리면 업무 처리에 문제\" 통과 \"표현만 부드러우면 충분\" 통. 첫 번째 통이 규칙으로 답하고 있는지 확인한다 — 그것이 이런 시스템을 규칙으로 만드는 이유다."
       }
     ],
     "next": "규칙이 수백 개가 되면",
@@ -2314,30 +2073,12 @@ export const issues: Issue[] = [
         "text": "요즘 엔진도 골격은 같다. Rasa는 고정 동작을 rules로, 대화 시나리오를 stories로 나누고 규칙이 스토리보다 우선한다. Dialogflow는 intents·entities·flows로 같은 개념을 부른다. 패턴 매칭의 비용도 알아 둘 일이다 — 패턴을 나열해 순서대로 비교하면 규칙 수에 비례해 느려지지만, 트라이(접두사 나무)로 인덱싱하면 입력 글자 수만큼만 내려간다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "intent",
-          "entity-slot",
-          "aiml",
-          "morphological-analysis",
-          "trie"
-        ]
-      },
-      {
-        "type": "link",
-        "href": "/drills/aiml-category/",
-        "label": "오늘의 훈련",
-        "title": "AIML 카테고리 읽어 내기",
-        "detail": "패턴과 템플릿, srai 재호출을 줄 단위로 따라가 본다 · 5분"
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
         "text": "챗봇 규칙을 다루고 있다면 같은 답으로 가는 질문 표현을 세 가지 적어 본다. 셋이 같은 규칙으로 묶이는지 확인하고, 묶이지 않는다면 어느 표현이 새고 있는지 찾는다."
       }
     ],
-    "next": "규칙이냐 모델이냐, 공공기관의 답",
+    "next": "규칙이냐 모델이냐, 실패 비용이 정한다",
     "series": "룰베이스 챗봇"
   },
   {
@@ -2389,16 +2130,6 @@ export const issues: Issue[] = [
         "text": "이후의 이야기도 알아 둘 만하다. 1980년대는 전문가 시스템의 시대였지만 규칙이 수천 개가 되자 서로 충돌하고 유지보수가 불가능해졌고, 그 붕괴가 1980년대 말~1990년대 전반의 제2차 AI 겨울로 이어졌다. 규칙은 죽지 않았다 — 1995년 ALICE와 AIML로 이어지고, 지금 실무에서 관리하는 규칙 화면까지 이어진다. 다만 규칙 수의 관리라는 교훈은 그때 배운 그대로다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "eliza",
-          "expert-system",
-          "rule-based-chatbot",
-          "nlp"
-        ]
-      },
-      {
         "type": "link",
         "href": "https://tools.ietf.org/html/rfc439",
         "label": "RFC 439",
@@ -2429,7 +2160,7 @@ export const issues: Issue[] = [
     "blocks": [
       {
         "type": "p",
-        "text": "앞 호의 RAG는 문서를 찾아 함께 건네주는 방식으로 LLM의 환각을 줄이는 구조였다. 한편 현장에서 운영되는 챗봇 상당수는 모델이 아니라 규칙으로 답한다. CPU 기반 룰베이스 챗봇이 공공기관 시스템에 붙는 구조를 상상해 보자. 에이전트 빌더가 워크플로우를 부르고, 워크플로우가 필요할 때 데이터베이스를 부른다. 그런데 한 번의 질문에 7초가 걸린다면, 그 7초는 어디에 살고 있을까."
+        "text": "앞 호의 RAG는 문서를 찾아 함께 건네주는 방식으로 LLM의 환각을 줄이는 구조였다. 한편 현장에서 운영되는 챗봇 상당수는 모델이 아니라 규칙으로 답한다. CPU 기반 룰베이스 챗봇이 내부 시스템에 붙는 구조를 상상해 보자. 에이전트 빌더가 워크플로우를 부르고, 워크플로우가 필요할 때 데이터베이스를 부른다. 그런데 한 번의 질문에 7초가 걸린다면, 그 7초는 어디에 살고 있을까."
       },
       {
         "type": "callout",
@@ -2442,8 +2173,8 @@ export const issues: Issue[] = [
         "items": [
           "DB — 커넥션 풀 없이 요청마다 새 접속(핸드셰이크만 수백 밀리초), 인덱스 없는 풀스캔, 단계마다 나눠 부르는 N+1 조회, 필요한 컬럼만 있으면 되는데 SELECT *",
           "규칙 엔진 — if-else 순차 매칭(규칙 수에 비례), 형태소 분석기를 요청마다 새로 초기화(매번 수백 밀리초), 나쁜 정규식 하나의 백트래킹(입력 길이에 기하급수), 규칙 파일을 요청마다 디스크에서 다시 읽기",
-          "아키텍처 — 에이전트·워크플로우·DB가 각각 다른 서버에서 동기 HTTP로 순차 호출, 대화 세션을 매턴 DB에서 통째로 읽고 쓰기, 감사 로그의 동기 기록(공공기관은 로깅 요구가 많다)",
-          "망분리 — 게이트웨이·보안 솔루션을 여러 홉 거치며 홉당 지연이 누적"
+          "아키텍처 — 에이전트·워크플로우·DB가 각각 다른 서버에서 동기 HTTP로 순차 호출, 대화 세션을 매턴 DB에서 통째로 읽고 쓰기, 감사 로그의 동기 기록(감사 요구가 많은 조직일수록)",
+          "네트워크 — 게이트웨이·보안 솔루션을 여러 홉 거치며 홉당 지연이 누적"
         ]
       },
       {
@@ -2456,7 +2187,7 @@ export const issues: Issue[] = [
           },
           {
             "label": "보안·게이트웨이",
-            "detail": "망분리 홉당 지연"
+            "detail": "네트워크 홉당 지연"
           },
           {
             "label": "에이전트 빌더",
@@ -2481,18 +2212,6 @@ export const issues: Issue[] = [
         "title": "먼저 측정, 그다음 고친다",
         "tone": "good",
         "text": "요청 경로에 타임스탬프 로그를 남기면 7초가 어느 구간에서 사라지는지 바로 보인다. 짐작으로 고치는 최적화는 대개 낭비다 — 로그 한 줄이 정확한 범인을 가리킨다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "rule-based-chatbot",
-          "n-plus-one",
-          "datasource",
-          "morphological-analysis",
-          "redos",
-          "index-db"
-        ]
       },
       {
         "type": "quiz",
@@ -2541,7 +2260,7 @@ export const issues: Issue[] = [
         "type": "callout",
         "title": "환각이 치명적인 자리",
         "tone": "warn",
-        "text": "공공기관 업무 안내 챗봇에서 이 환각은 단순한 실수가 아니라 잘못된 안내로 이어진다. \"신청 기한은 이번 달 말까지입니다\" 같은 문장을 모델이 지어냈을 때, 사용자는 그것이 지어낸 것인지 알 방법이 없다."
+        "text": "업무 안내 챗봇에서 이 환각은 단순한 실수가 아니라 잘못된 안내로 이어진다. \"신청 기한은 이번 달 말까지입니다\" 같은 문장을 모델이 지어냈을 때, 사용자는 그것이 지어낸 것인지 알 방법이 없다."
       },
       {
         "type": "p",
@@ -2584,21 +2303,10 @@ export const issues: Issue[] = [
       {
         "type": "list",
         "items": [
-          "역할 지정 — \"당신은 ○○ 기관의 민원 안내 담당자입니다\"처럼 역할을 명확히 준다.",
+          "역할 지정 — \"당신은 ○○ 서비스의 고객 안내 담당자입니다\"처럼 역할을 명확히 준다.",
           "근거 범위 제한 — \"아래 제공된 문서 내용만 근거로 답하라\"고 명시해 환각을 줄인다.",
           "출력 형식 지정 — 답변을 항목별로, 혹은 정해진 형식으로 받도록 지시한다.",
           "모른다고 말할 조건 명시 — 근거 문서에 없으면 \"확인이 필요하다\"고 답하게 한다."
-        ]
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "hallucination",
-          "rag",
-          "vector-db",
-          "token",
-          "prompt-engineering"
         ]
       },
       {
@@ -2667,7 +2375,7 @@ export const issues: Issue[] = [
         "type": "code",
         "language": "sql",
         "caption": "의심스러운 조회의 진단",
-        "content": "EXPLAIN ANALYZE\nSELECT *\nFROM tb_minwon\nWHERE UPPER(emply_id) = 'USER01'\n  AND status_cd = 'P';"
+        "content": "EXPLAIN ANALYZE\nSELECT *\nFROM tb_user\nWHERE UPPER(user_id) = 'USER01'\n  AND status_cd = 'P';"
       },
       {
         "type": "p",
@@ -2676,17 +2384,6 @@ export const issues: Issue[] = [
       {
         "type": "p",
         "text": "또 하나의 함정은 선택도다. 성별·상태코드처럼 값 종류가 몇 개 안 되는 컬럼은 조건을 걸어도 행의 몇십 퍼센트가 남는다. 이만큼을 인덱스로 건너뛰며 읽는 것보다 표를 순서대로 읽는 편이 빠르므로, 데이터베이스는 인덱스를 정당하게 무시한다. 인덱스가 늦가 아니라 조건이 좁아야 이기는 게임이다."
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "btree",
-          "composite-index",
-          "selectivity",
-          "explain",
-          "index-db"
-        ]
       },
       {
         "type": "link",
@@ -2732,7 +2429,7 @@ export const issues: Issue[] = [
     "blocks": [
       {
         "type": "p",
-        "text": "공공기관 SI 프로젝트는 대부분 발주자와 수주자 사이의 계약 관계로 진행된다. 계약금이 산출물 검수를 기준으로 지급되기 때문에, \"일단 만들어보고 고치자\"는 접근보다 요구사항을 먼저 문서로 확정하고 설계하고 구현하고 검증하는 순서가 표준으로 자리 잡았다."
+        "text": "발주자와 수주자의 계약으로 도는 프로젝트 — 공공 SI가 대표적이다 — 는 계약금이 산출물 검수를 기준으로 지급된다. 그래서 \"일단 만들어보고 고치자\"는 접근보다 요구사항을 먼저 문서로 확정하고 설계하고 구현하고 검증하는 순서가 표준으로 자리 잡았다."
       },
       {
         "type": "callout",
@@ -2741,7 +2438,7 @@ export const issues: Issue[] = [
       },
       {
         "type": "p",
-        "text": "마르미-III는 이 흐름에 맞춰 분석부터 전개까지 각 단계에서 무엇을 제출해야 하는지 정해 둔 표준 방법론이다. 발주기관이 다른 업체가 수행한 사업이라도 동일한 틀로 검수할 수 있는 것이 목적이다."
+        "text": "마르미-III는 한국 공공 SI가 쓰는 표준 방법론으로, 분석부터 전개까지 각 단계에서 무엇을 제출해야 하는지 정해 둔다. 발주기관이 다른 업체가 수행한 사업이라도 같은 틀로 검수할 수 있는 것이 목적이다."
       },
       {
         "type": "table",
@@ -2774,17 +2471,6 @@ export const issues: Issue[] = [
         "text": "설계 단계의 WBS는 전체 작업을 더 작은 단위로 쪼개 계층으로 정리한 표다. 무슨 작업을 누가 언제까지 할지를 한눈에 보이게 만드는 것이 목적이며, 이후 일정 관리와 진척률 보고의 기준이 된다. ERD는 테이블 사이의 관계를 그림으로, 테이블명세서는 컬럼·타입·제약조건까지 표로 정리한다 — 이 둘이 구현 단계에서 실제로 짤 쿼리의 설계도가 된다."
       },
       {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "waterfall",
-          "marmi",
-          "wbs",
-          "erd",
-          "pk-fk"
-        ]
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
         "text": "지금 맡은 업무의 요구사항정의서나 화면설계서를 한 번 열어 본다. 코드를 보기 전에 이 문서가 먼저 확정되어 있었다는 사실만 확인해도, 왜 이렇게 만들어졌는지가 다르게 읽힌다."
@@ -2814,8 +2500,8 @@ export const issues: Issue[] = [
       {
         "type": "code",
         "language": "java",
-        "caption": "표준프레임워크 Service 구현체의 전형",
-        "content": "@Service(\"noticeService\")\npublic class NoticeServiceImpl extends EgovAbstractServiceImpl\n    implements NoticeService {\n\n  @Resource(name = \"noticeMapper\")\n  private NoticeMapper noticeMapper;\n\n  @Transactional\n  public void registerNotice(NoticeVO notice) {\n    noticeMapper.insertNotice(notice);\n    // 이어지는 DB 작업 중 하나라도 실패하면 함께 되돌려야 한다.\n  }\n}"
+        "caption": "Service와 Mapper를 잇는 전형적인 구현",
+        "content": "@Service(\"noticeService\")\npublic class NoticeServiceImpl implements NoticeService {\n\n  @Resource(name = \"noticeMapper\")\n  private NoticeMapper noticeMapper;\n\n  @Transactional\n  public void registerNotice(NoticeVO notice) {\n    noticeMapper.insertNotice(notice);\n    // 이어지는 DB 작업 중 하나라도 실패하면 함께 되돌려야 한다.\n  }\n}"
       },
       {
         "type": "p",
@@ -2839,23 +2525,6 @@ export const issues: Issue[] = [
         ],
         "answer": 2,
         "explain": "self-invocation이라 트랜잭션 경계가 없고, 예외를 잡아 로그만 남기므로 반복문도 멈추지 않는다. 실패한 건만 빠진 채 나머지가 그대로 저장된다 — 가장 늦게 발견되는 형태의 데이터 불일치다."
-      },
-      {
-        "type": "link",
-        "href": "/drills/transaction-trap/",
-        "label": "오늘의 훈련",
-        "title": "롤백되지 않는 @Transactional 읽어 내기",
-        "detail": "실제 코드에서 두 함정을 직접 찾아본다 · 8분"
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "transactional",
-          "aop",
-          "proxy",
-          "service-impl"
-        ]
       },
       {
         "type": "callout",
@@ -2943,24 +2612,6 @@ export const issues: Issue[] = [
         "explain": "form 전송도 jQuery의 serialize() 도 name을 기준으로 값을 모은다. name이 없으면 그 입력칸은 아예 포함되지 않는다. 서버는 받은 적이 없으므로 오류도 나지 않고, 로그에도 흔적이 없다 — 그래서 원인 찾기가 오래 걸린다."
       },
       {
-        "type": "link",
-        "href": "/drills/id-and-name/",
-        "label": "오늘의 훈련",
-        "title": "id와 name — 화면이 찾는 이름, 서버가 받는 이름",
-        "detail": "검색 화면 한 편을 줄 단위로 읽고 두 이름의 경로를 갈라 본다 · 8분"
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "html-id",
-          "name-attribute",
-          "css-selector",
-          "dom",
-          "url-fragment"
-        ]
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
         "text": "JSP를 열고 두 목록을 만들어 본다. 하나는 name이 붙은 입력칸 전부 — 이것이 서버로 가는 전부다. 다른 하나는 스크립트 안의 $(\"#…\") 전부 — 이것이 화면이 건드리는 자리다. 두 목록을 나란히 놓으면 그 화면이 무엇을 보내고 무엇을 바꾸는지가 정리된다."
@@ -2985,44 +2636,43 @@ export const issues: Issue[] = [
     "blocks": [
       {
         "type": "p",
-        "text": "Java 파일만 읽으면 이해되지 않는 일이 계속 생긴다. 아무도 부르지 않은 Controller가 실행되고, new 하지 않은 Service가 필드에 들어와 있고, 반환한 문자열이 파일을 찾아낸다. 이 셋의 출처는 모두 설정이다. 표준프레임워크 계열 프로젝트에서 설정은 어노테이션보다 XML에 더 많이 들어 있다."
+        "text": "Java 파일만 읽으면 이해되지 않는 일이 계속 생긴다. 아무도 부르지 않은 Controller가 실행되고, new 하지 않은 Service가 필드에 들어와 있고, 반환한 문자열이 파일을 찾아낸다. 이 셋의 출처는 모두 설정이다. 레거시 Spring 프로젝트는 설정을 어노테이션보다 XML에 더 많이 담는다."
       },
       {
         "type": "p",
         "text": "순서가 있다. 서버가 애플리케이션을 띄울 때 가장 먼저 읽는 파일이 web.xml이고, 그 안에서 나머지 설정 파일의 위치가 지정된다. 그래서 낯선 프로젝트를 열 때도 이 파일부터 읽으면 지도를 손에 쥔 채 시작할 수 있다."
       },
       {
-        "type": "codeRead",
+        "type": "code",
         "language": "xml",
         "caption": "web.xml — 애플리케이션이 켜지는 순서",
-        "question": "이 파일에서 나머지 설정 파일의 위치를 알려 주는 줄은 어디인가?",
-        "code": "<context-param>\n    <param-name>contextConfigLocation</param-name>\n    <param-value>classpath*:egovframework/spring/com/context-*.xml</param-value>\n</context-param>\n\n<listener>\n    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>\n</listener>\n\n<filter>\n    <filter-name>encodingFilter</filter-name>\n    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>\n    <init-param>\n        <param-name>encoding</param-name>\n        <param-value>UTF-8</param-value>\n    </init-param>\n</filter>\n\n<servlet>\n    <servlet-name>action</servlet-name>\n    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>\n    <load-on-startup>1</load-on-startup>\n</servlet>\n\n<servlet-mapping>\n    <servlet-name>action</servlet-name>\n    <url-pattern>*.do</url-pattern>\n</servlet-mapping>",
-        "notes": [
-          {
-            "lines": "1-4",
-            "title": "여기가 설정의 목차다",
-            "body": "contextConfigLocation이 가리키는 경로 아래 XML들이 애플리케이션 전체의 빈 설정이다. classpath*: 는 여러 jar와 소스 경로를 모두 훑으라는 뜻이고, context-*.xml 은 이름이 그렇게 시작하는 파일을 전부 읽는다는 뜻이다. 새 설정 파일을 만들었는데 반영되지 않는다면 이름 규칙에서 벗어난 경우다."
-          },
-          {
-            "lines": "6-8",
-            "title": "리스너가 컨테이너를 켠다",
-            "body": "ContextLoaderListener는 서버 기동 시 위 경로의 XML을 읽어 Spring 컨테이너를 만든다. 이 시점에 component-scan이 돌면서 @Service, @Repository가 붙은 클래스가 전부 빈으로 등록된다. 애플리케이션이 뜰 때 나는 오류의 상당수가 이 단계에서 발생한다."
-          },
-          {
-            "lines": "10-17",
-            "title": "한글이 깨지면 여기부터 본다",
-            "body": "필터는 서블릿보다 먼저 실행된다. CharacterEncodingFilter는 요청 본문을 UTF-8로 해석하도록 지정한다. POST로 보낸 한글이 물음표로 저장된다면 이 설정이 빠졌거나 DB 인코딩과 어긋난 경우다."
-          },
-          {
-            "lines": "19-23",
-            "title": "DispatcherServlet이 등록되는 자리",
-            "body": "load-on-startup 1은 첫 요청을 기다리지 않고 서버가 켜질 때 미리 초기화하라는 뜻이다. 이때 servlet-name과 같은 이름의 XML — 여기서는 action-servlet.xml — 을 화면 설정으로 함께 읽는다. ViewResolver 설정을 찾을 때 이 이름이 단서가 된다."
-          },
-          {
-            "lines": "25-28",
-            "title": "*.do 의 정체",
-            "body": "이 매핑 때문에 .do로 끝나는 모든 요청이 DispatcherServlet으로 간다. 서버에 list.do 라는 파일은 존재하지 않는다. 전자정부 계열 URL에서 .do를 보면 \"여기부터 Spring이 처리한다\"는 신호로 읽는다."
-          }
+        "content": "<context-param>\n    <param-name>contextConfigLocation</param-name>\n    <param-value>classpath*:config/spring/context-*.xml</param-value>\n</context-param>\n\n<listener>\n    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>\n</listener>\n\n<filter>\n    <filter-name>encodingFilter</filter-name>\n    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>\n    <init-param>\n        <param-name>encoding</param-name>\n        <param-value>UTF-8</param-value>\n    </init-param>\n</filter>\n\n<servlet>\n    <servlet-name>action</servlet-name>\n    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>\n    <load-on-startup>1</load-on-startup>\n</servlet>\n\n<servlet-mapping>\n    <servlet-name>action</servlet-name>\n    <url-pattern>*.do</url-pattern>\n</servlet-mapping>",
+      },
+      {
+        "type": "table",
+        "caption": "줄별 읽는 포인트",
+        "head": ["줄", "무엇을 보나"],
+        "rows": [
+          [
+            "1-4",
+            "설정의 목차. contextConfigLocation이 가리키는 경로 아래 XML들이 애플리케이션 전체의 빈 설정이다. classpath*: 는 여러 jar와 소스 경로를 모두 훑으라는 뜻이고, context-*.xml 은 그 이름으로 시작하는 파일을 전부 읽으라는 뜻이다. 새 설정 파일이 반영되지 않으면 이름 규칙부터 확인한다."
+          ],
+          [
+            "6-8",
+            "ContextLoaderListener가 서버 기동 시 위 경로의 XML을 읽어 Spring 컨테이너를 만든다. 이때 component-scan이 돌며 @Service, @Repository가 빈으로 등록된다. 기동 시점 오류의 상당수가 여기서 난다."
+          ],
+          [
+            "10-17",
+            "필터는 서블릿보다 먼저 실행된다. CharacterEncodingFilter가 요청 본문을 UTF-8로 해석한다. POST 한글이 물음표로 저장되면 이 설정이 빠졌거나 DB 인코딩과 어긋난 경우다."
+          ],
+          [
+            "19-23",
+            "load-on-startup 1은 첫 요청을 기다리지 않고 서버가 켜질 때 초기화하라는 뜻이다. 이때 servlet-name과 같은 이름의 XML — action-servlet.xml — 을 화면 설정으로 함께 읽는다. ViewResolver를 찾을 때의 단서다."
+          ],
+          [
+            "25-28",
+            "*.do 매핑. .do로 끝나는 모든 요청이 DispatcherServlet으로 간다. 서버에 list.do라는 파일은 존재하지 않는다. .do는 \"여기부터 Spring이 처리한다\"는 신호로 읽는다."
+          ]
         ]
       },
       {
@@ -3049,16 +2699,6 @@ export const issues: Issue[] = [
             "label": "요청 대기",
             "detail": "이제 .do 요청을 받을 준비 완료"
           }
-        ]
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "web-xml",
-          "context-xml",
-          "dispatcher-servlet-xml",
-          "component-scan"
         ]
       },
       {
@@ -3140,24 +2780,7 @@ export const issues: Issue[] = [
         "type": "code",
         "language": "sql",
         "caption": "searchKeyword 에 ' OR '1'='1 을 넣었을 때 실제로 실행되는 문장",
-        "content": "-- #{searchKeyword} 인 경우 : 값으로 들어간다\nSELECT * FROM COMTNBBS WHERE NTT_SJ LIKE ?\n   -- 바인딩된 값: %' OR '1'='1%   → 그냥 이상한 검색어일 뿐\n\n-- ${searchKeyword} 인 경우 : 문장이 된다\nSELECT * FROM COMTNBBS WHERE NTT_SJ LIKE '%' OR '1'='1%'\n   -- WHERE 조건이 항상 참 → 전체 행이 그대로 노출된다"
-      },
-      {
-        "type": "link",
-        "href": "/drills/mybatis-binding/",
-        "label": "오늘의 훈련",
-        "title": "#{ } 와 ${ } — 한 글자가 취약점이 되는 자리",
-        "detail": "Mapper XML 한 편을 줄 단위로 읽고 위험한 자리를 직접 짚어 본다 · 8분"
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "mybatis",
-          "sql-injection",
-          "prepared-statement",
-          "dynamic-sql"
-        ]
+        "content": "-- #{searchKeyword} 인 경우 : 값으로 들어간다\nSELECT * FROM BOARD_POST WHERE TITLE LIKE ?\n   -- 바인딩된 값: %' OR '1'='1%   → 그냥 이상한 검색어일 뿐\n\n-- ${searchKeyword} 인 경우 : 문장이 된다\nSELECT * FROM BOARD_POST WHERE TITLE LIKE '%' OR '1'='1%'\n   -- WHERE 조건이 항상 참 → 전체 행이 그대로 노출된다"
       },
       {
         "type": "callout",
@@ -3219,23 +2842,6 @@ export const issues: Issue[] = [
         "text": "주의할 점이 하나 있다. EL은 없는 이름을 만나도 오류를 내지 않는다. 조용히 빈 값을 출력하고 지나간다. 그래서 화면이 비어 있는데 로그에는 아무것도 없는 상황이 흔하다. 이럴 때는 예외를 찾지 말고 이름 철자를 대조한다."
       },
       {
-        "type": "link",
-        "href": "/drills/model-to-el/",
-        "label": "오늘의 훈련",
-        "title": "Model의 이름을 화면에서 다시 만나기",
-        "detail": "게시판 목록 JSP를 줄 단위로 읽고 서버 코드를 역추적한다 · 7분"
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "el",
-          "jstl",
-          "model",
-          "xss"
-        ]
-      },
-      {
         "type": "callout",
         "title": "오늘 해 볼 것",
         "text": "화면의 JSP에서 ${...} 를 하나 골라, 그 이름을 그대로 전역 검색해 Controller의 addAttribute를 찾아본다. 한 번만 성공하면 이 방법은 평생 쓴다."
@@ -3272,7 +2878,7 @@ export const issues: Issue[] = [
         "steps": [
           {
             "label": "브라우저",
-            "detail": "GET /cop/bbs/selectBoardList.do"
+            "detail": "GET /bbs/selectBoardList.do"
           },
           {
             "label": "DispatcherServlet",
@@ -3312,23 +2918,6 @@ export const issues: Issue[] = [
         "type": "callout",
         "title": "자동으로 호출되는 것처럼 보이는 이유",
         "text": "코드 어디에도 Controller를 부르는 문장이 없다. 그런데 실행된다. web.xml이 모든 .do 요청을 DispatcherServlet에 넘기도록 등록해 두었고, 그 서블릿이 @RequestMapping 문자열을 모아 만든 표에서 담당 메서드를 찾기 때문이다. 마법이 아니라 설정의 결과다."
-      },
-      {
-        "type": "link",
-        "href": "/drills/url-to-controller/",
-        "label": "오늘의 훈련",
-        "title": "URL 하나로 Controller 찾아가기",
-        "detail": "실제 공통컴포넌트 코드를 줄 단위로 읽는다 · 6분"
-      },
-      {
-        "type": "terms",
-        "title": "오늘의 용어",
-        "ids": [
-          "dispatcher-servlet",
-          "handler-mapping",
-          "view-resolver",
-          "do-extension"
-        ]
       },
       {
         "type": "callout",

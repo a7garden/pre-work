@@ -1,4 +1,4 @@
-# 발간 파이프라인 — GitHub 이슈 → 데일리 호 자동 발간
+# 발간 파이프라인 — GitHub 이슈 → 칼럼 자동 발간
 
 > 실행 시점: 매일 00:05 KST (launchd: com.pre-work.publish-daily)
 > 실행 모델: `zai/glm-5.3:max`
@@ -21,8 +21,7 @@
    회사 실제 소스·테이블명·컬럼명·계정·접속 정보·내부 문서 원문 금지.
    코드 예시는 구조만 남기고 이름을 바꿔 각색한다.
 2. 기존 호를 절대 수정하지 않는다. 추가만 한다:
-   `src/data/issues.ts`(배열 맨 앞), `src/data/glossary.ts`(append),
-   `src/data/drills.ts`(append).
+   `src/data/issues.ts`(배열 맨 앞).
 3. `.github/`, `src/pages/`, `src/components/`, `src/lib/`, `astro.config.mjs`,
    `package.json`을 건드리지 않는다.
 4. 발간 이슈가 하나도 없으면 1단계에서 조용히 종료한다 — 요약 파일만 쓰고,
@@ -69,20 +68,14 @@ gh issue list --repo a7garden/pre-work --label publish --state open \
    - `minutes`: 실제 분량 감으로 8~12.
    - `tags`: 기존 호의 태그 재사용 우선(태그 아카이브 일관성). 새 태그는 꼭 필요할 때만.
    - `takeaway` 한 문장부터 정하고 본문을 채운다.
-   - `blocks`: p / list / callout / code / codeRead / flow / tree / table / terms /
-     quiz / link 중 골라 **10분 안쪽** 분량으로. 표·흐름·퀴즈를 적재적소에.
+   - `blocks`: p / list / callout / code / flow / tree / table / quiz / link 중
+     골라 **10분 안쪽** 분량으로. 표·흐름·퀴즈를 적재적소에.
    - `callout`은 반드시 "오늘 해 볼 것" 한 가지, 독자가 자기 실무에서 바로
      확인할 수 있는 행동으로 끝낸다.
    - `next`: 내일 이어서 볼 것 한 줄.
    - `series`: 기존 호와 같은 흐름이면 기존 series 이름을 그대로 재사용한다.
      새 시리즈 이름은 주제가 명확히 이어질 때만.
    - 요청 이슈에서 왔다면 본문 끝에 `link` 블록으로 이슈 URL을 크레딧으로 남긴다.
-4. **용어**: 본문의 핵심 개념이 `glossary.ts`에 없으면 추가한다.
-   - `short`는 정의 한 줄(툴팁용). "왜 중요한가"는 `long`으로.
-   - 두 글자 미만 등록 금지. 흔한 단어는 `noauto: true`.
-   - 관련 훈련을 만들었다면 `see`로 연결.
-5. **훈련**: 코드를 다루는 주제면 `drills.ts`에 훈련 1개 추가를 검토한다.
-   level 1~3, `quiz`는 한두 개, 보기는 실제로 헷갈릴 만한 것으로.
 
 ## 4단계: 검증
 
@@ -114,11 +107,11 @@ git push origin main
 
 ## 6단계: 이슈 종결
 
-라이브 URL: `https://a7garden.github.io/pre-work/daily/{no}/`
+라이브 URL: `https://a7garden.github.io/pre-work/read/{no}/`
 
 ```bash
 gh issue close {N} --repo a7garden/pre-work \
-  --comment "제{no}호로 발간했습니다: https://a7garden.github.io/pre-work/daily/{no}/"
+  --comment "제{no}호로 발간했습니다: https://a7garden.github.io/pre-work/read/{no}/"
 ```
 
 ## 7단계: 요약 파일 출력
@@ -131,9 +124,6 @@ cat > /tmp/oxi-reports/pre-work.md << 'ENDOFSUMMARY'
 ## 발간한 호
 - 제{no}호 {제목} (이슈 #{N})
 
-## 추가된 용어/훈련
-- glossary: {추가한 용어 id 목록 or 없음}
-- drills: {추가한 훈련 id 목록 or 없음}
 
 ## 커밋 / 배포 상태
 - {커밋 해시} / 배포 {성공|실패: 원인}

@@ -1,33 +1,29 @@
 ---
 import type { Block } from "../data/blocks";
 import RichText from "./RichText.astro";
-import CodeRead from "./CodeRead.astro";
 import Quiz from "./Quiz.astro";
-import { termById } from "../data/glossary";
 
 interface Props {
   blocks: Block[];
-  /** 페이지 전체에서 같은 용어를 한 번만 연결하기 위한 누적 집합 */
-  seen?: Set<string>;
 }
 
-const { blocks, seen } = Astro.props;
+const { blocks } = Astro.props;
 let quizIndex = 0;
 ---
 
 {blocks.map((block) => {
   switch (block.type) {
     case "p":
-      return <p><RichText text={block.text} seen={seen} /></p>;
+      return <p><RichText text={block.text} /></p>;
 
     case "list":
       return block.ordered ? (
         <ol class="b-list b-list--ordered">
-          {block.items.map((item) => <li><RichText text={item} seen={seen} /></li>)}
+          {block.items.map((item) => <li><RichText text={item} /></li>)}
         </ol>
       ) : (
         <ul class="b-list">
-          {block.items.map((item) => <li><RichText text={item} seen={seen} /></li>)}
+          {block.items.map((item) => <li><RichText text={item} /></li>)}
         </ul>
       );
 
@@ -35,7 +31,7 @@ let quizIndex = 0;
       return (
         <aside class={`b-callout b-callout--${block.tone ?? "note"}`}>
           <strong>{block.title}</strong>
-          <p><RichText text={block.text} seen={seen} /></p>
+          <p><RichText text={block.text} /></p>
         </aside>
       );
 
@@ -47,17 +43,6 @@ let quizIndex = 0;
           )}
           <pre><code>{block.content}</code></pre>
         </figure>
-      );
-
-    case "codeRead":
-      return (
-        <CodeRead
-          language={block.language}
-          caption={block.caption}
-          code={block.code}
-          question={block.question}
-          notes={block.notes}
-        />
       );
 
     case "flow":
@@ -106,24 +91,6 @@ let quizIndex = 0;
         </figure>
       );
 
-    case "terms":
-      return (
-        <div class="b-terms">
-          {block.title && <p class="b-terms__title mono">{block.title}</p>}
-          <div class="b-terms__grid">
-            {block.ids.map((id) => {
-              const t = termById(id);
-              return t ? (
-                <a class="b-term-card" href={`/glossary/#${t.id}`}>
-                  <p class="b-term-card__term">{t.term}</p>
-                  <p class="b-term-card__short">{t.short}</p>
-                </a>
-              ) : null;
-            })}
-          </div>
-        </div>
-      );
-
     case "quiz":
       return (
         <Quiz
@@ -149,62 +116,23 @@ let quizIndex = 0;
 })}
 
 <script>
-  /* ── 코드 읽기: 줄을 누르면 해설이 열린다 ── */
+  /* ── 퀴즈: 보기를 고르면 정오답과 해설이 열린다 ── */
   document.addEventListener("click", (event) => {
-    const line = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-cr-target]");
-    if (line) {
-      const id = line.dataset.crTarget!;
-      const note = document.getElementById(id);
-      if (!note) return;
-      const open = !note.hidden;
-      const figure = line.closest("[data-coderead]");
-      figure?.querySelectorAll<HTMLElement>("[data-cr-note]").forEach((n) => { n.hidden = true; });
-      figure?.querySelectorAll<HTMLElement>("[data-cr-target]").forEach((l) => {
-        l.setAttribute("aria-expanded", "false");
-        l.removeAttribute("data-active");
-      });
-      if (!open) {
-        note.hidden = false;
-        figure?.querySelectorAll<HTMLElement>(`[data-cr-target="${id}"]`).forEach((l) => {
-          l.setAttribute("aria-expanded", "true");
-          l.setAttribute("data-active", "true");
-        });
-      }
-      return;
-    }
-
-    const all = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-cr-all]");
-    if (all) {
-      const figure = all.closest("[data-coderead]");
-      const notes = [...(figure?.querySelectorAll<HTMLElement>("[data-cr-note]") ?? [])];
-      const expand = notes.some((n) => n.hidden);
-      notes.forEach((n) => { n.hidden = !expand; });
-      figure?.querySelectorAll<HTMLElement>("[data-cr-target]").forEach((l) => {
-        l.setAttribute("aria-expanded", String(expand));
-        if (expand) l.setAttribute("data-active", "true");
-        else l.removeAttribute("data-active");
-      });
-      all.textContent = expand ? "해설 접기" : "전체 해설 펼치기";
-      return;
-    }
-
-    /* ── 퀴즈: 보기를 고르면 정오답과 해설이 열린다 ── */
     const option = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-quiz-option]");
-    if (option) {
-      const quiz = option.closest<HTMLElement>("[data-quiz]");
-      if (!quiz) return;
-      const answer = Number(quiz.dataset.answer);
-      const picked = Number(option.dataset.quizOption);
-      quiz.querySelectorAll<HTMLElement>("[data-quiz-option]").forEach((el) => {
-        const i = Number(el.dataset.quizOption);
-        el.dataset.state = i === answer ? "correct" : i === picked ? "wrong" : "idle";
-      });
-      const explain = quiz.querySelector<HTMLElement>("[data-quiz-explain]");
-      const verdict = quiz.querySelector<HTMLElement>("[data-quiz-verdict]");
-      if (verdict) verdict.textContent = picked === answer ? "정답" : "다시 보기";
-      if (verdict) verdict.dataset.state = picked === answer ? "correct" : "wrong";
-      if (explain) explain.hidden = false;
-      quiz.dataset.done = picked === answer ? "correct" : "wrong";
-    }
+    if (!option) return;
+    const quiz = option.closest<HTMLElement>("[data-quiz]");
+    if (!quiz) return;
+    const answer = Number(quiz.dataset.answer);
+    const picked = Number(option.dataset.quizOption);
+    quiz.querySelectorAll<HTMLElement>("[data-quiz-option]").forEach((el) => {
+      const i = Number(el.dataset.quizOption);
+      el.dataset.state = i === answer ? "correct" : i === picked ? "wrong" : "idle";
+    });
+    const explain = quiz.querySelector<HTMLElement>("[data-quiz-explain]");
+    const verdict = quiz.querySelector<HTMLElement>("[data-quiz-verdict]");
+    if (verdict) verdict.textContent = picked === answer ? "정답" : "다시 보기";
+    if (verdict) verdict.dataset.state = picked === answer ? "correct" : "wrong";
+    if (explain) explain.hidden = false;
+    quiz.dataset.done = picked === answer ? "correct" : "wrong";
   });
 </script>

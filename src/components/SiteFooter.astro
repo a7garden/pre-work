@@ -1,9 +1,6 @@
 ---
 const links = [
-  { href: "/daily/", label: "데일리" },
-  { href: "/drills/", label: "훈련" },
-  { href: "/framework/", label: "3.8 구조" },
-  { href: "/glossary/", label: "용어" },
+  { href: "/", label: "전체 호" },
   { href: "/tags/", label: "태그" },
   { href: "/search/", label: "검색" },
   { href: "/rss.xml", label: "RSS" },
@@ -11,7 +8,7 @@ const links = [
 ];
 ---
 <footer class="foot-index">
-  <span><strong>pre-work</strong> · 일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 뉴스레터</span>
+  <span><strong>pre-work</strong> · 일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 읽거리</span>
   <nav class="foot-index__links" aria-label="빠른 이동">
     {links.map((l) => <a href={l.href}>{l.label}</a>)}
   </nav>

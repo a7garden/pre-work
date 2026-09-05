@@ -18,7 +18,7 @@ const tagged = issues.filter((issue) => issue.tags.includes(tag));
 const total = tagged.reduce((n, issue) => n + issue.minutes, 0);
 ---
 
-<Layout title={`${tag} · 태그`} description={`'${tag}' 태그가 붙은 데일리 호 목록입니다.`}>
+<Layout title={`${tag} · 태그`} description={`'${tag}' 태그가 붙은 호 목록입니다.`}>
   <header class="workspace-head">
     <div>
       <p class="workspace-head__eyebrow mono"><a href="/tags/">← 태그</a></p>
@@ -31,7 +31,7 @@ const total = tagged.reduce((n, issue) => n + issue.minutes, 0);
   <ol class="issue-list">
     {tagged.map((issue) => (
       <li>
-        <a href={`/daily/${issue.no}/`} data-read-mark={`issue-${issue.no}`}>
+          <a href={`/read/${issue.no}/`} data-read-mark={`issue-${issue.no}`}>
           <span class="issue-list__no mono">제{issue.no}호</span>
           <div class="issue-list__main">
             <p class="issue-list__title">{issue.title}</p>
@@ -50,7 +50,7 @@ const total = tagged.reduce((n, issue) => n + issue.minutes, 0);
 </Layout>
 
 <script>
-  /* 읽은 호 표시 — 데일리 아카이브와 같은 규칙 */
+  /* 읽은 호 표시 — 홈 목록과 같은 규칙 */
   const KEY = "pw-read";
   let read: string[] = [];
   try {

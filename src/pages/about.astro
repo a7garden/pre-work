@@ -1,24 +1,23 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { glossary } from "../data/glossary";
-import { drills } from "../data/drills";
 ---
 <Layout
   title="소개"
-  description="pre-work — 일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 뉴스레터. 운영 방식과 칼럼 요청 방법을 소개합니다."
+  description="pre-work — 일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 읽거리. 운영 방식과 칼럼 요청 방법을 소개합니다."
 >
   <div class="page-head">
     <span class="page-head__kicker mono">ABOUT</span>
     <h1>일 하기 전 10분</h1>
     <p class="lede">
-      pre-work는 개발자가 꾸준히 성장하기 위한 뉴스레터입니다. 매일 한 편, 10분 안쪽
-      칼럼을 읽고 오늘 남길 한 문장과 오늘 해 볼 것 하나를 가져갑니다.
+      pre-work는 개발자가 꾸준히 성장하기 위한 읽거리입니다. 매일 한 편, 10분 안쪽
+      칼럼을 읽고 오늘 남길 한 문장과 오늘 해 볼 것 하나를 가져갑니다. 개발 트렌드와
+      개발 기본 지식을 한 편씩 채워 가는 데 목적이 있습니다.
     </p>
   </div>
 
   <div class="doc">
     <h2>어떻게 만들어지는가</h2>
-    <p>이 뉴스레터의 칼럼은 요청에서 시작합니다.</p>
+    <p>이 읽거리의 칼럼은 요청에서 시작합니다.</p>
     <ol>
       <li><strong>요청</strong> — 누구나 GitHub 이슈로 읽고 싶은 주제를 던집니다.</li>
       <li><strong>승인</strong> — 운영자가 요청을 검토해 발행 대기를 붙입니다.</li>
@@ -28,15 +27,14 @@ import { drills } from "../data/drills";
 
     <h2>아카이브에 대하여</h2>
     <p>
-      지금의 아카이브는 2026년 9월 개편에서 개인 학습 노트를 뉴스레터 칼럼으로 전면
+      지금의 아카이브는 2026년 9월 개편에서 개인 학습 노트를 칼럼으로 전면
       재편해 이관한 것입니다. 호의 날짜는 이관 시의 연재 순서를 나타냅니다.
     </p>
 
     <h2>같이 읽기</h2>
     <ul>
       <li><a href="/rss.xml">RSS 구독</a> — 매일 아침 한 편</li>
-      <li><a href="/drills/">코드 읽기 훈련 {drills.length}편</a> — 코드를 먼저 읽고 스스로 답한 뒤 해설을 엽니다</li>
-      <li><a href="/glossary/">용어 사전 {glossary.length}개</a> — 본문 어디서나 밑줄로 연결됩니다</li>
+      <li><a href="/tags/">태그</a> — 주제별로 그동안의 호를 모아 봅니다</li>
       <li><a href="/search/">검색</a> — 전체 아카이브에서 찾기</li>
     </ul>
   </div>

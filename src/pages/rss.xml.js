@@ -15,7 +15,7 @@ export function GET(context) {
       /* 전문을 함께 내보내 리더 안에서 한 편이 끝나도록 한다 */
       content: issueToHtml(issue, base),
       pubDate: new Date(`${issue.date.replaceAll(".", "-")}T09:00:00+09:00`),
-      link: `daily/${issue.no}/`,
+      link: `read/${issue.no}/`,
       categories: issue.tags,
     })),
     customData:

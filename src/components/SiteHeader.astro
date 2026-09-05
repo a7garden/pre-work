@@ -1,0 +1,44 @@
+---
+/** 사이트 머리 — 읽기 앱의 최소 내비게이션. */
+const path = Astro.url.pathname;
+const links = [
+  { href: "/", label: "전체 호" },
+  { href: "/tags/", label: "태그" },
+  { href: "/search/", label: "검색" },
+  { href: "/about/", label: "소개" },
+  { href: "/rss.xml", label: "RSS" },
+];
+
+function isActive(href: string) {
+  if (href === "/") return path === "/";
+  return path.startsWith(href);
+}
+---
+
+<header class="site-header">
+  <a class="site-header__brand" href="/">
+    <span class="site-header__mark">pre-work</span>
+    <span class="site-header__sub">일 하기 전 10분</span>
+  </a>
+  <nav class="site-header__nav" aria-label="주 메뉴">
+    {links.map((l) => (
+      <a href={l.href} aria-current={isActive(l.href) ? "page" : undefined}>{l.label}</a>
+    ))}
+  </nav>
+  <button class="theme-toggle" type="button" data-theme-toggle>테마</button>
+</header>
+
+<script>
+  /* 라이트·다크를 전환한다 — 선택은 이 브라우저 안에서만 남는다 */
+  const btn = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+  btn?.addEventListener("click", () => {
+    const current =
+      document.documentElement.getAttribute("data-theme")
+      ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try {
+      localStorage.setItem("pw-theme", next);
+    } catch (e) {}
+  });
+</script>
