@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-09-06",
+    "scope": "app",
+    "macrostructure": "Workbench (home) / Long Document (read) / Index-First (tags·search)",
+    "theme": "Cobalt",
+    "enrichment": "icons (lucide, inline-vendored)",
+    "brief": "Reading-app UI pass — icon system, / search shortcut, arrow-key issue navigation, copy-link feedback on the locked Cobalt system"
+  },
+  {
     "date": "2026-09-03",
     "scope": "app",
     "macrostructure": "Workbench (workspace) / Long Document (notes)",

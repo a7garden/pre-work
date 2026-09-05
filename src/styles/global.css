@@ -136,6 +136,10 @@ main {
 }
 
 .site-header__nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  white-space: nowrap;
   padding: var(--space-2xs) var(--space-sm);
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);
@@ -152,8 +156,16 @@ main {
 }
 
 @media (max-width: 40rem) {
-  .site-header { flex-wrap: wrap; gap: var(--space-sm); }
-  .site-header__nav { margin-left: 0; }
+  .site-header { gap: var(--space-sm); }
+  .site-header__nav {
+    margin-left: 0;
+    min-width: 0;
+    flex: 1;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .site-header__nav::-webkit-scrollbar { display: none; }
 }
 
 .theme-toggle {
@@ -442,7 +454,13 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; font-weight: 650; }
 }
 .b-callout--warn { border-left-color: var(--color-warn); }
 .b-callout--good { border-left-color: var(--color-good); }
-.b-callout strong { display: block; color: var(--color-ink); font-size: var(--text-sm); }
+.b-callout strong {
+  display: flex; align-items: center; gap: var(--space-xs);
+  color: var(--color-ink); font-size: var(--text-sm);
+}
+.b-callout--note strong .icon { color: var(--color-muted); }
+.b-callout--warn strong .icon { color: var(--color-warn); }
+.b-callout--good strong .icon { color: var(--color-good); }
 .b-callout p { margin-top: var(--space-xs); font-size: var(--text-sm); line-height: 1.75; }
 .b-callout b { color: var(--color-accent); font-weight: 600; }
 
@@ -535,6 +553,11 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; font-weight: 650; }
 .quiz__verdict[data-state="correct"] { color: var(--color-good); }
 .quiz__verdict[data-state="wrong"] { color: var(--color-warn); }
 
+/* 인터랙션 요소의 눌림 상태 */
+.copy-link:active, .theme-toggle:active { transform: translateY(1px); }
+.quiz__option:active { transform: translateY(1px); }
+.copy-link, .note-add-guide__file { white-space: nowrap; }
+
 /* ── 홈: 오늘 ──────────────────────────────────────────────── */
 .today-head { max-width: 62rem; }
 .today-head__eyebrow { color: var(--color-muted); font-size: 0.7rem; letter-spacing: 0.08em; margin-bottom: var(--space-sm); }
@@ -545,8 +568,6 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; font-weight: 650; }
 }
 .today:hover { border-color: var(--color-accent); transform: translateY(-2px); }
 .today__stamp { display: flex; flex-wrap: wrap; gap: var(--space-md); color: var(--color-muted); font-size: var(--text-xs); }
-.today__stamp > span:first-child { color: var(--color-accent); }
-.today h1 { margin-top: var(--space-md); font-size: clamp(1.9rem, 2.4vw + 1rem, 3rem); line-height: 1.12; overflow-wrap: anywhere; }
 .today__dek { margin-top: var(--space-sm); max-width: 44rem; color: var(--color-muted); font-size: var(--text-md); line-height: 1.65; }
 .today__takeaway {
   display: flex; flex-direction: column; gap: var(--space-2xs);
@@ -565,9 +586,9 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; font-weight: 650; }
   display: grid; grid-template-columns: 5rem minmax(0, 1fr) minmax(9rem, auto);
   gap: var(--space-md); align-items: start; padding: var(--space-lg) 0;
   border-bottom: 1px solid var(--color-rule);
-  transition: padding var(--dur-short) var(--ease-out);
+  transition: transform var(--dur-short) var(--ease-out);
 }
-.issue-list > li > a:hover { padding-inline: var(--space-xs); }
+.issue-list > li > a:hover { transform: translateX(4px); }
 .issue-list__no { color: var(--color-accent); font-size: var(--text-xs); padding-top: 0.25rem; }
 .issue-list__title { color: var(--color-ink); font-size: var(--text-md); font-weight: 650; line-height: 1.35; }
 .issue-list__dek { margin-top: var(--space-2xs); color: var(--color-muted); font-size: var(--text-sm); line-height: 1.6; }
@@ -613,7 +634,7 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; font-weight: 650; }
 .issue__nav-link--next { text-align: right; }
 
 .foot-index__links { display: flex; flex-wrap: wrap; gap: var(--space-md); }
-.foot-index__links a { color: var(--color-muted); transition: color var(--dur-short) var(--ease-out); }
+.foot-index__links a { display: inline-flex; align-items: center; gap: var(--space-2xs); color: var(--color-muted); transition: color var(--dur-short) var(--ease-out); }
 .foot-index__links a:hover { color: var(--color-accent); }
 
 @media (max-width: 60rem) {
@@ -648,7 +669,61 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; font-weight: 650; }
   .b-table thead th, .b-table tbody th, .b-table td { padding: var(--space-xs) var(--space-sm); }
 }
 
-.note-add-guide__file { flex: none; }
+/* ─── 아이콘과 읽기 편의 ─── */
+svg.icon { display: inline-block; vertical-align: -0.18em; }
+.icon { flex: none; }
+
+/* 테마 토글 — 다음 상태의 아이콘을 보여 준다 */
+.theme-toggle { position: relative; }
+.theme-toggle::after { content: ""; position: absolute; inset: -10px; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: inline-block; }
+.theme-toggle[data-next="light"] .icon-sun { display: inline-block; }
+.theme-toggle[data-next="light"] .icon-moon { display: none; }
+
+/* 메타 줄의 아이콘 */
+.today__stamp > span, .issue__stamp > span, .issue-list__meta > span {
+  display: inline-flex; align-items: center; gap: var(--space-2xs);
+}
+.with-icon { display: inline-flex; align-items: center; gap: var(--space-xs); }
+
+/* 주소 복사 — 라벨 스왑이 피드백이다 */
+.copy-link {
+  position: relative;
+  display: inline-flex; align-items: center;
+  margin-left: auto;
+  border: 0; background: none; padding: 0;
+  color: var(--color-muted); font: inherit;
+  font-size: var(--text-xs); cursor: pointer;
+  transition: color var(--dur-short) var(--ease-out);
+}
+.copy-link::after { content: ""; position: absolute; inset: -12px; }
+.copy-link:hover { color: var(--color-ink); }
+.copy-link__idle, .copy-link__done { display: inline-flex; align-items: center; gap: var(--space-2xs); }
+.copy-link__done { display: none; color: var(--color-good); }
+.copy-link[data-state="copied"] { color: var(--color-good); }
+.copy-link[data-state="copied"] .copy-link__idle { display: none; }
+.copy-link[data-state="copied"] .copy-link__done { display: inline-flex; }
+
+/* 이전·다음 호 이동 */
+.issue__nav-link .mono { display: inline-flex; align-items: center; gap: var(--space-2xs); }
+
+/* 퀴즈 판정 — 상태는 아이콘과 함께 나타난다 */
+.quiz__verdict { display: inline-flex; align-items: center; gap: var(--space-2xs); }
+.quiz__verdict .icon { display: none; }
+.quiz__verdict[data-state="correct"] .icon-check { display: inline-block; color: var(--color-good); }
+.quiz__verdict[data-state="wrong"] .icon-x { display: inline-block; color: var(--color-warn); }
+
+/* 검색 힌트 */
+.search-hint { margin-top: var(--space-xs); color: var(--color-muted); font-size: var(--text-xs); }
+.kbd {
+  display: inline-block; padding: 0 var(--space-2xs);
+  border: var(--rule-hair) solid var(--color-rule); border-radius: var(--radius-sm);
+  background: var(--color-paper-2); color: var(--color-ink);
+  font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.6;
+}
+
+.note-add-guide__file { flex: none; display: inline-flex; align-items: center; gap: var(--space-2xs); }
 .note-add-guide__file code { display: block; transition: border-color var(--dur-short) var(--ease-out); }
 .note-add-guide__file:hover code { border-color: color-mix(in oklch, var(--color-paper) 55%, transparent); }
 

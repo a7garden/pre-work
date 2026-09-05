@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
 import { issues } from "../../data/issues";
 
 export function getStaticPaths() {
@@ -21,8 +22,8 @@ const total = tagged.reduce((n, issue) => n + issue.minutes, 0);
 <Layout title={`${tag} · 태그`} description={`'${tag}' 태그가 붙은 호 목록입니다.`}>
   <header class="workspace-head">
     <div>
-      <p class="workspace-head__eyebrow mono"><a href="/tags/">← 태그</a></p>
-      <h1>{tag}</h1>
+      <p class="workspace-head__eyebrow mono"><a href="/tags/"><Icon name="arrow-left" size={16} />태그</a></p>
+      <h1 class="with-icon"><Icon name="hash" size={20} />{tag}</h1>
       <p>'{tag}' 태그가 붙은 호를 최신부터 모았습니다.</p>
     </div>
     <div class="workspace-head__meta mono">{tagged.length}개 호 · 누적 {total}분</div>

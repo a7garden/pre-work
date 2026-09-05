@@ -2,6 +2,14 @@
 import type { Block } from "../data/blocks";
 import RichText from "./RichText.astro";
 import Quiz from "./Quiz.astro";
+import Icon from "./Icon.astro";
+
+/** 콜아웃 톤 — 색만으로 상태를 나타내지 않도록 아이콘을 짝지운다 */
+const toneIcons = {
+  note: "info",
+  warn: "triangle-alert",
+  good: "circle-check",
+} as const;
 
 interface Props {
   blocks: Block[];
@@ -30,7 +38,10 @@ let quizIndex = 0;
     case "callout":
       return (
         <aside class={`b-callout b-callout--${block.tone ?? "note"}`}>
-          <strong>{block.title}</strong>
+          <strong>
+            <Icon name={toneIcons[block.tone ?? "note"]} size={16} />
+            {block.title}
+          </strong>
           <p><RichText text={block.text} /></p>
         </aside>
       );
@@ -109,7 +120,9 @@ let quizIndex = 0;
           <span class="b-link__label mono">{block.label}</span>
           <span class="b-link__title">{block.title}</span>
           {block.detail && <span class="b-link__detail">{block.detail}</span>}
-          <span class="b-link__arrow" aria-hidden="true">→</span>
+          <span class="b-link__arrow" aria-hidden="true">
+            <Icon name={block.href.startsWith("http") ? "arrow-up-right" : "arrow-right"} size={16} />
+          </span>
         </a>
       );
   }
@@ -130,7 +143,8 @@ let quizIndex = 0;
     });
     const explain = quiz.querySelector<HTMLElement>("[data-quiz-explain]");
     const verdict = quiz.querySelector<HTMLElement>("[data-quiz-verdict]");
-    if (verdict) verdict.textContent = picked === answer ? "정답" : "다시 보기";
+    if (verdict) verdict.querySelector<HTMLElement>("[data-quiz-verdict-text]")!.textContent =
+      picked === answer ? "정답" : "다시 보기";
     if (verdict) verdict.dataset.state = picked === answer ? "correct" : "wrong";
     if (explain) explain.hidden = false;
     quiz.dataset.done = picked === answer ? "correct" : "wrong";

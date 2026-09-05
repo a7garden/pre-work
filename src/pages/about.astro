@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Icon from "../components/Icon.astro";
 ---
 <Layout
   title="소개"
@@ -33,9 +34,9 @@ import Layout from "../layouts/Layout.astro";
 
     <h2>같이 읽기</h2>
     <ul>
-      <li><a href="/rss.xml">RSS 구독</a> — 매일 아침 한 편</li>
-      <li><a href="/tags/">태그</a> — 주제별로 그동안의 호를 모아 봅니다</li>
-      <li><a href="/search/">검색</a> — 전체 아카이브에서 찾기</li>
+      <li><a href="/rss.xml"><Icon name="rss" size={16} />RSS 구독</a> — 매일 아침 한 편</li>
+      <li><a href="/tags/"><Icon name="tag" size={16} />태그</a> — 주제별로 그동안의 호를 모아 봅니다</li>
+      <li><a href="/search/"><Icon name="search" size={16} />검색</a> — 전체 아카이브에서 찾기</li>
     </ul>
   </div>
 </Layout>

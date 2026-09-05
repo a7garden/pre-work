@@ -1,15 +1,21 @@
 ---
+import Icon from "./Icon.astro";
+
 const links = [
   { href: "/", label: "전체 호" },
   { href: "/tags/", label: "태그" },
   { href: "/search/", label: "검색" },
-  { href: "/rss.xml", label: "RSS" },
+  { href: "/rss.xml", label: "RSS", icon: "rss" },
   { href: "/about/", label: "소개" },
 ];
 ---
 <footer class="foot-index">
   <span><strong>pre-work</strong> · 일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 읽거리</span>
   <nav class="foot-index__links" aria-label="빠른 이동">
-    {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    {links.map((l) => (
+      <a href={l.href}>
+        {l.icon && <Icon name={l.icon} size={16} />}{l.label}
+      </a>
+    ))}
   </nav>
 </footer>

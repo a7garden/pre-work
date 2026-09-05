@@ -1,8 +1,10 @@
-/* Hallmark · pre-emit critique: P5 H4 E5 S5 R5 V4
- * genre: modern-minimal · macrostructure: Workbench (workspace) / Long Document (notes)
- * design-system: design.md · theme: Cobalt · nav: N3 documentation rail · footer: Ft2 inline
- * tone: minimal developer workspace · anchor hue: 258 (cobalt) · contrast: pass (40–41)
- * slop: pass (42–49) · mobile: pass (34, 49–57)
+/* Hallmark · pre-emit critique: P5 H4 E4 S4 R5 V3
+ * genre: modern-minimal · macrostructure: Workbench (home) / Long Document (read) / Index-First (tags·search)
+ * design-system: design.md · theme: Cobalt · header: N1b top bar · footer: Ft2 inline
+ * icons: lucide · inline-vendored · 16/20px · currentColor
+ * tone: minimal reading app · anchor hue: 258 (cobalt) · contrast: pass
+ * slop: pass (42-49) · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · icons: pass (30)
+ * mobile: pass (34, 49) · contrast: pass (40-41) · nav: N1b (design.md) · footer: Ft2 inline
  */
 
 :root {

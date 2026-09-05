@@ -1,4 +1,6 @@
 ---
+import Icon from "./Icon.astro";
+
 interface Props {
   question: string;
   code?: { language: string; content: string };
@@ -32,7 +34,11 @@ const uid = Math.random().toString(36).slice(2, 8);
   </div>
 
   <div class="quiz__explain" data-quiz-explain hidden>
-    <p class="quiz__verdict mono" data-quiz-verdict></p>
+    <p class="quiz__verdict mono" data-quiz-verdict>
+      <Icon name="check" size={16} class="icon-check" />
+      <Icon name="x" size={16} class="icon-x" />
+      <span data-quiz-verdict-text></span>
+    </p>
     <p>{explain}</p>
   </div>
 </div>
