@@ -846,6 +846,77 @@ function fn_reload() {
       },
     ],
   },
+  {
+    id: "upload-validation",
+    no: 11,
+    title: "업로드 파일 검증 코드 읽어 내기",
+    goal: "확장자 검사와 매직 바이트 검사 중 어느 쪽이 실제 내용을 검사하는지 코드에서 짚어 낸다.",
+    level: 2,
+    minutes: 6,
+    tags: ["보안", "파일 업로드", "매직 바이트"],
+    blocks: [
+      {
+        type: "p",
+        text: "아래는 게시판 첨부 이미지를 받는 검증 코드다. 두 검사 중 하나는 서버를 지키고, 하나는 아무것도 지키지 못한다. 코드를 읽고 어느 쪽인지 답해 본다.",
+      },
+      {
+        type: "codeRead",
+        language: "java",
+        caption: "첨부 이미지 검증 — 두 개의 검사",
+        question: "(1)과 (2) 중 변형된 이미지 파일을 못 거르는 검사는 어느 쪽이고, 그 이유는?",
+        code: `public String checkUpload(MultipartFile file) {
+
+    String name = file.getOriginalFilename();      // (1)
+    if (!name.endsWith(".png")) {
+        return "PNG만 허용합니다";
+    }
+
+    byte[] head = readFirstBytes(file, 8);         // (2)
+    byte[] pngSign = {(byte)0x89, 0x50, 0x4E, 0x47,
+                      0x0D, 0x0A, 0x1A, 0x0A};
+    if (!Arrays.equals(head, pngSign)) {
+        return "PNG 시그니처가 아닙니다";
+    }
+    return "통과";
+}`,
+        notes: [
+          {
+            lines: "3-5",
+            title: "(1)은 클라이언트가 적어 보낸 문자열만 본다",
+            body: "파일 이름은 요청에 담겨 오는 문자열이다. 확장자를 attack.png로 붙인 파일은 무엇이든 이 검사를 통과한다. '표시된 형식'을 검사할 뿐 실제 내용은 검사하지 않는다.",
+          },
+          {
+            lines: "7-14",
+            title: "(2)는 실제 내용이 스스로 말하게 한다",
+            body: "파일 시작 바이트(매직 바이트)를 내용에서 직접 읽어 PNG 서명 8바이트와 비교한다. 이름을 바꾼 스크립트나 변형된 BMP는 여기서 걸린다 — 확장자 검사를 통과한 파일이 이미지 처리기로 들어가는 길을 끊는다.",
+          },
+          {
+            lines: "8",
+            title: "서명의 출처는 규격이다",
+            body: "PNG 서명은 형식 규격이 정의한 바이트열이다. 검증 기준이 '표시된 이름'에서 '정의된 서명'으로 옮겨 갔다는 것이 이 코드의 요점이다.",
+          },
+        ],
+      },
+      {
+        type: "quiz",
+        question: "확장자 검사만 남긴 업로드 경로에 남는 위험은?",
+        options: [
+          "파일이 커서 서버 저장소가 부족해진다",
+          "이름을 attack.png로 붙인 악성 파일이 이미지 처리기로 흘러 들어간다",
+          "PNG만 받으므로 위험이 없다",
+          "다운로드 속도가 느려진다",
+        ],
+        answer: 1,
+        explain: "확장자는 클라이언트가 적어 보내는 문자열이다. 실제 내용은 다른 형식일 수 있고, 그 파일이 이미지 처리기(ImageMagick 등)에 들어가면 처리기 취약점의 공격 표면이 된다.",
+      },
+      {
+        type: "callout",
+        title: "실무에서는 이 위에 두 겹을 더한다",
+        text: "이미지 처리기의 안 쓰는 코더·delegate를 policy 설정으로 끄고, 처리를 권한이 낮은 프로세스로 돌린다. 검증은 한 겹으로 끝내지 않는다.",
+      },
+    ],
+  },
+
 ];
 
 export const drillById = (id: string) => drills.find((d) => d.id === id);
