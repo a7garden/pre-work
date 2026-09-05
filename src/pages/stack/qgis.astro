@@ -17,8 +17,8 @@ const formats = [
     <span class="page-head__kicker mono">기술 스택 · 09</span>
     <h1>QGIS</h1>
     <p class="lede">
-      서버가 아니라 <strong>데스크탑 프로그램</strong>입니다. 산사태위험지도
-      원본 데이터를 눈으로 확인하고, 잘못된 부분을 고치고, DB로 들여보내기 전
+      서버가 아니라 <strong>데스크탑 프로그램</strong>입니다. 지도 원본 데이터를
+      눈으로 확인하고, 잘못된 부분을 고치고, DB로 들여보내기 전
       검수하는 용도로 씁니다.
     </p>
   </div>
@@ -29,7 +29,7 @@ const formats = [
       <li><a href="#what">QGIS는 무엇을 하는 도구인가</a></li>
       <li><a href="#formats">자주 다루는 파일 형식</a></li>
       <li><a href="#connect">PostGIS에 직접 연결하기</a></li>
-      <li><a href="#workflow">이 프로젝트에서의 작업 흐름</a></li>
+      <li><a href="#workflow">실무에서의 작업 흐름</a></li>
     </ol>
   </div>
 
@@ -52,7 +52,7 @@ const formats = [
       </table>
     </div>
     <p>
-      외부 기관(산림청, 지자체 등)에서 받는 원본 데이터는 대개 Shapefile입니다.
+      외부 기관(발주처, 지자체 등)에서 받는 원본 데이터는 대개 Shapefile입니다.
       이걸 QGIS로 열어 <a href="/stack/postgresql/#crs">좌표계(EPSG)</a>가
       프로젝트 표준과 맞는지 먼저 확인한 뒤 PostGIS로 들여보내는 것이 일반적인
       순서입니다.
@@ -67,9 +67,9 @@ const formats = [
       <a href="/stack/dbeaver/">DBeaver</a>에서 쓰는 것과 동일한 값을 씁니다.
     </p>
 
-    <h2 id="workflow">이 프로젝트에서의 작업 흐름</h2>
+    <h2 id="workflow">실무에서의 작업 흐름</h2>
     <ol>
-      <li>산림청 등에서 원본 shp 데이터 수령</li>
+      <li>발주처·지자체 등에서 원본 shp 데이터 수령</li>
       <li>QGIS로 열어 좌표계·속성값(위험등급 등) 검수</li>
       <li>필요하면 QGIS에서 직접 도형·속성 편집</li>
       <li>PostGIS로 반입 (QGIS의 DB Manager 또는 <code>shp2pgsql</code> 도구 사용)</li>

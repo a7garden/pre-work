@@ -1324,14 +1324,6 @@ export const glossary: GlossaryTerm[] = [
     related: ["unit-test", "gap-analysis"],
   },
   {
-    id: "coop",
-    term: "Co-op",
-    aliases: ["표준 현장실습학기제"],
-    category: "process",
-    short: "학교·기관·학생이 3자 협약을 맺고 진행하는 정식 학사 절차형 현장실습.",
-    related: ["si"],
-  },
-  {
     id: "business-logic",
     term: "비즈니스 로직",
     aliases: ["업무 로직", "도메인 로직", "business logic"],
@@ -1373,8 +1365,8 @@ export const glossary: GlossaryTerm[] = [
     aliases: ["tribal knowledge", "부족 지식", "암묵 지식"],
     category: "process",
     short: "문서에 없고 특정 사람의 머리와 손에만 있는 운영 지식.",
-    long: "배치의 숨은 순서, 장애 때의 우회로, \"원래 그렇게 쓰는 것\" 같은 지식이다. 그 사람이 떠나면 한꺼번에 사라진다(departure cliff). 커피토크 같은 대화로 노출시키고, 기록으로 굳혀서 다음 사람에게 넘긴다.",
-    related: ["si", "coop"],
+    long: "배치의 숨은 순서, 장애 때의 우회로, \"원래 그렇게 쓰는 것\" 같은 지식이다. 그 사람이 떠나면 한꺼번에 사라진다(departure cliff). 라운지 대화 같은 비격식 채널로 노출시키고, 기록으로 굳혀서 다음 사람에게 넘긴다.",
+    related: ["si"],
   },
   {
     id: "fallback",

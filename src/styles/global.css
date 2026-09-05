@@ -1289,12 +1289,6 @@ button.cr__line[data-active] { background: color-mix(in oklch, var(--color-accen
   *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
 }
 
-.authoring__result { color: var(--color-muted); font-size: 0.66rem; letter-spacing: 0.08em; }
-.authoring__demo {
-  padding: var(--space-lg); border: 1px dashed var(--color-rule); border-radius: var(--radius-md);
-  background: var(--color-paper);
-}
-.authoring__demo > * + * { margin-top: var(--space-md); }
 .doc > section > h2 > code.mono {
   padding: 2px var(--space-xs); border-radius: var(--radius-sm);
   background: var(--color-paper-3); color: var(--color-accent); font-size: var(--text-md);
@@ -1302,7 +1296,6 @@ button.cr__line[data-active] { background: color-mix(in oklch, var(--color-accen
 
 @media (max-width: 40rem) {
   .workspace-section { margin-top: var(--space-2xl); }
-  .authoring__demo { padding: var(--space-md); }
   /* 좁은 화면에서 칸을 억지로 줄이지 말고 상자 안에서 가로로 흐르게 둔다 */
   .b-table table, .spec-sheet { width: auto; min-width: 30rem; }
   .b-table thead th, .b-table tbody th, .b-table td { padding: var(--space-xs) var(--space-sm); }

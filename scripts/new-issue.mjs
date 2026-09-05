@@ -6,7 +6,7 @@
  *   npm run new:issue -- 2026-09-07   날짜를 지정해서
  *
  * 제목과 블록만 채우면 목록·상세·이전다음·홈이 전부 따라온다.
- * 쓸 수 있는 블록 종류는 /authoring/ 페이지에 예시와 함께 정리되어 있다.
+ * 쓸 수 있는 블록 종류와 저작 규칙은 CONTENT.md에 정리되어 있다.
  */
 import { readFile, writeFile } from "node:fs/promises";
 
@@ -33,10 +33,10 @@ if (at < 0) {
   process.exit(1);
 }
 
-const numbers = [...source.matchAll(/^    no: (\d+),$/gm)].map((m) => Number(m[1]));
+const numbers = [...source.matchAll(/^ {4}"?no"?: (\d+),$/gm)].map((m) => Number(m[1]));
 const nextNo = numbers.length ? Math.max(...numbers) + 1 : 1;
 
-if (source.includes(`date: "${date}"`)) {
+if (source.includes(`date: "${date}"`) || source.includes(`"date": "${date}"`)) {
   console.error(`${date} 자 호가 이미 있습니다. 날짜를 지정해 주세요: npm run new:issue -- 2026-09-07`);
   process.exit(1);
 }
@@ -57,7 +57,7 @@ const skeleton = `
       { type: "terms", title: "오늘의 용어", ids: [] },
       {
         type: "callout",
-        title: "오늘 회사에서 해 볼 것",
+        title: "오늘 해 볼 것",
         text: "한 가지만. 확인 가능한 것으로.",
       },
     ],
@@ -70,4 +70,4 @@ await writeFile(FILE, out, "utf8");
 
 console.log(`제${nextNo}호 (${date} ${weekday}) 뼈대를 추가했습니다.`);
 console.log("  src/data/issues.ts 맨 앞을 열어 제목과 블록을 채우세요.");
-console.log("  블록 종류와 예시: npm run dev 후 http://localhost:4321/authoring/");
+console.log("  블록 종류와 저작 규칙: CONTENT.md");

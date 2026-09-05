@@ -1,27 +1,29 @@
 # pre-work
 
-출근길에 한 편씩 읽으며 실무 코드를 읽는 힘을 기르는 개인 학습 플랫폼.
-전자정부 표준프레임워크 3.8 기반 레거시(Spring MVC · JSP · MyBatis · Tomcat)를 읽는 것이 주제다.
+일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 뉴스레터.
+매일 한 편, 10분 안쪽 칼럼을 읽고 오늘 남길 한 문장과 오늘 해 볼 것 하나를 가져간다.
 
-## 도는 방식
+## 이 뉴스레터가 도는 방식
 
-1. **낮** — 회사에서 막힌 것, 모르고 넘어간 단어를 메모한다.
-2. **밤** — 집에서 한 편으로 정리해 다음 호로 추가한다.
-3. **아침** — 출근길에 읽고, 회사에서 한 가지만 확인해 본다.
+1. **요청** — 누구나 [GitHub 이슈](https://github.com/a7garden/pre-work/issues/new?template=publish.yml)로 읽고 싶은 주제를 던진다.
+2. **승인** — 운영자가 요청을 검토해 `publish` 라벨을 붙인다. 라벨이 곧 발행 승인이다.
+3. **발행** — 매일 자정 파이프라인(launchd)이 승인된 주제를 저작 규칙에 맞는 칼럼으로 발행해 커밋·push한다. push하면 GitHub Actions가 GitHub Pages에 배포한다.
 
 ## 화면
 
 | 경로 | 무엇 |
 | :-- | :-- |
-| `/` | 오늘 읽을 호 + 지난 호 + 기준 페이지 |
+| `/` | 오늘 읽을 칼럼 + 지난 칼럼 + 레퍼런스 선반 |
+| `/about/` | 뉴스레터 소개와 운영 방식 |
 | `/daily/` | 데일리 아카이브 (뉴스레터 본체) |
 | `/drills/` | 코드 읽기 훈련 — 줄을 눌러 해설을 열고, 객관식으로 자가 점검 |
-| `/framework/` | 표준프레임워크 3.8 구조 해부 |
+| `/framework/` `/stack/` `/infra/` | 칼럼이 인용하는 레퍼런스 — 공공기관 SI 레거시 스택·망분리 구조 |
 | `/glossary/` | 용어 사전 — 본문의 점선 밑줄과 같은 데이터 |
-| `/authoring/` | 저작 방법 — 블록 종류와 실제 렌더링을 나란히 |
-| `/stack/` `/infra/` | 기술별 참고 — 뉴스레터가 인용하는 배경 자료 |
+| `/rss.xml` | RSS 구독 |
 
-## 새 글 추가하기
+## 칼럼 추가하기
+
+발행 파이프라인이 매일 자정에 승인된 이슈를 처리한다. 직접 추가할 때는:
 
 ```bash
 npm run new:issue            # 오늘 날짜로 다음 호 뼈대 생성
@@ -37,8 +39,7 @@ npm run new:issue -- 2026-09-07
 | `src/data/glossary.ts` | 용어 — 추가하면 사이트 전체 본문에 자동 연결 |
 | `src/data/blocks.ts` | 위 셋이 공유하는 블록 타입 정의 |
 
-블록 종류와 예시는 `/authoring/` 페이지에서 코드와 결과를 나란히 볼 수 있다.
-자세한 저작 규칙은 [CONTENT.md](CONTENT.md)를 본다.
+블록 종류와 저작 규칙은 [CONTENT.md](CONTENT.md)에 정리되어 있다.
 
 ## 용어 자동 연결
 
@@ -53,22 +54,9 @@ npm run new:issue -- 2026-09-07
 
 ```bash
 npm install
-npm run dev
+npm run dev          # http://localhost:4321
+npm run build        # astro build + pagefind 검색 인덱스
+npm run preview
 ```
 
-`CLAUDE.md` 의 안내대로 `astro dev --background` 로 띄우면 `astro dev stop` · `status` · `logs` 로 관리할 수 있다.
-
-| 명령 | 하는 일 |
-| :-- | :-- |
-| `npm run dev` | localhost:4321 개발 서버 |
-| `npm run build` | `./dist/` 로 정적 빌드 |
-| `npm run preview` | 빌드 결과 미리보기 |
-| `npm run new:issue` | 다음 호 뼈대 생성 |
-
-## 배포
-
-`main` 에 push하면 GitHub Actions가 빌드해 GitHub Pages로 올린다
-(`.github/workflows/deploy.yml`). 프로젝트 서브패스(`/pre-work/`) 대응은
-빌드 후 HTML의 루트 절대경로를 치환하는 방식이다. 스크립트가 실행 시점에
-만드는 링크는 좌측 레일 로고의 `href` 에서 접두어를 얻어 같은 규칙을 따른다
-(`src/components/TermLayer.astro`).
+기여는 칼럼 요청 이슈로. 코드 변경은 fork 후 PR.

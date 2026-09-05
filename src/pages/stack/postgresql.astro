@@ -26,7 +26,7 @@ const psqlCmds = [
     <span class="page-head__kicker mono">기술 스택 · 07</span>
     <h1>PostgreSQL + PostGIS</h1>
     <p class="lede">
-      업무 데이터와 산사태위험지도 같은 공간 데이터를 함께 담는 데이터베이스입니다.
+      업무 데이터와 재해 위험지도 같은 공간 데이터를 함께 담는 데이터베이스입니다.
       일반 관계형 DB 기능 위에, <strong>PostGIS</strong> 확장이 얹혀 지리정보를
       다룹니다.
     </p>
@@ -56,7 +56,7 @@ const psqlCmds = [
     <p>
       PostGIS는 PostgreSQL에 <code>geometry</code>/<code>geography</code>라는
       전용 데이터 타입과, 그 위에서 동작하는 공간 함수들을 추가하는 확장입니다.
-      산사태위험지도의 폴리곤, 취약지역 좌표 같은 데이터가 이 타입으로 저장됩니다.
+      재해 위험지도의 폴리곤, 관할 구역 좌표 같은 데이터가 이 타입으로 저장됩니다.
       테이블 하나를 예로 들면:
     </p>
     <div class="spec-sheet-wrap">

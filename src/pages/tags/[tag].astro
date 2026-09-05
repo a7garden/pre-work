@@ -18,7 +18,7 @@ const tagged = issues.filter((issue) => issue.tags.includes(tag));
 const total = tagged.reduce((n, issue) => n + issue.minutes, 0);
 ---
 
-<Layout title={`${tag} · 태그 · 실무 학습`} description={`'${tag}' 태그가 붙은 데일리 호 목록입니다.`}>
+<Layout title={`${tag} · 태그`} description={`'${tag}' 태그가 붙은 데일리 호 목록입니다.`}>
   <header class="workspace-head">
     <div>
       <p class="workspace-head__eyebrow mono"><a href="/tags/">← 태그</a></p>

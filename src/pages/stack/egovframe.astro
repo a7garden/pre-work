@@ -25,7 +25,7 @@ const commonComponents = [
     <span class="page-head__kicker mono">기술 스택 · 01</span>
     <h1>eGovFrame (전자정부 표준프레임워크)</h1>
     <p class="lede">
-      이 프로젝트 전체가 올라앉은 뼈대입니다. Spring을 밑에 깔고, 공공기관 SI 사업에
+      공공 SI 코드베이스 전체가 올라앉은 뼈대입니다. Spring을 밑에 깔고, 공공기관 SI 사업에
       필요한 공통 기능과 개발 규칙을 표준화해둔 프레임워크입니다.
     </p>
   </div>
@@ -36,7 +36,7 @@ const commonComponents = [
       <li><a href="#why">왜 존재하는가</a></li>
       <li><a href="#layers">계층 구조 (3-Tier)</a></li>
       <li><a href="#common">공통컴포넌트</a></li>
-      <li><a href="#in-project">이 프로젝트에서 만나는 모습</a></li>
+      <li><a href="#in-project">실무 코드에서 만나는 모습</a></li>
     </ol>
   </div>
 
@@ -54,7 +54,7 @@ const commonComponents = [
 
     <div class="callout">
       <p class="label">더 깊게 보기</p>
-      <p>이 프로젝트가 쓰는 <a href="/framework/">표준프레임워크 3.8의 구조 해부</a>에서 네 개의 환경,
+      <p><a href="/framework/">표준프레임워크 3.8의 구조 해부</a>에서 네 개의 환경,
       실행환경 여섯 레이어, 폴더 구조, 설정 파일, 코드 관용구를 한 페이지로 이어서 볼 수 있습니다.</p>
     </div>
 
@@ -72,9 +72,9 @@ const commonComponents = [
       </table>
     </div>
     <p>
-      예를 들어 산사태위험지도 목록을 조회하는 요청이 들어오면:
+      예를 들어 게시판 목록을 조회하는 요청이 들어오면:
       <code>Controller</code>가 요청을 받아 →
-      <code>Service</code>가 "위험지도 목록을 조회한다"는 업무 로직을 처리하며 →
+      <code>Service</code>가 "게시판 목록을 조회한다"는 업무 로직을 처리하며 →
       <code>Mapper</code>가 실제 SQL을 실행해 →
       <code>VO</code>에 결과를 담아 다시 위로 올려보냅니다. 계층별 자세한 동작은
       <a href="/stack/spring/">Spring 페이지</a>에서 이어집니다.
@@ -93,9 +93,9 @@ const commonComponents = [
       </table>
     </div>
 
-    <h2 id="in-project">이 프로젝트에서 만나는 모습</h2>
+    <h2 id="in-project">실무 코드에서 만나는 모습</h2>
     <p>
-      산사태정보시스템처럼 지도가 중심인 프로젝트에서는 eGovFrame의 표준 계층 구조
+      지도·공간 데이터가 중심인 시스템에서는 eGovFrame의 표준 계층 구조
       위에 <strong>공간 데이터 처리</strong>가 얹힙니다 — <code>Service</code>가
       PostGIS 쿼리 결과를 받아 GeoJSON으로 변환하거나, <code>Controller</code>가
       <a href="/infra/#stack">GeoServer의 WMS/WFS</a> 호출을 중계하는 식입니다.

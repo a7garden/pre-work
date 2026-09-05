@@ -16,7 +16,7 @@ const shelves = [
 
 <Layout
   title="오늘"
-  description="출근길 10분, 실무 코드를 읽는 힘을 기르는 개인 학습 플랫폼입니다."
+  description="일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 뉴스레터입니다."
 >
   <header class="today-head">
     <p class="today-head__eyebrow mono">오늘 읽을 것</p>
@@ -81,21 +81,21 @@ const shelves = [
 
   <aside class="loop">
     <div class="loop__col">
-      <p class="mono">이 사이트가 도는 방식</p>
+      <p class="mono">이 뉴스레터가 도는 방식</p>
       <ol class="loop__steps">
-        <li><strong>낮</strong><span>회사에서 막힌 것, 모르고 넘어간 단어를 메모한다</span></li>
-        <li><strong>밤</strong><span>집에서 한 편으로 정리해 다음 호로 추가한다</span></li>
-        <li><strong>아침</strong><span>출근길에 읽고, 회사에서 한 가지만 확인해 본다</span></li>
+        <li><strong>요청</strong><span>읽고 싶은 주제를 GitHub 이슈로 던진다 — 누구나</span></li>
+        <li><strong>승인</strong><span>발행 대기를 붙여 다음 칼럼으로 확정한다</span></li>
+        <li><strong>발행</strong><span>자정 파이프라인이 칼럼으로 발행해 배포한다</span></li>
       </ol>
     </div>
     <div class="loop__col">
-      <p class="mono">추가하는 곳</p>
+      <p class="mono">함께 읽는 곳</p>
       <ul class="loop__files">
-        <li><code>src/data/issues.ts</code><span>데일리 한 편</span></li>
-        <li><code>src/data/drills.ts</code><span>코드 읽기 훈련</span></li>
-        <li><code>src/data/glossary.ts</code><span>용어 — 본문에 자동 연결됨</span></li>
+        <li><code>/drills/</code><span>코드 읽기 훈련 — 줄을 눌러 해설을 연다</span></li>
+        <li><code>/glossary/</code><span>용어 사전 — 본문 어디서나 연결된다</span></li>
+        <li><code>/rss.xml</code><span>구독 — 매일 아침 한 편</span></li>
       </ul>
-      <a class="text-action" href="/authoring/">저작 방법 보기 <span aria-hidden="true">→</span></a>
+      <a class="text-action" href="https://github.com/a7garden/pre-work/issues/new?template=publish.yml">칼럼 요청하기 <span aria-hidden="true">→</span></a>
     </div>
   </aside>
 </Layout>

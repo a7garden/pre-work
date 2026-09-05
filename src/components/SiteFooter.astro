@@ -7,11 +7,11 @@ const links = [
   { href: "/tags/", label: "태그" },
   { href: "/search/", label: "검색" },
   { href: "/rss.xml", label: "RSS" },
-  { href: "/authoring/", label: "저작" },
+  { href: "/about/", label: "소개" },
 ];
 ---
 <footer class="foot-index">
-  <span><strong>pre-work</strong> · 실무에서 마주친 것을 다음의 이해로 연결하는 개인 노트</span>
+  <span><strong>pre-work</strong> · 일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 뉴스레터</span>
   <nav class="foot-index__links" aria-label="빠른 이동">
     {links.map((l) => <a href={l.href}>{l.label}</a>)}
   </nav>

@@ -1,7 +1,7 @@
 # Design — pre-work
 
-이 앱은 매일 아침 출근길에 한 편을 읽고, 밤에 한 편을 더하는 개인 학습 플랫폼이다.
-모든 화면은 **오늘 무엇을 읽고, 오늘 밤 무엇을 더할지** 빠르게 판단할 수 있어야 한다.
+이 앱은 일 하기 전 10분에 한 편을 읽는 공개 뉴스레터다.
+모든 화면은 **오늘 무엇을 읽을지** 빠르게 판단할 수 있어야 한다.
 
 ## Genre
 
@@ -13,7 +13,7 @@ Modern-minimal documentation workspace. 읽기 화면은 뉴스레터에 가깝�
 - Daily issue (`/daily/<no>/`): Long Document — 한 편이 10분 안에 끝나는 세로 흐름. 상단 진행 막대.
 - Drill (`/drills/<id>/`): Interactive Document — 코드를 먼저 보고, 눌러서 해설을 열고, 객관식으로 확인.
 - Reference (`/framework/`, `/glossary/`, `/stack/`, `/infra/`): Index-first / Long Document.
-- Authoring (`/authoring/`): 좌 코드 · 우 결과의 사양서.
+- About (`/about/`): 운영 방식과 요청 방법을 설명하는 안내 문서.
 
 ## Theme
 
