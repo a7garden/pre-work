@@ -765,3 +765,28 @@ svg.icon { display: inline-block; vertical-align: -0.18em; }
 /* ─── 검색 ─── */
 .search-box { margin-top: var(--space-xl); }
 .search-fallback { margin-top: var(--space-lg); color: var(--color-muted); font-size: var(--text-sm); }
+
+/* ─── Pagefind 검색 UI — 기본 테마가 흰색이라 다크에서 자체 토큰으로 재매핑한다 ─── */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .pagefind-ui {
+    --pagefind-ui-primary: var(--color-accent);
+    --pagefind-ui-text: var(--color-ink);
+    --pagefind-ui-background: var(--color-paper-2);
+    --pagefind-ui-border: var(--color-rule);
+    --pagefind-ui-tag: var(--color-paper-3);
+  }
+}
+html[data-theme="dark"] .pagefind-ui {
+  --pagefind-ui-primary: var(--color-accent);
+  --pagefind-ui-text: var(--color-ink);
+  --pagefind-ui-background: var(--color-paper-2);
+  --pagefind-ui-border: var(--color-rule);
+  --pagefind-ui-tag: var(--color-paper-3);
+}
+/* 검색 하이라이트 — 브라우저 기본 형광 노랑(all: revert)보다 높은 명시도가 필요하다 */
+#search .pagefind-ui mark {
+  background: color-mix(in oklch, var(--color-accent) 26%, transparent);
+  color: inherit;
+  padding: 0 0.1em;
+  border-radius: 2px;
+}

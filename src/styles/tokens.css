@@ -6,8 +6,9 @@
  * slop: pass (42-49) · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · icons: pass (30)
  * mobile: pass (34, 49) · contrast: pass (40-41) · nav: N1b (design.md) · footer: Ft2 inline
  */
-
 :root {
+  color-scheme: light;
+
   /* ---- color: cool neutral paper with a restrained cobalt signal ---- */
   --color-paper:      oklch(98.5% 0.003 255);
   --color-paper-2:    oklch(96.5% 0.006 255);
@@ -76,6 +77,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
     --color-paper:      oklch(16% 0.012 255);
     --color-paper-2:    oklch(20% 0.014 255);
     --color-paper-3:    oklch(25% 0.016 255);
@@ -92,6 +95,8 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
+
   --color-paper:      oklch(16% 0.012 255);
   --color-paper-2:    oklch(20% 0.014 255);
   --color-paper-3:    oklch(25% 0.016 255);

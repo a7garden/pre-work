@@ -70,7 +70,7 @@ function isActive(href: string) {
     if (!searchLink) return;
     event.preventDefault();
     if (searchLink.getAttribute("aria-current") === "page") {
-      document.querySelector<HTMLInputElement>(".pagefind-ui__input")?.focus();
+      document.querySelector<HTMLInputElement>(".pagefind-ui__search-input")?.focus();
     } else {
       try {
         sessionStorage.setItem("pw-focus-search", "1");
