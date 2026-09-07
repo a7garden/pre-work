@@ -6,6 +6,22 @@ import Icon from "../components/Icon.astro";
 const latest = issues[0];
 const rest = issues.slice(1);
 const total = issues.reduce((n, i) => n + i.minutes, 0);
+
+/* "지금 이어지는 시리즈" — 가장 최근에 발행된 시리즈를 보여 준다.
+ * 같은 시리즈의 호들을 오래된 순으로 모아 읽는 순서를 그대로 보여 준다. */
+const seriesGroups = new Map<string, typeof issues>();
+for (const issue of issues) {
+  if (!issue.series) continue;
+  const list = seriesGroups.get(issue.series) ?? [];
+  list.push(issue);
+  seriesGroups.set(issue.series, list);
+}
+const activeSeriesName = [...seriesGroups.entries()]
+  .map(([name, list]) => ({ name, latest: Math.max(...list.map((i) => i.no)) }))
+  .sort((a, b) => b.latest - a.latest)[0]?.name;
+const activeSeries = activeSeriesName
+  ? [...(seriesGroups.get(activeSeriesName) ?? [])].sort((a, b) => a.no - b.no)
+  : [];
 ---
 
 <Layout
@@ -29,6 +45,31 @@ const total = issues.reduce((n, i) => n + i.minutes, 0);
       <span class="today__go">읽기 시작 <Icon name="arrow-right" size={16} /></span>
     </a>
   </header>
+
+  {activeSeries.length > 0 && (
+    <section class="workspace-section" aria-labelledby="active-series-heading">
+      <div class="section-title">
+        <div>
+          <p class="mono">지금 이어지는 시리즈</p>
+          <h2 id="active-series-heading">{activeSeriesName}</h2>
+        </div>
+        <a class="section-title__meta mono" href="/about/#series-catalog">전체 시리즈 {seriesGroups.size}개 <Icon name="arrow-right" size={16} /></a>
+      </div>
+      <aside class="issue__series active-series">
+        <p class="mono">시리즈 · {activeSeriesName} · {activeSeries.length}편 진행 중</p>
+        <ol>
+          {activeSeries.map((s) => (
+            <li aria-current={s.no === latest.no ? "page" : undefined}>
+              <a href={`/read/${s.no}/`}>
+                <span class="mono">제{s.no}호</span>
+                <span>{s.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </aside>
+    </section>
+  )}
 
   <section class="workspace-section" aria-labelledby="archive-heading">
     <div class="section-title">

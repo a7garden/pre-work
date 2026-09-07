@@ -1,6 +1,46 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Icon from "../components/Icon.astro";
+import { issues } from "../data/issues";
+
+/* 시리즈 카탈로그 — 같은 series를 묶어 회차 수와 첫·최근 호를 함께 보여 준다. */
+type CatalogRow = {
+  name: string;
+  count: number;
+  earliest: number;
+  latest: number;
+  latestDate: string;
+  latestTitle: string;
+};
+const seriesCatalog: CatalogRow[] = (() => {
+  const groups = new Map<string, typeof issues>();
+  for (const issue of issues) {
+    if (!issue.series) continue;
+    const list = groups.get(issue.series) ?? [];
+    list.push(issue);
+    groups.set(issue.series, list);
+  }
+  const rows: CatalogRow[] = [];
+  for (const [name, list] of groups) {
+    const sorted = [...list].sort((a, b) => a.no - b.no);
+    const first = sorted[0];
+    const latest = sorted[sorted.length - 1];
+    rows.push({
+      name,
+      count: sorted.length,
+      earliest: first.no,
+      latest: latest.no,
+      latestDate: latest.date,
+      latestTitle: latest.title,
+    });
+  }
+  /* 최근 호 번호가 큰 시리즈가 위로 */
+  rows.sort((a, b) => b.latest - a.latest);
+  return rows;
+})();
+
+const totalMinutes = issues.reduce((n, i) => n + i.minutes, 0);
+const distinctTags = new Set(issues.flatMap((i) => i.tags)).size;
 ---
 <Layout
   title="소개"
@@ -26,17 +66,42 @@ import Icon from "../components/Icon.astro";
     </ol>
     <p><a href="https://github.com/a7garden/pre-work/issues/new?template=publish.yml">GitHub 이슈로 칼럼 요청하기 →</a></p>
 
+    <h2 id="series-catalog">지금까지의 시리즈</h2>
+    <p>
+      같은 주제로 이어지는 호들은 시리즈로 묶여 있습니다. 회차 수와 최근 호는
+      발행 현황을 그대로 보여 줍니다 — 최근에 발행된 시리즈가 위쪽에 놓입니다.
+    </p>
+    <ol class="series-catalog">
+      {seriesCatalog.map((row) => (
+        <li>
+          <a href={`/read/${row.latest}/`} class="series-catalog__link">
+            <span class="series-catalog__name">{row.name}</span>
+            <span class="series-catalog__meta mono">
+              <span>{row.count}편</span>
+              <span>제{row.earliest}호 → 제{row.latest}호</span>
+              <span>{row.latestDate}</span>
+            </span>
+            <span class="series-catalog__latest">{row.latestTitle}</span>
+            <span class="series-catalog__arrow"><Icon name="arrow-right" size={16} /></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+
     <h2>아카이브에 대하여</h2>
     <p>
       지금의 아카이브는 2026년 9월 개편에서 개인 학습 노트를 칼럼으로 전면
       재편해 이관한 것입니다. 호의 날짜는 이관 시의 연재 순서를 나타냅니다.
+      현재까지 <strong>{issues.length}편</strong>이 발행되어 있고, 누적 읽기 시간은
+      약 <strong>{totalMinutes}분</strong>, 사용된 태그는
+      <strong>{distinctTags}개</strong>입니다.
     </p>
 
     <h2>같이 읽기</h2>
     <ul>
       <li><a href="/rss.xml"><Icon name="rss" size={16} />RSS 구독</a> — 매일 아침 한 편</li>
       <li><a href="/tags/"><Icon name="tag" size={16} />태그</a> — 주제별로 그동안의 호를 모아 봅니다</li>
-      <li><a href="/search/"><Icon name="search" size={16} />검색</a> — 전체 아카이브에서 찾기</li>
+      <li><a href="/search/"><Icon name="search" size={16} />검색</a> — 전체 아카이브에서 찾습니다</li>
     </ul>
   </div>
 </Layout>
