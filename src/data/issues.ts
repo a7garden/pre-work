@@ -25,6 +25,809 @@ export type Issue = {
 };
 export const issues: Issue[] = [
   {
+    no: 59,
+    date: "2026.10.09",
+    weekday: "금",
+    title: "unsafe 블록을 두는 기준 — 검토 가능한 범위, wrap-as-safe 패턴",
+    dek: "unsafe는 없애는 게 아니라 좁히는 것이다. 블록 범위를 줄이고 불변식을 주석으로 남기는 관행, 안전한 껍질로 감싸는 패턴까지 정리한다.",
+    minutes: 9,
+    tags: ["Rust", "안전성", "언어 내부"],
+    takeaway: "unsafe의 단위는 라인이 아니라 불변식이다 — 검토할 조건이 명시된 가장 좁은 블록만 남긴다.",
+    blocks: [
+      {
+        type: "p",
+        text: "unsafe 키워드가 하는 일은 위험한 코드를 허용하는 것이 아니라, 컴파일러가 검증하지 못하는 조건을 프로그래머가 인수인계받았다는 표시다. Rust의 안전성 약속은 두 층으로 나뉜다. safe 코드는 타입 검사와 빌림 검사가 모든 실행 경로를 증명하고, unsafe 코드는 그 증명의 일부를 사람이 맡는다. \"아무거나 해도 된다\"가 아니라 \"이 조건이 참이어야 안전하다\"는 조건이 존재하는 방식이다. 그래서 unsafe를 평가하는 기준은 \"얼마나 많은가\"가 아니라 \"검토해야 할 조건이 얼마나 명확한가\"다."
+      },
+      {
+        type: "p",
+        text: "가장 기본적인 관행은 블록을 좁게 유지하는 것이다. 함수 전체를 unsafe fn으로 만드는 대신, 포인터 역참조처럼 검증 불가능한 연산이 실제로 일어나는 두세 줄만 감싼다. 블록이 좁을수록 리뷰어가 읽어야 할 범위가 줄고, 나머지 코드는 컴파일러가 여전히 전부 검증한다. 아래 예에서 호출자에게 넘겨야 할 불변식은 딱 하나다 — 포인터가 유효한 메모리를 가리킨다는 것."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "검토 대상인 연산만 블록으로 좁힌다",
+        content: "pub fn as_slice<'a>(ptr: *const u8, len: usize) -> &'a [u8] {\n    assert!(!ptr.is_null());\n    assert!(len <= isize::MAX as usize);\n    // SAFETY: 호출자는 ptr이 len 길이의 읽기 가능한 메모리를\n    // 가리킨다는 것을 보증해야 한다 — 시그니처로는 강제되지 않는다.\n    unsafe { std::slice::from_raw_parts(ptr, len) }\n}"
+      },
+      {
+        type: "p",
+        text: "두 번째 관행은 안전성 주석이다. 표준 라이브러리 개발 가이드가 정착시킨 규칙으로, unsafe 블록이나 unsafe impl 앞에 SAFETY 주석으로 \"이 코드가 왜 지금 조건을 만족하는지\"를 적는다. 주석이 없는 unsafe는 코드가 아니라 미확인 부채다. 리뷰어는 이 주석을 읽고 필요조건이 실제로 참인지 검토하고, 조건이 깨지는 커밋이 오면 주석이 깨진 이유를 먼저 드러낸다."
+      },
+      {
+        type: "p",
+        text: "세 번째가 wrap-as-safe 패턴이다. unsafe 연산은 비공개 안에 가두고, 공개 API는 안전한 함수로 둔다. 필요조건은 공개 함수의 입구에서 검사하거나 타입으로 강제한다. 호출자는 unsafe를 전혀 보지 않고, 검토할 조건은 한 곳에 모인다. 표준 라이브러리의 get_unchecked 같은 원시 도구가 있는데도 평소 unsafe를 안 쓰는 이유다 — 대부분은 검사를 더한 안전한 래퍼로 충분하다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "wrap-as-safe — unsafe는 비공개에, 검사는 공개 입구에",
+        content: "pub fn get(table: &[Row], i: u32) -> Option<&Row> {\n    if (i as usize) < table.len() {\n        // SAFETY: 바로 위의 검사로 인덱스가 범위 안에 있음이 증명됐다.\n        Some(unsafe { table.get_unchecked(i as usize) })\n    } else {\n        None\n    }\n}\n// 호출자는 unsafe를 보지 않는다 — 검토할 조건은 이 한 곳에 모인다."
+      },
+      {
+        type: "p",
+        text: "2024 에디션부터는 unsafe fn 몸통 안의 unsafe 연산에도 별도 블록을 요구하는 경고가 기본으로 켜진다(unsafe_op_in_unsafe_fn). 시그니처의 unsafe가 \"몸통 전체가 위험하다\"가 아니라 \"호출자에게 불변식을 인계받는다\"를 뜻하도록 좁힌 것이다. 불변식의 위치를 정확히 적던 문화가 언어 기본값으로 스며든 사례다. 결국 unsafe를 다루는 기술은 새로운 지식이 아니라 회계다 — 어디까지 검토했는지를 남기는 일."
+      },
+      {
+        type: "quiz",
+        question: "안전한 래퍼가 unsafe 연산을 감쌌을 때, 그 래퍼가 안전한 근거는?",
+        options: [
+          "unsafe 키워드를 쓰지 않았기 때문에",
+          "런타임 가드가 자동으로 설치되기 때문에",
+          "입구에서 필요조건을 검사하거나 타입으로 강제했기 때문에",
+          "컴파일러가 unsafe 블록을 무시하기 때문에"
+        ],
+        answer: 2,
+        explain: "래퍼가 safe인 이유는 unsafe가 사라져서가 아니라, 불변식이 입구에서 증명되기 때문이다. 검사가 빠진 래퍼는 안전해 보이는 가장 위험한 코드가 된다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/nomicon/safe-unsafe-meaning.html",
+        label: "The Rustonomicon",
+        title: "What Safe and Unsafe Really Mean",
+        detail: "safe와 unsafe의 경계가 정확히 무엇을 보증하는지 정의."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/book/ch20-01-unsafe-rust.html",
+        label: "The Rust Programming Language",
+        title: "Unsafe Rust",
+        detail: "블록·함수·트레이트별 unsafe 단위 정리."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자기 프로젝트에서 unsafe를 검색해 본다 — 블록마다 SAFETY 주석이 붙어 있는지, 블록 범위가 실제 필요 연산만 담는지 점검한다. 주석이 없다면 오늘 하나 붙여 본다. 주석을 쓰다 막히는 지점이 곧 검토되지 않은 불변식이다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 58,
+    date: "2026.10.08",
+    weekday: "목",
+    title: "mpsc 채널과 크로스비어 메시징 — tokio::sync::mpsc와 std::sync::mpsc의 차이",
+    dek: "이름은 같은 multi-producer, single-consumer. recv가 스레드를 멈추는가, await로 양보하는가 — 런타임에 숨길 수 없는 차이를 정리한다.",
+    minutes: 9,
+    tags: ["Rust", "동시성", "비동기"],
+    takeaway: "블로킹 채널과 논블로킹 채널은 API가 비슷해도 기다리는 방식이 다르다 — 비동기 코드에서 recv가 스레드를 점유하면 런타임이 굶는다.",
+    next: "unsafe를 어디까지 좁힐 것인가 — 검토 가능한 경계와 안전한 껍질.",
+    blocks: [
+      {
+        type: "p",
+        text: "mpsc는 multi-producer, single-consumer의 약자다. Sender는 여러 개 클론해 생산자가 늘어나고, Receiver는 하나뿐이라 소비 순서가 꼬이지 않는다. std::sync::mpsc와 tokio::sync::mpsc가 이 모양을 그대로 공유한다. 그러나 두 채널의 메서드가 \"기다리는\" 방식이 다르고, 이 차이는 성능 미세조정이 아니라 코드가 통하는 세계를 가른다."
+      },
+      {
+        type: "p",
+        text: "std 버전의 recv는 스레드를 재운다. 메시지가 올 때까지 그 OS 스레드는 아무것도 하지 못한다. 채널 하나만 기다리는 전용 소비 스레드라면 문제가 없다. 그러나 비동기 런타임 위의 async 함수 안에서 이 코드를 부르면 이야기가 달라진다. 런타임은 소수의 스레드에 수많은 작업을 번갈아 얹어 돌리는데, 워커 하나가 recv로 멈추면 그 스레드에 얹힌 다른 작업까지 전부 대기에 갇힌다. 채널이 비어 있을 뿐인데 시스템 전체가 멈춘 것처럼 보이는 장면이 여기서 나온다."
+      },
+      {
+        type: "p",
+        text: "tokio 버전은 같은 자리에서 recv().await를 부른다. 메시지가 없으면 작업만 양보하고 스레드는 다른 작업을 돌린다. 메시지가 도착하면 런타임이 그 작업을 깨워 다시 얹는다. 용량도 다르다. std의 channel은 무제한 큐고(sync_channel(n)으로 경계를 만든다), tokio의 channel(n)은 처음부터 용량이 있다. 큐가 가득 차면 send().await가 여유 슬롯을 기다린다 — 생산자가 자연스럽게 소비자 속도에 맞춰지는 역압력이다. unbounded_channel도 있지만 문서가 분명히 경고한다. 소비가 밀리면 메모리가 커진다고. 무제한 큐는 기본이 아니라 예외다."
+      },
+      {
+        type: "table",
+        caption: "같은 이름, 다른 대기 방식",
+        head: ["", "std::sync::mpsc", "tokio::sync::mpsc"],
+        rows: [
+          ["대기 방식", "recv()가 스레드를 재운다", "recv().await가 작업만 양보한다"],
+          ["기본 용량", "무제한 (sync_channel(n)으로 경계)", "channel(n)이 기본, unbounded_channel은 별도"],
+          ["역압력", "생산자가 그대로 밀어 넣는다", "가득 차면 send().await가 여유 슬롯을 기다린다"],
+          ["맞는 자리", "전용 소비 스레드", "비동기 작업 안"]
+        ]
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "tokio mpsc — 용량이 곧 역압력이다",
+        content: "let (tx, mut rx) = tokio::sync::mpsc::channel::<Job>(256);\n\nfor worker in 0..4 {\n    let tx = tx.clone(); // 생산자는 여러 개\n    tokio::spawn(async move {\n        loop {\n            let job = next_job(worker).await;\n            if tx.send(job).await.is_err() {\n                break; // 수신자가 닫히면 에러\n            } // 큐가 가득하면 이 줄에서 양보한다\n        }\n    });\n}\n\nwhile let Some(job) = rx.recv().await { // 소비자는 하나\n    process(job).await;\n}"
+      },
+      {
+        type: "p",
+        text: "선택 기준은 \"누가 기다리는가\"다. 소비자가 자기 전용 스레드면 std로 충분하고 런타임도 필요 없다. 소비자가 async 함수 안에 있으면 tokio 쪽이 정답이다. 동기 세계와 비동기 세계를 둘 다 건너야 한다면 한 곳으로 모은다 — 동기 쪽 생산자들이 std 채널로 메시지를 밀고, 전용 스레드 하나가 그것을 받아 다시 tokio 채널로 흘려넣는 다리를 두는 식이다. 두 세계를 잇는 코드는 한 곳에만 두는 것이 검토에도 유리하다."
+      },
+      {
+        type: "quiz",
+        question: "async 작업 안에서 std::sync::mpsc의 recv를 그대로 부르면 생기는 일은?",
+        options: [
+          "컴파일 에러가 난다",
+          "메시지가 유실된다",
+          "자동으로 await로 변환된다",
+          "워커 스레드가 블록돼 같은 스레드의 다른 작업까지 멈춘다"
+        ],
+        answer: 3,
+        explain: "std 채널의 recv는 타입으로도 잡히지 않고 스레드를 재운다. 비동기 런타임의 워커 스레드가 통째로 멈추므로, 그 스레드를 공유하던 다른 작업들이 전부 영향을 받는다. 타입 오류가 아니라 성능·정합 문제로 드러나는 이유다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/sync/mpsc/index.html",
+        label: "std 문서",
+        title: "std::sync::mpsc",
+        detail: "블로킹 채널의 공식 문서."
+      },
+      {
+        type: "link",
+        href: "https://docs.rs/tokio/latest/tokio/sync/mpsc/index.html",
+        label: "Tokio 문서",
+        title: "tokio::sync::mpsc",
+        detail: "bounded 채널과 역압력, unbounded에 대한 경고."
+      },
+      {
+        type: "link",
+        href: "https://tokio.rs/tokio/tutorial/channels",
+        label: "Tokio 튜토리얼",
+        title: "Channels",
+        detail: "mpsc·oneshot·broadcast의 용도 구분."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자기 비동기 코드에서 채널 호출 하나를 골라 따라가 본다 — recv가 await 없이 불리고 있지 않은지, send는 큐가 가득 찰 때 무엇을 하는지. async 함수 안에 std 채널이 있다면 오늘 tokio 채널로 옮겨 본다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 57,
+    date: "2026.10.07",
+    weekday: "수",
+    title: "라이프타임의 의미 — 빌림 검사기가 실제로 보는 것, 두 빌림의 공존",
+    dek: "라이프타임 어노테이션은 수명을 늘리거나 줄이지 않는다. 빌림 검사기가 참조가 사는 구간을 어떻게 계산하는지, 규칙 두 줄로 무엇이 허용되고 거부되는지 정리한다.",
+    minutes: 9,
+    tags: ["Rust", "타입 시스템", "언어 내부"],
+    takeaway: "라이프타임은 참조의 설명이지 설정이 아니다 — 어노테이션은 관계에 이름을 붙이고, 검사기는 사용 지점에서 구간을 계산한다.",
+    next: "스레드를 건너는 메시지 큐 — std와 tokio의 mpsc 채널.",
+    blocks: [
+      {
+        type: "p",
+        text: "빌림의 규칙은 두 줄이다. 임의 개수의 불변 빌림(&T)이 동시에 존재할 수 있거나, 정확히 하나의 가변 빌림(&mut T)이 존재할 수 있다 — 둘은 섞이지 않는다. 이 규칙이 쓰는 도중에 깨지는 이터레이터와 데이터 경쟁을 컴파일 타임에 지운다. 런타임 검사도 가비지 컬렉터도 없다. 참조가 살아 있는 구간이 컴파일 타임에 계산되기 때문이다."
+      },
+      {
+        type: "p",
+        text: "흔한 오해부터 바로잡는다. 'a 같은 어노테이션은 수명을 만들거나 바꾸지 않는다. 참조가 실제로 사는 구간은 코드가 결정하고, 어노테이션은 여러 참조의 구간 사이 관계에 이름을 붙이는 매개변수다. 표준 문서의 대표 예가 이것을 보여 준다 — longest 함수는 두 문자열 참조 중 긴 쪽을 돌려주는데, 반환 참조가 어느 입력의 수명을 따르는지 컴파일러가 알아야 한다. 'a는 \"두 입력이 공통으로 살아 있는 구간\"의 이름이고, 반환값은 그 구간 안에서만 유효하다고 검사가 일어난다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "'a는 구간의 이름이지 길이 지정이 아니다",
+        content: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {\n    if x.len() > y.len() { x } else { y }\n}\n\nlet s1 = String::from(\"long string\");\nlet result;\n{\n    let s2 = String::from(\"small\");\n    result = longest(&s1, &s2); // 'a는 s2가 살아 있는 구간까지\n} // s2 해제\n// println!(\"{result}\"); — 거부: result는 여기서 이미 죽은 대상을 가리킨다"
+      },
+      {
+        type: "p",
+        text: "초기 Rust는 이 구간을 중괄호 스코프로 계산했다 — 스코프가 끝나야 참조가 죽는 방식이라, 다시 쓸 일이 없어도 끝까지 살아 있었다. 2018 에디션의 NLL(non-lexical lifetimes)이 이 계산을 사용 지점 기반으로 바꿨다. 참조는 마지막으로 쓰이는 지점까지 살아 있고, 그 뒤로는 원본을 다시 빌릴 수 있다. 빌린 값을 읽고 나서 벡터에 push하는 흔한 코드가 통과된 것은 이 변화 덕분이다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "NLL — 마지막 사용이 빌림의 끝이다",
+        content: "let mut scores = vec![3, 1, 4];\nlet first = &scores[0];\nprintln!(\"{first}\"); // first의 마지막 사용 — 여기서 빌림이 끝난다\nscores.push(1);      // &mut와 겹치지 않으므로 통과\n\nlet first = &scores[0];\nscores.push(1);      // 거부 — 아래에서 first를 또 쓴다\nprintln!(\"{first}\"); // error: borrow later used here"
+      },
+      {
+        type: "p",
+        text: "빌림 검사기의 계산은 제어 흐름 그래프 위에서 일어난다. 컴파일러는 중간 표현(MIR)에서 각 참조가 어느 프로그램 지점에서 살아 있어야 하는지 도달 가능성으로 계산하고, 지점마다 빌림이 겹치는지 확인한다. 그래서 같은 코드라도 분기 구조에 따라 통과하기도 거부되기도 한다. 거부 메시지가 \"borrow later used here\"를 가리키는 이유도 이것이다 — 문제는 어노테이션이 아니라 그 지점에서 참조가 아직 살아 있다는 사실이다. 에러를 읽는 요령도 정해진다. 어노테이션을 고치는 것이 아니라, 마지막 사용을 앞당기면 된다. 변수를 나누거나, 중괄호로 범위를 줄이거나, 필요한 값만 클론하는 것."
+      },
+      {
+        type: "quiz",
+        question: "let first = &v[0]; 다음에 v.push(4);가 오고, 그다음 줄에서 first를 출력하는 코드의 결과는?",
+        options: [
+          "정상적으로 1이 출력된다",
+          "런타임 패닉이 일어난다",
+          "컴파일 거부 — first가 push 이후에도 살아 있어 가변 빌림과 겹친다",
+          "경고만 출력되고 통과한다"
+        ],
+        answer: 2,
+        explain: "first의 마지막 사용이 push 뒤의 출력이므로 그 시점까지 불변 빌림이 살아 있고, push의 &mut와 겹쳐 규칙을 어긴다. 출력을 push 앞으로 옮기면 NLL이 통과시킨다 — 구간은 사용 지점으로 계산되기 때문이다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html",
+        label: "The Rust Programming Language",
+        title: "Validating References with Lifetimes",
+        detail: "elision 규칙과 longest 예제가 나오는 공식 챕터."
+      },
+      {
+        type: "link",
+        href: "https://rustc-dev-guide.rust-lang.org/borrow_check.html",
+        label: "Rust Compiler Development Guide",
+        title: "Borrow checking",
+        detail: "MIR 기반 빌림 검사의 실제 계산 방식."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "최근에 빌림 오류로 거부된 코드 하나를 떠올린다 — 어노테이션을 고치려 했는지, 마지막 사용을 앞당겼는지. 다음에는 마지막 사용부터 찾는다. 변수를 나누고 중괄호로 범위를 줄이면 어노테이션 없이 풀리는 경우가 대부분이다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 56,
+    date: "2026.10.06",
+    weekday: "화",
+    title: "매크로 101 — declarative vs procedural, derive가 매크로인 이유",
+    dek: "매크로는 컴파일 도중 코드를 생성하는 코드다. 토큰을 패턴으로 받는 선언 매크로와 TokenStream을 다루는 절차 매크로, 그리고 derive가 매크로인 이유를 정리한다.",
+    minutes: 9,
+    tags: ["Rust", "도구", "언어 내부"],
+    takeaway: "매크로의 입력은 토큰이고 출력은 코드다 — 함수가 값을 다루는 동안 매크로는 구문 트리를 다룬다.",
+    next: "빌림 검사기가 실제로 보는 것 — 라이프타임의 뜻.",
+    blocks: [
+      {
+        type: "p",
+        text: "함수와 매크로의 차이는 입력이다. 함수는 런타임 값을 받아 값을 돌려주고, 매크로는 컴파일 타임에 토큰을 받아 새 코드를 만든다. vec![1, 2, 3]이 임의 개수의 인수를 받을 수 있는 이유가 이것이다. \"인수 개수 자체가 가변\"은 함수 시그니처로 표현할 수 없지만, 매크로는 패턴 매칭으로 받는다. assert_eq!가 두 값과 함께 실패 시의 표현식 자체를 받을 수 있는 것도 같은 이유다 — 값이 아니라 토큰을 받기 때문이다."
+      },
+      {
+        type: "p",
+        text: "선언 매크로(declarative, macro_rules!)는 패턴에 맞는 토큰 나열을 템플릿에 끼워 넣는다. matcher => expansion 규칙의 나열이며, $w:expr 같은 조각 지정자가 입력을 어떤 문법 조각으로 파싱할지 정한다. 확장 시점과 범위 규칙이 컴파일러에 정해져 있어 진입 비용이 낮다. 반복되는 보일러플레이트 — 테스트 케이스 나열, 비슷한 접근자 대량 생성 — 의 첫 도구다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "선언 매크로 — 패턴에 맞으면 템플릿이 확장된다",
+        content: "macro_rules! grid {\n    ($w:expr ; $h:expr) => {{\n        let mut rows = Vec::new();\n        for _ in 0..$h {\n            rows.push(vec![0.0; $w]);\n        }\n        rows\n    }};\n}\n\nlet map = grid!(8 ; 4); // 인수의 모양과 개수는 패턴이 정한다"
+      },
+      {
+        type: "p",
+        text: "절차 매크로(procedural)는 더 일반적이다. TokenStream을 입력으로 받아 임의의 코드를 출력하는 Rust 함수이고, 컴파일 타임에 그 함수가 실제로 실행된다. 파생 트리를 직접 다루므로 선언 매크로가 못 하는 변형도 가능하다. 세 종류가 있다. derive는 아이템 뒤에 새 아이템을 붙이고, 속성(attribute) 매크로는 아이템을 받아 가공해 돌려주고, 함수형(function-like) 매크로는 괄호 안의 임의 토큰을 받는다. 절차 매크로 크레이트는 proc-macro = true로 표시되어 별도로 컴파일된다 — 매크로가 자기 자신을 확장하는 재귀를 끊기 위해서다."
+      },
+      {
+        type: "p",
+        text: "derive가 매크로인 이유는 단순하다. #[derive(Debug)]가 하는 일은 구조체의 필드를 하나씩 꺼내 Debug 구현을 작성하는 것인데, 이는 언어에 내장할 수 없는 임의의 코드 생성이다. derive 매크로는 원본 아이템의 토큰을 받아 impl 블록을 새 아이템으로 덧붙인다. 표준의 Debug와 외부의 직렬화 파생이 같은 메커니즘을 쓴다. 언어가 모든 타입의 직렬화를 미리 몰라도 되는 이유다. 생성 코드가 컴파일 오류로 드러나면 매크로 크레이트의 코드가 잘못 확장한 것이고, 생성 결과를 검토하려면 확장된 토큰을 보여 주는 도구로 확인한다."
+      },
+      {
+        type: "table",
+        caption: "두 축으로 나뉘는 매크로",
+        head: ["종류", "입력", "출력", "예"],
+        rows: [
+          ["선언 (macro_rules!)", "패턴에 맞는 토큰 나열", "템플릿 치환", "vec!, assert_eq!"],
+          ["derive", "아이템의 토큰", "impl 등 새 아이템 추가", "#[derive(Debug)]"],
+          ["속성 (attribute)", "아이템 + 속성 인수 토큰", "아이템 가공·교체", "#[tokio::main]"],
+          ["함수형 (function-like)", "괄호 안 임의 토큰", "임의 코드", "컴파일 타임 검사용 query! 계열"]
+        ]
+      },
+      {
+        type: "quiz",
+        question: "vec![1, 2, 3]이 함수가 아니라 매크로인 이유는?",
+        options: [
+          "함수 호출보다 빠르게 실행되기 때문에",
+          "인수 개수가 가변이라 함수 시그니처로 받을 수 없기 때문에",
+          "제네릭을 쓸 수 없기 때문에",
+          "표준 라이브러리 전용 문법이기 때문에"
+        ],
+        answer: 1,
+        explain: "매크로는 값이 아니라 토큰을 받는다. 개수가 정해지지 않은 인수 나열도 패턴으로 받아 반복문으로 확장할 수 있다. 함수는 이 표현이 불가능하다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/reference/macros-by-example.html",
+        label: "Rust Reference",
+        title: "Macros By Example",
+        detail: "선언 매크로의 문법과 조각 지정자."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/reference/procedural-macros.html",
+        label: "Rust Reference",
+        title: "Procedural Macros",
+        detail: "세 종류 절차 매크로의 정의."
+      },
+      {
+        type: "link",
+        href: "https://veykril.github.io/tlborm/",
+        label: "The Little Book of Rust Macros",
+        title: "TLBORM",
+        detail: "선언 매크로 패턴 기법을 깊게 다루는 온라인 책."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "최근에 세 번 이상 복사 붙여넣기한 코드 블록을 하나 찾는다 — 인수 나열의 반복이면 선언 매크로, 구조체마다 똑같은 impl이면 derive가 대안인지 따져 본다. 매크로는 중복 제거의 마지막 수단이지 첫 수단이 아니다. 함수·제네릭·트레이트로 안 되는지 먼저 확인한다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 55,
+    date: "2026.10.05",
+    weekday: "월",
+    title: "이터레이터 어댑터 비용 — collect·fold·map의 실제 차이, 어댑터 조합의 lazy",
+    dek: "map 뒤에 filter를 붙여도 루프는 하나다. 어댑터가 게으른 이유, collect가 실제로 하는 일, 그리고 비용이 커지는 조합의 모양을 정리한다.",
+    minutes: 9,
+    tags: ["Rust", "성능", "이터레이터"],
+    takeaway: "어댑터 체인은 조립이고 소비자가 트리거다 — 비용은 중간 단계가 아니라 무엇을 얼마나 모으느냐에서 나온다.",
+    next: "코드를 생성하는 코드 — 선언 매크로와 절차 매크로.",
+    blocks: [
+      {
+        type: "p",
+        text: "이터레이터 어댑터는 게으르다. map, filter, take는 호출 시점에 아무것도 계산하지 않고, 자기 자신을 감싼 새 이터레이터를 돌려줄 뿐이다. 실제 작업은 next()를 부르는 소비자 — for, collect, fold, sum — 가 시작한다. 표준 문서도 이 지연 평가를 명시적으로 경고한다. 어댑터만 붙여 놓은 코드는 실행되지 않는다는 뜻이다. 디버깅하다가 \"map이 안 돌았다\"고 느꼈다면 대개 소비자가 없는 것이다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "어댑터는 조립이고, 소비자가 트리거다",
+        content: "// 아직 아무 일도 일어나지 않는다\nlet evens = (0..1_000_000).map(|x| x * 2).filter(|x| x % 4 == 0);\n\nlet total: i64 = evens.sum(); // 소비자가 next()를 돌려야 루프가 돈다\n\n// 느려지는 모양: 중간 수집\nlet v: Vec<i32> = (0..n).map(f).collect();        // 첫 번째 벡터\nlet w: Vec<i32> = v.into_iter().map(g).collect(); // 두 번째 벡터 — 또 쓴다"
+      },
+      {
+        type: "p",
+        text: "조립된 체인은 단형화(monomorphization)를 거쳐 하나의 루프로 합쳐진다. map과 filter와 sum의 조합은 \"원소를 꺼내고, 조건을 보고, 더하는\" 중첩 없는 코드가 된다. 인덱스로 벡터를 순회할 때마다 지워야 했던 경계 검사도 이터레이터는 애초에 하지 않는다. 손으로 쓴 루프와 같은 기계어가 나오는 경우가 많다는 이야기가 반복되는 이유다. 다만 \"항상\"은 아니고, 클로저가 인라인되지 못하거나 부작용이 많으면 달라진다 — 측정이 답이다."
+      },
+      {
+        type: "p",
+        text: "비용이 붙는 곳은 어댑터가 아니라 수집이다. collect::<Vec<_>>()는 중간 컬렉션을 만든다. 이터레이터가 주는 크기 힌트(size_hint)가 정확하면 Vec은 처음부터 필요한 용량을 확보해 재할당이 없고, 부정확하면 늘어나면서 재할당과 복사가 반복된다. 그리고 체인 사이에 collect를 여러 번 끼우면 각 지점마다 벡터가 새로 만들어진다. collect 직후 into_iter로 이어지는 코드가 성능 검토에서 가장 흔히 지목되는 모양인 이유다."
+      },
+      {
+        type: "table",
+        caption: "소비자별 비용 포인트",
+        head: ["소비자", "하는 일", "비용 포인트"],
+        rows: [
+          ["collect", "원소를 컬렉션으로 모은다", "힌트가 정확하면 사전 확보, 부정확하면 재할당"],
+          ["fold", "중간 컬렉션 없이 누산", "접는 함수가 복잡해지면 가독성이 희생된다"],
+          ["for", "손으로 쓴 루프", "가장 읽기 쉽고, 성능은 대개 체인과 같다"],
+          ["sum·count", "집약만 한다", "최종 값만 남으므로 수집 비용이 없다"]
+        ]
+      },
+      {
+        type: "p",
+        text: "fold는 누산기라는 점이 다르다. 중간 컬렉션 없이 원소를 하나씩 상태에 접어 넣는다. 여러 단계를 거쳐야 할 때도 접는 함수 안에서 해결되면 fold 한 번으로 끝난다. 다만 체인이 길어질수록 map과 filter 조합이 읽기 쉽고, 컴파일러가 대부분 같은 코드로 합쳐 준다. 순서는 정해져 있다. 먼저 읽기 쉽게 쓰고, 측정해서 느린 지점만 손본다. 어댑터 체인을 손 루프로 \"최적화\"하는 일은 측정 전에는 하지 않는다."
+      },
+      {
+        type: "quiz",
+        question: "map(x * 2).filter(조건).sum()이 map(x * 2).collect::<Vec<_>>().into_iter().filter(조건).sum()보다 나은 이유는?",
+        options: [
+          "어댑터가 더 빠른 함수를 쓰기 때문에",
+          "중간 벡터와 재할당이 없고 전체가 하나의 루프로 합쳐지기 때문에",
+          "자동으로 병렬화되기 때문에",
+          "정수 연산이라 특별 취급되기 때문에"
+        ],
+        answer: 1,
+        explain: "차이는 어댑터가 아니라 수집이다. 중간 collect는 벡터 할당과 재할당, 캐시 왕복을 만들고, 체인을 잇는 버전은 중간 저장소 없이 원소 단위로 흘려 보낸다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/iter/index.html",
+        label: "std 문서",
+        title: "std::iter",
+        detail: "지연 평가와 세 종류 메서드(어댑터·소비자)의 공식 정리."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/book/ch13-04-performance.html",
+        label: "The Rust Programming Language",
+        title: "Comparing Performance: Loops vs. Iterators",
+        detail: "루프와 이터레이터가 같은 코드로 합쳐지는 과정."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자기 코드에서 .collect()를 검색해 그다음 줄이 다시 이터레이터 메서드로 시작하는지 본다 — collect().into_iter() 모양이면 체인으로 이어 붙여 중간 벡터를 없애 본다. 남은 collect에는 정말 컬렉션이 필요한지도 확인한다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 54,
+    date: "2026.10.02",
+    weekday: "금",
+    title: "Result의 From 변환 — ? 연산자의 자동 변환, 사용자 에러와 From 구현",
+    dek: "?는 에러를 만나면 From::from으로 바꿔 돌려준다. 이 자동 변환이 함수 경계를 잇는 방법과, 사용자 에러 타입에 From을 붙이는 기준을 정리한다.",
+    minutes: 8,
+    tags: ["Rust", "타입 시스템", "에러 처리"],
+    takeaway: "?는 문법 설탕이 아니라 계약이다 — 함수가 돌려주는 에러 타입에 From으로 도달할 수 있어야 통과한다.",
+    next: "map 뒤에 collect를 붙이는 순간 — 이터레이터 어댑터의 실제 비용.",
+    blocks: [
+      {
+        type: "p",
+        text: "? 연산자의 실제 동작은 짧다. Result가 Ok면 값을 꺼내고, Err면 그 에러를 From::from으로 변환해 함수에서 즉시 돌려준다. 내부 잔여 타입(residual)을 거치는 최신 구현이 있지만 사용자가 보는 계약은 이것 하나다. 이 자동 변환 덕분에 IO 에러와 파싱 에러를 다루는 함수가 하나의 사용자 에러 타입으로 돌려줄 수 있다. 각 라이브러리 에러마다 match를 쓰지 않아도 되는 이유다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "?는 Err(e)를 From::from(e)로 바꿔 조기 반환한다",
+        content: "fn read_config(path: &str) -> Result<Config, AppError> {\n    let text = fs::read_to_string(path)?; // io::Error를 From으로 변환\n    let value = text.parse::<Config>()?;  // 파싱 에러도 같은 경로\n    Ok(value)\n}\n\n// ?의 실제 모양\nmatch fs::read_to_string(path) {\n    Ok(v) => v,\n    Err(e) => return Err(From::from(e)),\n}"
+      },
+      {
+        type: "p",
+        text: "From 트레이트는 변환의 표준 이름이다. from 메서드 하나뿐이고, 잃지 않는 변환에 쓴다. std는 흔한 조합의 From 구현을 이미 여럿 갖고 있다 — 문자열에서 Box<dyn Error>를 만드는 구현 같은 다리들이다. 그리고 From이 있으면 반대 방향 Into가 공짜다. 표준 규칙은 이렇다. From을 구현하라, Into는 그것으로 충분하다."
+      },
+      {
+        type: "p",
+        text: "사용자 에러 타입 설계의 기본형은 열거형이다. 함수가 속한 모듈 바깥으로 에러가 나가면 표준 에러 타입을 그대로 쓰기보다 자기 타입으로 포장하고, 원인 에러마다 From을 구현한다. 그러면 ?가 경계를 자동으로 잇는다. 변형마다 원인을 보관하므로 호출자는 매칭으로 원인을 꺼내 복구를 시도할 수 있다. 복구 가능성을 잃지 않으면서 여러 원인을 한 시그니처로 모으는 방법이다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "원인 에러마다 From을 붙이면 ?가 경계를 잇는다",
+        content: "enum AppError {\n    Io(std::io::Error),\n    Parse(std::num::ParseIntError),\n}\n\nimpl From<std::io::Error> for AppError {\n    fn from(e: std::io::Error) -> Self { AppError::Io(e) }\n}\nimpl From<std::num::ParseIntError> for AppError {\n    fn from(e: std::num::ParseIntError) -> Self { AppError::Parse(e) }\n}\n// read_config의 ? 두 개가 이제 컴파일된다"
+      },
+      {
+        type: "p",
+        text: "무조건 From을 다는 것이 능사는 아니다. 변환이 정보를 잃으면 포장이 맞다 — 문맥을 추가하는 래퍼(무엇을 하다가 실패했는지)가 복구에 더 유용할 때가 많다. 또 ?의 자동 변환은 \"함수 시그니처의 에러 타입으로 From이 도달 가능\"만 본다. 시그니처가 Box<dyn Error>면 모든 From이 통과된다 — 프로토타입에는 편하지만 매칭으로 복구할 수 없게 된다. 순서는 정해져 있다. 프로토타입은 Box<dyn Error>, 경계가 잡히면 자기 타입으로 좁힌다."
+      },
+      {
+        type: "quiz",
+        question: "fn f() -> Result<u32, AppError> 안에서 io::Error를 돌려주는 g()? 를 부르려면 무엇이 필요한가?",
+        options: [
+          "io::Error를 반드시 match로 수동 변환해야 한다",
+          "AppError가 From<io::Error>를 구현하고 있으면 ?가 자동 변환한다",
+          "io::Error는 다른 에러 타입으로 변환할 수 없다",
+          "?는 변환 없이 에러를 그대로 돌린다"
+        ],
+        answer: 1,
+        explain: "?의 조건은 Err(e)에 대해 From::from(e)가 함수의 에러 타입으로 도달 가능한지뿐이다. From<io::Error> for AppError가 있으면 자동 변환되고, 없으면 그때가 컴파일 에러다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/convert/trait.From.html",
+        label: "std 문서",
+        title: "std::convert::From",
+        detail: "From·Into의 관계와 구현 지침."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html",
+        label: "The Rust Programming Language",
+        title: "Recoverable Errors with Result",
+        detail: "? 연산자가 처음 소개되는 공식 챕터."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/reference/expressions/operator-expr.html",
+        label: "Rust Reference",
+        title: "The question mark operator",
+        detail: "?의 전개 규칙이 실린 레퍼런스."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자기 에러 열거형에 From 구현 개수를 세어 본다 — ?로 흘러들어 오는 원인 에러가 있는데 From이 없다면, match 수동 변환이 어디에 숨어 있는지 찾아 구현으로 바꿔 본다. 함수 시그니처에 Box<dyn Error>가 남아 있다면 오늘 하나 자기 타입으로 좁혀 본다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 53,
+    date: "2026.10.01",
+    weekday: "목",
+    title: "Send와 Sync를 다시 — std::marker의 의미, Rc가 !Send인 이유, 실수 패턴",
+    dek: "Send는 스레드를 건너는 소유권 이동, Sync는 &T의 동시 공유. 메서드 없는 자동 트레이트가 왜 Rc를 문으로 막는지, 컴파일러가 드러내는 실수 패턴까지 정리한다.",
+    minutes: 9,
+    tags: ["Rust", "동시성", "타입 시스템"],
+    takeaway: "Send와 Sync는 메서드가 없는 약속이다 — 타입이 스레드 경계를 넘는 방식을 타입 시스템이 기록한다.",
+    next: "? 연산자 뒤의 자동 변환 — 사용자 에러 타입을 잇는 From.",
+    blocks: [
+      {
+        type: "p",
+        text: "std::marker의 두 트레이트는 메서드가 하나도 없다. Send는 값의 소유권이 스레드 사이를 옮겨 갈 수 있다는 표시고, Sync는 &T 참조가 여러 스레드에서 동시에 보여도 안전하다는 표시다. 구현은 대부분 컴파일러가 자동으로 붙인다 — 자동 트레이트라서, 구성 요소가 다 Send면 조합도 Send다. 프로그래머가 unsafe impl로 직접 붙이는 경우는 원시 포인터처럼 컴파일러가 판단할 수 없는 타입뿐이다. 그리고 이 표시는 증명이 아니라 서명이다 — 틀리게 붙이면 컴파일러가 잡아 주지 않는다."
+      },
+      {
+        type: "p",
+        text: "두 트레이트의 관계는 두 줄이다. &T는 T가 Sync일 때만 Send다 — 참조를 다른 스레드에 넘겨도 된다는 것은 여러 스레드가 동시에 봐도 된다는 뜻과 같으니까. &mut T는 T가 Send일 때 Send다 — 배타적 소유라 공유 문제가 없다. 이 정의만으로 Rc의 운명이 정해진다."
+      },
+      {
+        type: "p",
+        text: "Rc의 참조 카운트는 비원자적 연산으로 올라간다. 두 스레드가 동시에 Rc를 클론하면 읽기-수정-쓰기가 겹쳐 카운트가 틀어지고, 틀어진 카운트는 이중 해제나 누수로 끝난다. 그래서 Rc는 !Send이자 !Sync로 표시된다 — 스레드 경계를 넘는 코드(spawn, 채널)는 타입 검사에서 거부된다. Arc는 같은 카운트를 원자적 연산으로 올리므로 Send+Sync다. 원자 연산 비용을 필요한 사람만 내는 설계다. 단일 스레드임이 분명한 곳에서 Rc를 쓰는 이유도 여기 있다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "컴파일러가 문을 지킨다 — 에러는 시그니처가 아니라 트레이트 경계를 가리킨다",
+        content: "let shared = Rc::new(42);\n// std::thread::spawn(move || {\n//     println!(\"{shared}\");\n// });\n// error[E0277]: `Rc<i32>` cannot be sent between threads safely\n//   required because it appears within the type `Rc<i32>`\n//   required for `Rc<i32>` to implement `Send`\n\nlet shared = Arc::new(42); // 원자적 카운트 — 이제 통과한다\nstd::thread::spawn(move || println!(\"{shared}\")).join().unwrap();"
+      },
+      {
+        type: "table",
+        caption: "대표 타입의 Send·Sync",
+        head: ["타입", "Send", "Sync", "이유"],
+        rows: [
+          ["Rc<T>", "아니오", "아니오", "비원자적 카운트"],
+          ["Arc<T>", "예 (T: Send + Sync)", "예 (T: Send + Sync)", "원자적 카운트"],
+          ["RefCell<T>", "예 (T: Send)", "아니오", "빌림 검사가 런타임 플래그로, 원자적이지 않다"],
+          ["Mutex<T>", "예 (T: Send)", "예 (T: Send)", "접근이 락으로 배타적이다"],
+          ["*const T", "아니오", "아니오", "유효성을 컴파일러가 알 수 없다"]
+        ]
+      },
+      {
+        type: "p",
+        text: "실수 패턴은 대개 두 가지다. 첫째, 채널이나 스레드 경계에서 Rc·RefCell 조합을 그대로 넘기려다 거부당한다. RefCell<T>는 T: Send면 Send지만 Sync가 아니다 — 빌림 규칙을 런타임 플래그로 검사하는데 그 플래그 갱신이 원자적이지 않아, 두 스레드가 동시에 닿으면 검사 자체가 깨진다. 같은 자리의 Mutex<T>는 이 검사를 원자적 락으로 하므로 Sync다. RefCell을 스레드에 넘겨야 한다면 의미상 Mutex여야 한다. 둘째, 에러 메시지를 읽지 않고 unsafe impl Send로 넘기는 것 — 이 표시는 타입 검사를 끄는 서명이므로, 잘못 붙이면 데이터 경쟁이 컴파일 타임의 안전망을 지나간다."
+      },
+      {
+        type: "quiz",
+        question: "RefCell<i32>가 스레드 사이의 &T 공유(Sync)에 안전하지 않은 이유는?",
+        options: [
+          "참조 카운트가 비원자적이라서",
+          "빌림 규칙 검사가 런타임 플래그로 이뤄지는데, 그 갱신이 원자적이지 않아서",
+          "크기가 커서",
+          "내부에 OS 락이 있어서"
+        ],
+        answer: 1,
+        explain: "RefCell은 컴파일 타임이 아니라 런타임 플래그로 빌림을 검사한다. 그 플래그 갱신이 원자적이지 않아 두 스레드가 동시에 접근하면 규칙 자체가 깨질 수 있다. Mutex는 이 검사를 원자적 락으로 한다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/marker/index.html",
+        label: "std 문서",
+        title: "std::marker",
+        detail: "Send·Sync의 공식 정의와 Copy 등 다른 마커들."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/nomicon/send-and-sync.html",
+        label: "The Rustonomicon",
+        title: "Send and Sync",
+        detail: "자동 트레이트의 전개와 unsafe impl의 기준."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자기 코드에서 스레드 경계(spawn, 채널, 스레드 풀)를 지나는 타입 목록을 만들어 본다 — 각각이 Send·Sync인 근거를 한 줄로 적으면, Arc와 Mutex가 붙은 자리가 원자 비용을 지불할 만한 자리였는지 판단할 수 있다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 52,
+    date: "2026.09.30",
+    weekday: "수",
+    title: "Pin과 자기참조 구조체 — async/await과 futures의 메모리 안전성",
+    dek: "async fn이 만드는 상태 기계는 자기 자신의 주소를 안에 저장한다. 움직이면 깨지는 이 구조를 Pin이 어떻게 금지하는지 정리한다.",
+    minutes: 10,
+    tags: ["Rust", "비동기", "언어 내부"],
+    takeaway: "Pin은 \"앞으로도 움직이지 않는다\"는 약속의 타입이다 — 자기참조 데이터가 async에서 안전해진 열쇠다.",
+    next: "Rc가 스레드를 넘지 못하는 이유 — Send와 Sync 마커 트레이트.",
+    blocks: [
+      {
+        type: "p",
+        text: "Rust의 참조는 대상이 자리를 옮기지 않는다고 가정한다. 그런데 async fn은 컴파일 타임에 상태 기계로 변형되고, await 지점 사이에 살아 남는 지역 변수가 그 상태가 된다. 문제는 이전 상태의 주소를 다음 상태가 들고 있는 경우다 — 자기참조 구조체. 어떤 지역 변수 buf의 참조를 이후 상태가 필드로 저장했다면, 이 상태 기계가 스택에서 힙으로 옮겨지는 순간 저장된 주소는 옛 자리를 가리킨다. 안전한 코드에서는 있을 수 없는 dangling 포인터가 실행기의 손을 거치며 만들어진다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "async fn은 await를 건너는 지역 변수를 상태로 만든다",
+        content: "async fn serve(&self, id: u32) -> Bytes {\n    let buf = self.load(id).await; // 첫 상태\n    let parsed = parse(&buf);      // buf의 주소가 상태에 저장될 수 있다\n    self.save(parsed).await;       // buf는 여기까지 살아 있어야 한다\n    parsed\n}\n// 이 상태 기계가 폴링 사이에 옮겨진다면\n// buf를 가리키던 주소는 옛 자리를 가리킨다"
+      },
+      {
+        type: "p",
+        text: "안전한 코드에서는 자기참조 구조체를 참조 필드로 만들 수 없다 — 참조가 원본의 수명을 따라가야 해서 같은 구조체 안에 원본과 참조를 함께 담는 것이 거부되기 때문이다. 그런데 컴파일러가 만드는 async 상태 기계는 이 모양이 필요하다. 그래서 타입 시스템에 새 축이 추가됐다. Unpin이다. 대부분의 타입은 Unpin이다 — 참조를 안 저장하므로 어디로 옮겨도 상관없다는 뜻이다. Unpin이 아닌 타입만 \"옮기면 안 된다\"는 특별한 종류가 되고, 컴파일러는 이 둘을 시그니처로 구분한다."
+      },
+      {
+        type: "p",
+        text: "Pin<P>는 \"P가 가리키는 값은 앞으로 다시 움직이지 않는다\"는 계약이다. 안전한 Pin::new는 Unpin 타입만 받는다 — 애초에 옮겨도 안전한 값이라 고정이 사실상 무의미하다. Unpin이 아닌 값을 고정하려면 Pin<Box<T>>나 Pin<&mut T>처럼 한번 박혀 나오지 않을 자리에 놓는다. 박스가 힙 주소를 유지하므로, 첫 폴링 이후 값의 주소가 바뀌지 않는 보장이 성립한다. 포인터 필드는 그 이후에도 여전히 옳은 자리를 가리킨다."
+      },
+      {
+        type: "p",
+        text: "Future 트레이트의 poll이 &mut self가 아니라 Pin<&mut Self>를 받는 이유가 이것이다. 실행기(executor)는 future를 폴링 사이에 옮겨야 한다 — 태스크를 깨우고, 다른 태스크를 돌리고, 다시 돌아와야 하니까. Pin 계약 덕분에 실행기는 첫 폴링 이후 주소가 바뀌지 않을 것을 알고, 자기참조 상태 기계를 안전하게 다룰 수 있다. async 함수가 돌려주는 future는 Unpin이 아니므로 Pin<Box<dyn Future>>가 이것을 저장하는 표준 형태가 됐다. 반면 일반 타입은 대부분 Unpin이라 이 복잡성을 평소 못 본다 — 못 본다기보다, 언어가 대부분의 경우를 기본값으로 흡수한 것이다."
+      },
+      {
+        type: "quiz",
+        question: "Pin::new(&mut value)가 런타임 검사 없이 컴파일 타임에 제한하는 것은?",
+        options: [
+          "value가 힙에 있어야 한다는 것",
+          "value가 Unpin이어야 한다는 것",
+          "value가 Sync이어야 한다는 것",
+          "value의 크기가 작아야 한다는 것"
+        ],
+        answer: 1,
+        explain: "Pin::new의 시그니처가 Unpin 타입만 받는다. Unpin이 아닌 값은 safe 코드에서 이 함수로 고정할 수 없고, Pin<Box<T>>처럼 주소가 고정되는 경로를 거쳐야 한다. 제약은 런타임이 아니라 타입 검사에 있다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/pin/index.html",
+        label: "std 문서",
+        title: "std::pin",
+        detail: "고정(pinning)의 공식 정의와 Unpin의 역할."
+      },
+      {
+        type: "link",
+        href: "https://rust-lang.github.io/async-book/03_async_await/01_chapter.html",
+        label: "Async Book",
+        title: "Async Await",
+        detail: "자기참조 구조체 문제가 소개되는 공식 비동기 책."
+      },
+      {
+        type: "link",
+        href: "https://os.phil-opp.com/async-await/",
+        label: "Writing an OS in Rust",
+        title: "Async/Await",
+        detail: "상태 기계 변형과 자기참조를 저수준에서 따라가는 글."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자기 비동기 코드에서 future를 담는 자료구조를 하나 찾아 본다 — Box::pin을 쓰고 있었다면 그 future가 Unpin이 아니어서였는지 따져 본다. 대부분의 값은 Unpin이다. 고정이 필요한 자리와 필요 없는 자리를 구분하는 것이 이 주제의 실무 해상도다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 51,
+    date: "2026.09.29",
+    weekday: "화",
+    title: "Cow가 느린 이유 — Clone-on-Write가 항상 복사를 피하는 건 아니다",
+    dek: "Cow는 빌렸을 때 복사를 피하는 타입이다. 그런데 to_mut이 닿는 순간 클론이 일어나고, 열거형이라는 몸집도 비용이 된다 — Cow가 느려지는 지점을 정리한다.",
+    minutes: 9,
+    tags: ["Rust", "성능", "메모리"],
+    takeaway: "Cow는 \"복사 안 함\"이 아니라 \"복사를 미룸\"이다 — 미뤄진 복사가 실제로 몇 번 일어나는지가 성능을 가른다.",
+    next: "await 사이에 사는 자기참조 상태 기계 — Pin이 움직임을 금지하는 이유.",
+    blocks: [
+      {
+        type: "p",
+        text: "Cow<'a, B>는 두 갈래 열거형이다. Borrowed(&B)면 빌린 것을 그대로 보여 주고, Owned(B::Owned)면 자기 소유 복사본을 든다. Deref가 두 갈래를 같은 B로 보이게 하므로 읽는 코드는 차이를 모른다. 읽기만 하는 경로에서는 복사가 전혀 없다 — 이것이 Cow의 설계 목적이다. 입력을 검사해서 \"바꿀 게 없으면 입력을 그대로 돌려주고, 바꿔야 할 때만 복사본을 만드는\" 함수가 대표적인 사용처다."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "변경이 필요 없는 경로가 지배할 때 Cow가 이긴다",
+        content: "fn sanitize(input: &str) -> Cow<'_, str> {\n    if needs_no_change(input) {\n        Cow::Borrowed(input) // 복사 없음 — 대부분의 호출이 여기\n    } else {\n        Cow::Owned(rewrite(input)) // 바뀔 때만 복사\n    }\n}"
+      },
+      {
+        type: "p",
+        text: "첫 번째 느려지는 지점은 to_mut이다. to_mut은 Borrowed 상태에서 불리는 첫 순간 클론한다. 한번 Owned로 바뀐 뒤의 재호출은 공짜지만, 복사가 필요 없을 거라 기대했던 경로에서 실제로는 거의 매번 to_mut이 닿는다면, 클론 비용은 그대로 내고 그것이 필요했는지 판단하던 지연이 헛된 것이 된다. Cow는 복사를 없애는 게 아니라 미루는 도구다. 미뤄진 복사가 실제로 덜 일어날 때만 이긴다. 수정이 대부분인 워크로드는 처음부터 Owned를 쓰는 게 빠르다."
+      },
+      {
+        type: "p",
+        text: "두 번째 지점은 몸집이다. 64비트 기준 &str은 16바이트(주소+길이), String은 24바이트(주소+길이+용량)다. Cow<'_, str>은 둘 중 큰 쪽인 String 갈래에 판별자 칸을 더한 32바이트가 된다. 함수 인수로 Cow<str>을 받으면 &str의 두 배가 넘는 크기가 스택으로 오간다. 판별자 검사도 매 접근에 붙는다 — 분기 하나지만 핫 패스에서는 사라지지 않는 비용이다. Cow가 열거형인 이유는 안전이고, 열거형의 대가가 이 몸집이다."
+      },
+      {
+        type: "p",
+        text: "그래서 Cow의 자리는 좁고 명확하다. 거의 안 바꾸고 소유도 불필요하면 &str이고, 거의 항상 바꾸거나 결과를 길게 저장하면 String이다. Cow는 그 사이 — 변경 없는 경로가 지배적이고 수정이 가끔인 곳 — 이다. 세 선택지의 경계는 코드를 읽어서가 아니라 호출 분포를 측정해서 정한다. \"변경 비율이 몇 퍼센트부터 Owned가 이기는가\"는 데이터 크기와 복사 비용에 따라 달라지므로, 답은 미리 정해져 있지 않다."
+      },
+      {
+        type: "table",
+        caption: "입력을 다루는 세 선택",
+        head: ["상황", "선택", "이유"],
+        rows: [
+          ["읽기만 하고 소유가 불필요", "&str", "가장 작고, 복사도 판별자도 없다"],
+          ["변경 없는 경로가 지배적, 수정은 가끔", "Cow<str>", "수정하는 호출만 복사를 낸다"],
+          ["거의 항상 수정하거나 결과를 저장", "String", "판별자 검사 없이 곧장 소유한다"]
+        ]
+      },
+      {
+        type: "quiz",
+        question: "Cow<'_, str>을 받아 대부분의 호출에서 to_mut()으로 수정하는 함수가 느린 이유는?",
+        options: [
+          "Cow는 항상 힙에 살아서 접근이 느리기 때문에",
+          "판별자 검사와 함께, 미뤄뒀던 클론이 거의 매 호출에서 일어나기 때문에",
+          "to_mut은 부를 때마다 무조건 전체를 복사하기 때문에",
+          "Cow는 스레드 락을 걸기 때문에"
+        ],
+        answer: 1,
+        explain: "to_mut은 Borrowed 상태에서 처음 닿을 때 클론한다. 수정이 대부분이라면 그 미뤄둔 복사가 사실상 매번 일어나는 셈이고, 판별자 검사까지 얹어 낸다. 이런 워크로드는 Owned가 정답이다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/borrow/enum.Cow.html",
+        label: "std 문서",
+        title: "std::borrow::Cow",
+        detail: "두 갈래 설계와 to_mut·into_owned의 공식 정의."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/borrow/index.html",
+        label: "std 문서",
+        title: "std::borrow",
+        detail: "Borrow·ToOwned 트레이트와 Cow의 관계."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자기 코드에서 문자열을 변환해 돌려주는 함수 하나를 골라 호출 분포를 가늠해 본다 — 수정 비율이 낮으면 Cow가 유지, 높으면 Owned로, 저장하지 않으면 &str로. 숫자가 없다면 임의로 정하지 말고 로그나 카운터로 한 번 센다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+
+  {
+    no: 50,
+    date: "2026.09.28",
+    weekday: "월",
+    title: "Box와 Rc의 경계 — 단일 스레드 공유와 단일 소유",
+    dek: "힙에 놓는 방법은 여러 개다. Box는 소유 하나, Rc는 소유 여럿. 참조 카운트가 어디에 살고, Drop이 언제 불리는지 정리한다.",
+    minutes: 9,
+    tags: ["Rust", "메모리", "언어 내부"],
+    takeaway: "Box와 Rc의 차이는 힙 여부가 아니라 소유권 개수다 — 공유가 시작되면 카운트와 Drop 타이밍이 따라온다.",
+    next: "Cow는 복사를 없애는 게 아니라 미룬다 — Cow가 느려지는 지점.",
+    blocks: [
+      {
+        type: "p",
+        text: "Box<T>는 값을 힙에 놓고 그 주소를 든다. 소유자는 하나뿐이고, Box가 스코프를 벗어나면 값도 같이 해제된다. 쓰이는 곳은 명확하다 — 재귀 타입처럼 크기를 컴파일 타임에 정할 수 없는 값, 크기가 크거나 이동 비용이 큰 값. 컴파일러는 Box를 약간 특별 취급한다. 역참조를 통한 소유 이동이 허용되는 몇 안 되는 타입이라, *box로 내부 값을 꺼내는 동작이 가능하다. 그러나 본질은 단순하다 — 할당 하나, 소유 하나."
+      },
+      {
+        type: "p",
+        text: "Rc<T>는 reference counted다. 값은 힙에 있고, 그 할당 하나 안에 강한 카운트와 약한 카운트, 그리고 값이 같이 산다. Rc를 클론하면 값이 복사되지 않고 카운트만 1 올라간다. 마지막 강한 참조가 사라질 때 값이 해제된다. 즉 Drop 타이밍이 \"스코프가 끝날 때\"에서 \"마지막 소유자가 사라질 때\"로 바뀐다. 이것이 Box와의 본질적 차이다 — 힙에 놓였는지가 아니라 소유권이 몇 개인지."
+      },
+      {
+        type: "code",
+        language: "rust",
+        caption: "Rc<T>의 힙 할당 하나 안에는 값과 카운트가 같이 산다 (개념도)",
+        content: "struct RcBox<T> {\n    strong: Cell<usize>, // Rc 클론마다 +1\n    weak: Cell<usize>,   // Weak 참조가 여기 계수된다\n    value: T,            // 공유되는 본체\n}"
+      },
+      {
+        type: "flow",
+        caption: "Rc<T>의 생명 주기",
+        steps: [
+          { label: "Rc::clone", detail: "강한 카운트 +1 — 값은 복사되지 않는다" },
+          { label: "Rc drop", detail: "강한 카운트 −1" },
+          { label: "강한 카운트 0", detail: "value의 Drop이 실행된다" },
+          { label: "약한 카운트 0", detail: "힙 할당 전체가 해제된다" }
+        ]
+      },
+      {
+        type: "p",
+        text: "약한 카운트가 왜 따로 사는지가 다음 함정을 설명한다. 순환 참조다. Rc 두 개가 서로를 들면 강한 카운트가 0이 되지 않아 둘 다 해제되지 않는다 — 카운트 기반 공유의 유명한 누수다. Rc::downgrade로 만드는 Weak는 강한 카운트를 올리지 않으므로 해제를 막지 않고, 값이 먼저 해제된 뒤에는 접근이 실패한다. 트리 구조에서 자식이 부모를 가리킬 때 Weak를 쓰는 이유다. 고리의 \"한 방향\"만 약하게 두면 순환이 끊긴다."
+      },
+      {
+        type: "p",
+        text: "선택 기준을 정리하면 이렇다. 값이 크거나 이동 비용이 크거나 재귀 타입이면 Box. 여러 곳이 같은 값을 공유해야 하고 스코프가 제각각이면 Rc. 공유하면서 가변성까지 필요하면 단일 스레드 한정으로 Rc<RefCell<T>>. 스레드를 넘어야 하면 Arc — Rc는 스레드를 건너지 못하는데, 그 이유(비원자적 카운트)는 53호에서 다룬다. 결국 물어야 할 질문은 \"언제 힙에 놓는가\"가 아니라 \"누가 언제까지 소유하는가\"다. 소유권 그림이 그려지면 선택은 따라온다."
+      },
+      {
+        type: "quiz",
+        question: "Rc<T>를 클론할 때 실제로 일어나는 일은?",
+        options: [
+          "value가 힙에 새로 복사된다",
+          "강한 참조 카운트가 1 올라간다",
+          "주소만 복사되고 카운트는 그대로다",
+          "Weak 참조가 하나 생긴다"
+        ],
+        answer: 1,
+        explain: "Rc의 클론은 값을 복사하지 않는다. 같은 힙 할당을 가리키는 포인터를 하나 더 만들고 강한 카운트를 올릴 뿐이다. 값의 해제는 마지막 강한 참조가 사라질 때 일어난다."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/boxed/index.html",
+        label: "std 문서",
+        title: "std::boxed",
+        detail: "Box의 용도와 컴파일러 특수 취급에 대한 공식 설명."
+      },
+      {
+        type: "link",
+        href: "https://doc.rust-lang.org/std/rc/index.html",
+        label: "std 문서",
+        title: "std::rc",
+        detail: "강한·약한 카운트와 순환 참조 주의가 나오는 모듈 문서."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자기 코드에서 Box와 Rc의 개수를 세어 본다 — Rc가 서로를 가리키는 곳이 있으면 순환 가능성을 점검하고, 공유가 사실상 한 곳뿐이었다면 Box로 줄일 수 있는지 따져 본다. 카운트가 붙는 순간 Drop 타이밍도 함께 바뀐다."
+      }
+    ],
+    series: "Rust와 저수준"
+  },
+
+  {
     no: 39,
     date: "2026.09.13",
     weekday: "일",
