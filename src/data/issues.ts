@@ -25,6 +25,730 @@ export type Issue = {
 };
 export const issues: Issue[] = [
   {
+    no: 69,
+    date: "2026.10.26",
+    weekday: "월",
+    title: "정규화가 비즈니스 로직과 만나는 지점 — 도메인 분리, 도메인 컬럼이 코드로 가는 경로",
+    dek: "정규화는 데이터를 사실 단위로 쪼갠다. 그 경계가 코드의 도메인 경계가 되는 이유와, 데이터베이스가 지킬 제약과 코드가 지킬 규칙을 가르는 기준을 본다.",
+    minutes: 8,
+    tags: ["데이터베이스", "정규화", "도메인 설계"],
+    takeaway: "테이블 경계는 사실의 경계이고 도메인 경계의 씨앗이다 — 무결성은 데이터베이스에, 전이와 흐름은 코드에 둔다.",
+    blocks: [
+      {
+        type: "p",
+        text: "시리즈를 거치며 반복 컬럼을 테이블로, 부분 종속을 두 사실로, 이행 종속을 컬럼 분리로 풀었다. 공통 원리는 하나다 — 사실 하나는 한 곳에만 산다. 이 원리는 데이터에서 멈추지 않는다. 쪼개진 테이블은 곧 코드의 도메인 후보다. customers, orders, products가 별개 테이블로 존재한다는 사실 자체가, 주문 처리 코드에서 세 관심사가 갈라져야 한다는 신호다. 스키마의 경계를 먼저 그렸다면 코드의 경계는 그 그림을 따라 읽으면 된다."
+      },
+      {
+        type: "p",
+        text: "가장 흔한 만남의 장면은 상태 컬럼이다. orders.status가 'pending', 'paid', 'shipped'를 값으로 가진다면, 데이터베이스가 보장할 것은 값의 집합이다. CHECK 제약은 오타로 'payd'를 쓰는 행이 들어오는 것을 막는다. 반면 pending에서 paid로만 갈 수 있고 paid에서 pending으로 돌아갈 수 없다는 전이 규칙은 프로세스다. 이것을 트리거에 박아 넣으면 비즈니스 규칙이 스키마 속으로 사라진다 — 변경할 때마다 마이그레이션이 되고, 테스트는 데이터베이스를 띄워야만 가능해진다."
+      },
+      {
+        type: "code",
+        language: "sql",
+        caption: "값의 집합은 제약으로, 전이는 코드로",
+        content: "ALTER TABLE orders\n  ADD CONSTRAINT orders_status_valid\n  CHECK (status IN ('pending', 'paid', 'shipped', 'cancelled'));\n\n-- 전이 규칙(pending → paid만 허용)은 애플리케이션의 상태 전이 테이블이 담당한다.\nconst NEXT: Record<Status, Status[]> = {\n  pending:   ['paid', 'cancelled'],\n  paid:      ['shipped'],\n  shipped:   [],\n  cancelled: [],\n};"
+      },
+      {
+        type: "p",
+        text: "정규화는 도메인 발견 도구이기도 하다. 같은 고객 이름이 주문 행마다 반복됐다면 사실이 겹친다는 신호였고, 그 신호가 customers라는 도메인으로 갈라졌다. 방향을 거슬러 읽을 수도 있다 — 항상 세 개의 조인이 함께 따라오는 읽기 패턴은 그 셋이 사실상 하나의 도메인 안에서 움직인다는 말이다. 컬럼에서 코드로 가는 경로는 대개 이렇다. 상태 컬럼은 상태 전이 테이블로, 금액과 수량 컬럼은 정책 객체로, 집계 컬럼은 도메인 이벤트의 결과로. 컬럼의 이름이 곧 코드의 언어가 된다."
+      },
+      {
+        type: "p",
+        text: "가르는 기준을 정리한다. 데이터베이스가 지킬 것은 값의 집합(CHECK), 참조 무결성(외래키), 고유함(UNIQUE), 존재(NOT NULL)다. 코드가 지킬 것은 상태 전이 순서, 승인 절차, 알림 같은 정책과 흐름이다. 두 축을 바꿔 배치하면 문제가 생긴다 — 전이를 트리거에 두면 비즈니스 변경이 스키마 변경이 되고, 무결성을 애플리케이션에만 두면 스크립트·마이그레이션·사람의 손 같은 다른 쓰기 경로가 규칙을 우회한다. 계약은 데이터베이스 제약이, 흐름은 코드가 책임진다."
+      },
+      {
+        type: "quiz",
+        question: "orders.status의 값 집합과 상태 전이 규칙. 각각 어디에 두는 것이 맞는가?",
+        options: [
+          "둘 다 CHECK 제약으로 데이터베이스에 둔다",
+          "값 집합은 CHECK 제약, 전이 규칙은 도메인 코드에 둔다",
+          "둘 다 애플리케이션 코드에만 둔다",
+          "값 집합은 코드에, 전이 규칙은 트리거에 둔다"
+        ],
+        answer: 1,
+        explain: "값의 집합은 여러 쓰기 경로가 있어도 데이터베이스가 최후의 방어선이 된다. 전이 순서는 비즈니스 흐름이므로 코드에 두면 테스트와 변경이 쉬워진다. 축을 바꿔 배치하면 각각의 약점이 드러난다."
+      },
+      {
+        type: "link",
+        href: "https://martinfowler.com/eaaCatalog/domainModel.html",
+        label: "Martin Fowler",
+        title: "Domain Model (Patterns of Enterprise Application Architecture)",
+        detail: "도메인 모델을 코드의 언어로 끌어 올리는 고전 패턴. 테이블과 객체가 1:1일 필요는 없다는 점도 함께 읽는다."
+      },
+      {
+        type: "link",
+        href: "https://www.postgresql.org/docs/current/ddl-constraints.html",
+        label: "PostgreSQL",
+        title: "Constraints",
+        detail: "CHECK, UNIQUE, NOT NULL — 데이터베이스에 맡길 계약의 목록."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "스키마의 CHECK·NOT NULL·UNIQUE 목록을 뽑아 본다. 애플리케이션 코드가 같은 규칙을 조용히 중복 검증하고 있지 않은지 찾고, 데이터베이스에 없는 제약 하나를 마이그레이션으로 추가한다. 반대로 트리거 속에 숨은 비즈니스 규칙 하나를 찾았다면 그것은 코드로 옮길 후보다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 68,
+    date: "2026.10.23",
+    weekday: "금",
+    title: "MVCC와 락 — InnoDB·PostgreSQL의 차이, 갱신 손실 패턴",
+    dek: "MVCC는 읽기가 쓰기를 막지 않게 만든 설계다. 두 데이터베이스가 버전을 어디에 두는지 비교하고, MVCC 아래에서도 남는 갱신 손실 패턴을 본다.",
+    minutes: 9,
+    tags: ["데이터베이스", "트랜잭션", "동시성"],
+    takeaway: "MVCC는 읽기와 쓰기를 분리할 뿐이다 — 읽고 고쳐 쓰는 코드가 남기는 갱신 손실은 여전히 애플리케이션의 책임이다.",
+    next: "시리즈의 마지막 — 정규화가 비즈니스 로직과 만나는 지점.",
+    blocks: [
+      {
+        type: "p",
+        text: "어제 본 격리 수준의 배후에 있는 기술이 다중 버전 동시성 제어(MVCC)다. 아이디어는 단순하다 — 고쳐 쓸 때 예전 버전을 지우지 않고 남겨 두고, 트랜잭션마다 자기 시점에서 보이는 버전을 판별해 읽는다. 읽기는 락을 잡지 않는다. 읽는 동안 누가 행을 고쳐도 예전 버전이 남아 있으니 독자는 방해받지 않고, 쓰는 쪽도 독자를 기다리지 않는다. 읽기가 쓰기를 막지 않고, 쓰기가 읽기를 막지 않는다."
+      },
+      {
+        type: "p",
+        text: "구현은 두 갈래로 갈린다. MySQL InnoDB는 현재 버전을 클러스터드 인덱스 안에서 그 자리에 고치고, 이전 버전은 언두 로그에 적어 둔다. 과거 시점을 봐야 하는 트랜잭션은 언두 로그를 따라 거슬러 올라가 버전을 재구성한다. 대가는 오래된 트랜잭션이다 — 그것이 살아 있는 동안 언두 이력을 지울 수 없어 이력이 쌓이고, 거슬러 올라가는 읽기가 느려진다. 긴 트랜잭션을 경계하라는 조언의 근거다."
+      },
+      {
+        type: "p",
+        text: "PostgreSQL은 다르다. UPDATE는 새 버전 행을 테이블에 그대로 추가하고, 행마다 생성 트랜잭션과 만료 트랜잭션을 달아 자기 시점에 보이는 버전을 판정한다. 남겨진 죽은 행은 VACUUM이 회수한다. 대가는 갱신 폭주다 — 죽은 행이 쌓이는 속도가 VACUUM보다 빠르면 테이블과 인덱스가 부풀어 오른다(블로트). 같은 MVCC라도 버전을 어디에 두느냐가 운영상의 약점을 바꾼다 — InnoDB는 긴 트랜잭션에 약하고, PostgreSQL은 갱신 폭주에 약하다."
+      },
+      {
+        type: "table",
+        caption: "같은 MVCC, 다른 버전의 집",
+        head: ["", "InnoDB", "PostgreSQL"],
+        rows: [
+          ["과거 버전", "언두 로그에 적고 필요하면 재구성", "갱신마다 테이블에 새 행 추가"],
+          ["회수", "백그라운드 purge가 언두 이력 정리", "VACUUM이 죽은 행 회수"],
+          ["약해지는 지점", "긴 트랜잭션이 언두를 붙잡는다", "갱신 폭주와 vacuum 지연"]
+        ]
+      },
+      {
+        type: "p",
+        text: "MVCC가 풀어 주지 않는 것은 쓰기와 쓰기의 충돌이다. 두 트랜잭션이 같은 행을 고치면 결국 순서가 필요하다. InnoDB는 먼저 행 락을 잡은 쪽이 이기고 다른 쪽은 대기한다. PostgreSQL의 REPEATABLE READ는 더 엄격하다 — 먼저 커밋한 트랜잭션이 이기고, 나중에 커밋하려던 쪽은 직렬화 오류로 실패해 재시도해야 한다. 어느 쪽이든 조용히 이겨 주는 것은 없다 — 충돌을 어떻게 다룰지는 코드의 결정이다."
+      },
+      {
+        type: "p",
+        text: "대표적인 함정이 읽기-계산-쓰기 세 단계다. SELECT로 재고 10을 읽고, 애플리케이션에서 1을 빼고, UPDATE로 9를 저장한다. READ COMMITTED에서 두 트랜잭션이 함께 이 패턴을 밟으면 둘 다 10을 읽고 각자 9를 쓴다 — 두 번의 차감 중 한 번이 사라진다. 이것이 갱신 손실(lost update)이다. MVCC는 읽기를 자유롭게 해 주지만, 읽은 값을 근거로 쓰는 코드까지 지켜 주지는 않는다. 해결은 세 가지로 수렴한다 — SET stock = stock - 1처럼 읽기를 없애는 원자적 UPDATE, SELECT ... FOR UPDATE로 읽는 순간 잠그기, 또는 버전 컬럼을 쓰는 낙관적 락."
+      },
+      {
+        type: "code",
+        language: "sql",
+        caption: "낙관적 락 — 이겼는지는 영향받은 행 수가 말한다",
+        content: "-- 읽을 때 version을 함께 읽는다 (여기서는 version = 7)\nUPDATE reservations\n   SET seats   = seats - 1,\n       version = version + 1\n WHERE id      = 42\n   AND version = 7;\n\n-- 영향받은 행이 0이면 누군가 먼저 고쳤다는 뜻이다.\n-- 다시 읽고 판단한 뒤 다시 시도한다 — 조용히 덮어쓰지 않는다."
+      },
+      {
+        type: "quiz",
+        question: "READ COMMITTED에서 두 트랜잭션이 같은 카운터를 읽어 각자 +1한 값을 저장했다. 두 번 늘어야 할 값이 한 번만 늘었다. 빠진 것은?",
+        options: [
+          "격리 수준이 SERIALIZABLE이 아니어서",
+          "읽기와 쓰기가 하나의 원자 연산이 아니어서",
+          "MVCC를 끄지 않아서",
+          "트랜잭션을 너무 짧게 잡아서"
+        ],
+        answer: 1,
+        explain: "읽은 값을 근거로 쓰는 갱신 손실 패턴이다. 원자적 UPDATE, FOR UPDATE, 버전 컬럼 중 하나로 읽기와 쓰기 사이를 잠가야 한다. 격리 수준만 올리는 것은 이 패턴의 직접 치료가 아니다."
+      },
+      {
+        type: "link",
+        href: "https://www.postgresql.org/docs/current/mvcc.html",
+        label: "PostgreSQL",
+        title: "Concurrency Control",
+        detail: "xmin/xmax로 가시성을 판정하는 방식과 VACUUM의 역할을 공식 문서로 확인한다."
+      },
+      {
+        type: "link",
+        href: "https://dev.mysql.com/doc/refman/8.0/en/innodb-multi-versioning.html",
+        label: "MySQL",
+        title: "InnoDB Multi-Versioning",
+        detail: "언두 로그로 과거 버전을 재구성하는 InnoDB 방식의 공식 문서."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "코드에서 SELECT로 값을 읽어 계산한 뒤 UPDATE로 저장하는 지점을 찾는다. 숫자를 더하고 빼는 곳은 원자적 UPDATE로, 여러 필드를 읽어 판단하는 곳은 FOR UPDATE나 버전 컬럼으로 바꿀 후보다. 검증은 간단하다 — 같은 요청을 두 개 동시에 날려 결과가 두 번 적용되는지 본다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 67,
+    date: "2026.10.22",
+    weekday: "목",
+    title: "트랜잭션 격리 수준 — READ COMMITTED, REPEATABLE READ, SERIALIZABLE의 의미",
+    dek: "격리 수준은 무결성과 동시성의 가격표다. 각 수준이 막아 주는 이상 현상과 허용하는 이상 현상을 표 하나로 정리한다.",
+    minutes: 8,
+    tags: ["데이터베이스", "트랜잭션", "동시성"],
+    takeaway: "격리 수준은 어떤 이상을 막고 어떤 이상을 허용할지의 계약이다 — 시작은 자기 데이터베이스의 기본값이 무엇을 허용하는지 아는 일이다.",
+    next: "격리의 배후 기술 — MVCC, InnoDB와 PostgreSQL의 차이.",
+    blocks: [
+      {
+        type: "p",
+        text: "ACID의 I가 격리다. 동시에 실행되는 트랜잭션들이 서로 간섭하지 않는 것이 완전한 격리인데, 그것을 그대로 구현하면 동시성이 사실상 사라진다. SQL 표준은 그래서 계단을 네 칸으로 나눴다 — READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ, SERIALIZABLE. 위로 올라갈수록 더 많은 이상 현상(anomaly)을 막고 동시성 비용이 커진다."
+      },
+      {
+        type: "p",
+        text: "계단마다 무엇이 달라지는지 세 가지 이상 현상으로 본다. 더러운 읽기는 다른 트랜잭션이 아직 커밋하지 않은 데이터를 읽는 것이다 — 그 트랜잭션이 롤백하면 없던 일이 된 값을 근거로 행동한 셈이다. 반복 불가능 읽기는 한 트랜잭션 안에서 같은 행을 두 번 읽을 때, 사이에 다른 트랜잭션이 그 행을 고쳐 두 값이 달라지는 것이다. 팬텀은 같은 조건의 검색을 두 번 했을 때, 사이에 조건에 맞는 새 행이 나타나거나 기존 행이 사라지는 것이다."
+      },
+      {
+        type: "table",
+        caption: "격리 수준과 이상 현상 (SQL 표준 기준)",
+        head: ["수준", "더러운 읽기", "반복 불가능 읽기", "팬텀"],
+        rows: [
+          ["READ UNCOMMITTED", "허용", "허용", "허용"],
+          ["READ COMMITTED", "막는다", "허용", "허용"],
+          ["REPEATABLE READ", "막는다", "막는다", "허용"],
+          ["SERIALIZABLE", "막는다", "막는다", "막는다"]
+        ]
+      },
+      {
+        type: "p",
+        text: "기본값이 제각각이라는 사실이 실무의 출발점이다. PostgreSQL과 Oracle은 READ COMMITTED다. MySQL InnoDB는 REPEATABLE READ다. 같은 코드가 데이터베이스만 바꿔도 격리 동작이 달라진다. 참고로 두 데이터베이스의 REPEATABLE READ는 모두 MVCC 스냅샷 위에 구현돼 표준보다 강하게 동작하는 경우가 많다 — InnoDB는 같은 읽기를 반복해도 팬텀 없이 같은 결과를 보는 것이 대표적이고, PostgreSQL의 REPEATABLE READ는 스냅샷 격리다. 표의 칸은 최소 보증이지 구현의 전부가 아니다."
+      },
+      {
+        type: "p",
+        text: "그럼 어디까지 올려야 하나. SERIALIZABLE은 가장 안전하지만 가장 비싸다 — 충돌하는 트랜잭션을 실패시키고 애플리케이션이 재시도해야 하므로, 재시도 로직 없이는 쓸 수 없다. 실무에서 흔한 답은 격리 수준을 기본값으로 두고, 경합이 실제로 몰리는 지점만 명시적 도구로 잠그는 것이다. 재고 차감과 잔액 이동처럼 두 트랜잭션이 같은 행을 동시에 고치는 곳에는 SELECT ... FOR UPDATE 같은 행 락이 목적에 맞다. 격리 수준은 전역 스위치이고, 락은 수술용 칼이다."
+      },
+      {
+        type: "quiz",
+        question: "READ COMMITTED에서는 일어나지만 REPEATABLE READ에서 막히는 현상은?",
+        options: [
+          "더러운 읽기",
+          "반복 불가능 읽기",
+          "교착 상태",
+          "갱신 손실"
+        ],
+        answer: 1,
+        explain: "READ COMMITTED는 매 읽기마다 최신 커밋을 보므로 같은 행을 다시 읽으면 값이 달라질 수 있다. REPEATABLE READ는 한 트랜잭션 안의 같은 행 읽기가 같음을 보장한다."
+      },
+      {
+        type: "link",
+        href: "https://www.postgresql.org/docs/current/transaction-iso.html",
+        label: "PostgreSQL",
+        title: "Transaction Isolation",
+        detail: "수준별 동작과 스냅샷 격리 구현을 공식 문서로 확인한다."
+      },
+      {
+        type: "link",
+        href: "https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html",
+        label: "MySQL",
+        title: "InnoDB Transaction Isolation Levels",
+        detail: "InnoDB의 네 수준과 REPEATABLE READ가 표준과 다르게 동작하는 부분."
+      },
+      {
+        type: "link",
+        href: "https://en.wikipedia.org/wiki/Isolation_(database_systems)",
+        label: "Wikipedia",
+        title: "Isolation (database systems)",
+        detail: "표준의 네 수준과 표준 뒤에 발견된 추가 이상 현상(쓰기 왜곡 등)까지 정리한 개관."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "쓰는 데이터베이스의 기본 격리 수준을 확인한다 — PostgreSQL은 SHOW transaction_isolation, MySQL은 SELECT @@transaction_isolation. 그리고 커넥션 풀 설정에 격리 수준을 따로 지정한 곳이 없는지 찾아 본다. 기본값과 다른 설정이 숨어 있다면 그 이유를 아는 사람에게 물어 본다 — 이유가 없다면 그것이 첫 점검 대상이다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 66,
+    date: "2026.10.21",
+    weekday: "수",
+    title: "인덱스 카디널리티 — 선택도가 낮을 때의 함정, 복합 인덱스 컬럼 순서",
+    dek: "인덱스는 만들었다고 쓰이지 않는다. 선택도가 낮은 단독 인덱스를 옵티마이저가 버리는 이유와, 복합 인덱스에서 컬럼 순서가 결정하는 것을 본다.",
+    minutes: 8,
+    tags: ["데이터베이스", "인덱스", "성능"],
+    takeaway: "인덱스의 가치는 선택도가 결정한다 — 등가 조건 컬럼을 앞에, 범위 조건 컬럼을 뒤에 둔다.",
+    next: "동시에 읽고 쓸 때의 약속 — 트랜잭션 격리 수준.",
+    blocks: [
+      {
+        type: "p",
+        text: "어제 B+Tree로 인덱스의 모양을 봤다. 오늘은 옵티마이저가 인덱스를 택하는 기준을 본다. 핵심 개념은 선택도(selectivity)다 — DISTINCT 값의 수를 전체 행 수로 나눈 비율이다. 백만 행에 값이 백만 종류면 선택도는 1에 가깝고, 값이 둘뿐이면 0에 가깝다. 카디널리티는 그 값의 종류 수 자체를 가리키며, 옵티마이저는 수집한 통계로 이 숫자를 추정해 실행 계획을 고른다."
+      },
+      {
+        type: "p",
+        text: "선택도가 낮을 때의 함정부터. is_active(TRUE/FALSE) 같은 컬럼에 단독 인덱스를 만들었다 하자. WHERE is_active = TRUE가 행의 절반을 가리킨다면, 인덱스로 흩어진 페이지를 하나씩 랜덤 접근하는 것보다 테이블을 처음부터 쓸어 읽는 편이 빠르다. 옵티마이저는 이 계산을 하고 인덱스를 버린다 — 인덱스가 존재하는 것과 쓰이는 것은 다르다. 다만 낮은 카디널리티가 항상 나쁜 것은 아니다. 조건이 드문 값을 가리킬 때(is_active = FALSE, 전체의 0.1%)는 여전히 유효하다. 판단은 통계가 한다."
+      },
+      {
+        type: "p",
+        text: "복합 인덱스에서 컬럼 순서가 결정하는 것은 쓸 수 있는 조건의 모양이다. (country, city) 인덱스는 country에 대한 조건, country와 city가 함께 오는 조건에 쓰인다. city만으로는 쓰지 못한다 — B+Tree가 첫 컬럼 순으로 정렬돼 있으므로 맨 앞 컬럼이 고정돼야 출발점을 찾을 수 있다(최선 좌접두사 원칙). 순서의 기본 공식은 이렇다. 등가 조건 컬럼을 앞에, 범위 조건(>, <, BETWEEN) 컬럼을 뒤에. WHERE country = 'KR' AND created_at >= '...'에는 (country, created_at)이 맞다 — 범위 컬럼이 앞에 오면 그 뒤에 온 컬럼은 정렬 순서가 어긋나 탐색에 쓰이지 못한다."
+      },
+      {
+        type: "code",
+        language: "sql",
+        caption: "등가 앞, 범위 뒤",
+        content: "CREATE INDEX idx_orders_country_created\n  ON orders (country, created_at);\n\n-- 탐색에 쓰인다: country로 고정, created_at으로 출발점\nEXPLAIN ANALYZE\nSELECT * FROM orders\n WHERE country = 'KR'\n   AND created_at >= '2026-10-01';\n\n-- city 조건만으로는 이 인덱스의 출발점을 못 찾는다(좌접두사 미충족)"
+      },
+      {
+        type: "p",
+        text: "정렬도 같은 원리를 따른다. WHERE country = ? ORDER BY created_at LIMIT 20은 (country, created_at) 인덱스가 이미 요청한 순서로 정렬돼 있어 정렬 단계 자체가 사라진다. 컬럼을 (created_at, country)로 뒤집으면 조건은 타더라도 ORDER BY를 별도 정렬로 다시 처리하게 된다. 그래서 순서를 정할 때 보는 것은 WHERE만이 아니라 쿼리가 실제로 요구하는 전체 모양이다 — WHERE, ORDER BY, LIMIT까지 한 장에 놓고 본다."
+      },
+      {
+        type: "quiz",
+        question: "(a, b, c) 복합 인덱스가 있을 때 WHERE b = 1 AND c = 2는 이 인덱스를 어떻게 쓰는가?",
+        options: [
+          "b, c 두 컬럼으로 출발점을 찾아 탐색한다",
+          "a가 조건에 없어 출발점을 못 찾는다 — 인덱스 전체를 훑거나 커버링으로 활용하는 정도다",
+          "통계에 따라 랜덤 접근으로 탐색한다",
+          "a의 값을 자동으로 추론해 탐색한다"
+        ],
+        answer: 1,
+        explain: "맨 앞 컬럼이 고정돼야 B+Tree 출발점이 정해진다. (b, c)로 시작하는 별도 인덱스가 답이다. 조건 컬럼이 인덱스에 모두 담겨 있으면 테이블 접근 없이 인덱스만 읽는 커버링 스캔 정도는 가능할 수 있다."
+      },
+      {
+        type: "link",
+        href: "https://use-the-index-luke.com/sql/anatomy",
+        label: "Use The Index, Luke",
+        title: "The Anatomy of an Index",
+        detail: "인덱스 내부 구조와 선택도, 복합 인덱스 설계를 그림으로 설명하는 무료 온라인 책."
+      },
+      {
+        type: "link",
+        href: "https://dev.mysql.com/doc/refman/8.0/en/multiple-column-indexes.html",
+        label: "MySQL",
+        title: "Multiple-Column Indexes",
+        detail: "좌접두사 원칙의 공식 문서 — 어느 조건 조합이 인덱스를 쓰는지 표로 정리돼 있다."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자주 쓰는 쿼리 하나를 골라 EXPLAIN ANALYZE로 예상 행 수와 실제 행 수를 나란히 본다. 크게 어긋나면 통계가 오래됐거나 조건의 선택도가 생각과 다른 것이다. 이어서 카디널리티가 낮은 컬럼의 단독 인덱스를 찾아, 자주 함께 오는 조건 컬럼과 한 쌍이 되는 복합 인덱스를 설계해 본다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 65,
+    date: "2026.10.20",
+    weekday: "화",
+    title: "인덱스의 내부 — B+Tree — 리프 노드 연결, 범위 검색이 빠른 이유",
+    dek: "인덱스는 정렬된 사본이다. B+Tree가 층 수를 줄이고 리프 노드를 이어 붙여 범위 검색을 만드는 구조를 본다.",
+    minutes: 8,
+    tags: ["데이터베이스", "인덱스", "자료구조"],
+    takeaway: "B+Tree는 내부 노드로 출발점을 찾고 리프에서 흝는다 — 범위 검색이 빠른 이유는 리프가 연결돼 있어서다.",
+    next: "인덱스가 쓰이지 않는 이유 — 카디널리티와 복합 인덱스의 컬럼 순서.",
+    blocks: [
+      {
+        type: "p",
+        text: "관계형 데이터베이스가 해시 테이블이 아니라 B+Tree를 기본 인덱스로 쓰는 이유부터. 해시는 등가 조회(WHERE id = ?)가 한 번에 끝나지만, 정렬된 순서라는 개념이 없어 범위(BETWEEN, >=)와 정렬(ORDER BY), 접두어 검색을 전혀 다루지 못한다. 반면 B+Tree는 키 순서대로 정렬된 구조라 '이 값 이후'를 자연스럽게 말할 수 있다. 장단의 트레이드오프가 만든 선택이다."
+      },
+      {
+        type: "p",
+        text: "구조는 두 문장으로 요약된다. 내부 노드는 값이 아니라 키와 자식 포인터, 즉 길잡이만 둔다. 실제 키와 행 위치는 전부 리프 노드에 모인다. 모든 리프의 깊이가 같다(균형 트리) — 어떤 키를 찾든 같은 수의 단계를 거친다. 한 노드가 가질 수 있는 자식 수(팬아웃)가 수백에 이르므로 높이는 놀랍도록 낮다. 수억 행이라도 3~4층이면 충분하고, 검색 비용은 대략 층 수만큼의 페이지 읽기다."
+      },
+      {
+        type: "tree",
+        caption: "B+Tree 개념도 — 길잡이는 위, 값은 아래",
+        rows: [
+          { path: "root", note: "키 범위를 가르치는 내부 노드", depth: 0 },
+          { path: "internal", note: "키 사이 범위마다 자식을 둔다", depth: 1 },
+          { path: "leaf ⇄ leaf ⇄ leaf", note: "키 + 행 위치. 이중 연결 리스트로 이웃과 연결", depth: 2 }
+        ]
+      },
+      {
+        type: "p",
+        text: "범위 검색이 빠른 이유는 리프의 연결 때문이다. WHERE created_at BETWEEN '2026-10-01' AND '2026-10-07'의 실행은 두 단계다. 첫째, 트리를 내려가 조건이 시작되는 리프 위치를 찾는다. 둘째, 리프에서 리프로 연결을 따라가며 조건이 끝날 때까지 순서대로 읽는다. 중간에 트리 꼭대기로 되돌아가지 않는다. 리프가 정렬된 채로 이어져 있으므로 이 구간 읽기는 페이지 순서대로 이어지는 순차 접근에 가깝다 — 값이 위아래 노드에 나뉘어 있는 B-Tree와의 결정적 차이가 여기 있다."
+      },
+      {
+        type: "p",
+        text: "클러스터드 인덱스와 세컨더리 인덱스도 같은 맥락에서 본다. InnoDB에서 기본키 인덱스는 리프에 행 전체를 담는다(클러스터드) — 테이블 자체가 기본키 순서로 정렬된 B+Tree다. 세컨더리 인덱스의 리프에는 행 위치 대신 기본키 값이 들어 있어, 세컨더리 인덱스로 찾은 뒤 기본키로 한 번 더 찾아 간다. PostgreSQL은 테이블을 힙으로 두고 모든 인덱스의 리프가 행 위치(TID)를 가리킨다. 구현은 다르지만 어느 쪽이든 '리프에서 실제 행으로 가는 마지막 한 단락'이 남는다. 이 단락의 비용까지 포함해 실행 계획을 읽어야 한다."
+      },
+      {
+        type: "quiz",
+        question: "B+Tree가 범위 검색에 강한 구조적 이유는?",
+        options: [
+          "모든 노드에 값이 두 벌 저장돼 있어서",
+          "값이 전부 리프에 모이고 리프가 정렬된 채 연결 리스트로 이어져 있어서",
+          "트리의 높이가 데이터 양에 비례해서 늘어나서",
+          "해시 버킷이 정렬돼 있어서"
+        ],
+        answer: 1,
+        explain: "출발점을 트리 탐색으로 한 번 찾으면 이후는 리프 연결을 따라 순서대로 읽으면 된다. 높이는 데이터 양의 로그에 비례해 매우 천천히 늘어난다."
+      },
+      {
+        type: "link",
+        href: "https://en.wikipedia.org/wiki/B%2B_tree",
+        label: "Wikipedia",
+        title: "B+ tree",
+        detail: "B-Tree와의 차이, 리프 연결, 팬아웃과 높이 계산까지 정리된 개관."
+      },
+      {
+        type: "link",
+        href: "https://dev.mysql.com/doc/refman/8.0/en/innodb-index-types.html",
+        label: "MySQL",
+        title: "Clustered and Secondary Indexes",
+        detail: "InnoDB의 클러스터드 인덱스와 세컨더리 인덱스 구조 공식 문서."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자주 쓰는 범위 쿼리 하나를 골라 EXPLAIN으로 실행 계획을 본다. 인덱스를 타는지(range 스캔이나 Index Scan인지), 탄다면 어느 인덱스인지 확인한다. 그 인덱스의 컬럼 구성을 마이그레이션 파일에서 찾아, 키 순서와 쿼리 조건 순서를 나란히 놓고 비교해 본다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 64,
+    date: "2026.10.19",
+    weekday: "월",
+    title: "반정규화의 기준 — 읽기 경로가 고정될 때, 캐시 테이블과 materialized view",
+    dek: "반정규화는 정규형의 실패가 아니라 정규형 이후의 설계다. 읽기 경로가 고정되고 측정이 느림을 말할 때 쓰는 두 도구를 본다.",
+    minutes: 8,
+    tags: ["데이터베이스", "정규화", "성능"],
+    takeaway: "반정규화는 측정 뒤에 온다 — 느린 읽기 경로가 확인됐고 어긋남의 허용 범위를 그릴 수 있을 때만 중복을 산다.",
+    next: "정렬된 사본의 구조 — 인덱스의 내부, B+Tree.",
+    blocks: [
+      {
+        type: "p",
+        text: "이번 주 내내 중복을 쪼갰다. 오늘은 방향을 거스르는 이야기다. 정규화된 스키마는 쓰기의 일관성을 보장하지만, 읽을 때마다 조인과 집계를 반복한다. 대시보드의 합계, 목록 상단의 랭킹처럼 같은 질의가 초당 수백 번 불린다면 그 반복 비용을 매번 지불하는 것이 맞는지 묻게 된다. 반정규화는 그 질문에 대한 답이다 — 단, 순서가 있다."
+      },
+      {
+        type: "p",
+        text: "순서가 중요하다. 반정규화는 첫 수단이 아니라 마지막 수단이다. 먼저 인덱스와 실행 계획을 본다(이번 주 나머지 두 편의 주제다). 그다음 애플리케이션 캐시를 본다. 그래도 느리다면, 그제서야 '이 읽기 경로를 데이터 안에 미리 계산해 두는' 것을 논한다. 중복은 쓸 때마다 이자가 붙는 부채다 — 두 곳에 있는 사실은 언젠가 어긋나고, 어긋남은 조용히 온다."
+      },
+      {
+        type: "p",
+        text: "첫 번째 도구는 캐시 테이블이다. 사용자별 통계가 필요하다면 user_stats(user_id, post_count, last_posted_at) 테이블을 두고, 게시물이 등록될 때마다 함께 갱신한다. 조건은 두 가지다. 갱신 주체를 하나로 정한다 — 애플리케이션 코드, 트리거, 배치 중 하나만 쓴다. 둘 이상이 쓰면 사실이 어긋난다. 그리고 화면의 허용 오차를 정한다 — 몇 분까지 어긋나도 되는가가 갱신 방식(쓰기 시점 동기 갱신인가, 주기 배치인가)을 결정한다."
+      },
+      {
+        type: "p",
+        text: "두 번째 도구는 materialized view(구체화 뷰)다. 질의 정의와 그 결과를 함께 저장한다 — 일반 view가 질의의 별명이라면 materialized view는 결과를 물리적으로 적어 둔 표다. PostgreSQL은 REFRESH MATERIALIZED VIEW로 다시 계산하고, CONCURRENTLY 옵션을 쓰면 갱신 중에도 읽기를 막지 않는다(대상에 유니크 인덱스가 필요하다). MySQL에는 이 기능이 없으므로 요약 테이블과 주기적 INSERT ... SELECT로 흉내 낸다. 공통된 대가는 REFRESH의 비용이다 — 전체를 다시 계산하므로 대상이 커지면 무거워진다."
+      },
+      {
+        type: "code",
+        language: "sql",
+        caption: "PostgreSQL materialized view — 저장하고, 다시 계산한다",
+        content: "CREATE MATERIALIZED VIEW daily_order_summary AS\nSELECT order_date, country, COUNT(*) AS orders, SUM(amount) AS total\n  FROM orders\n GROUP BY order_date, country;\n\n-- CONCURRENTLY 갱신에는 유니크 인덱스가 필요하다\nCREATE UNIQUE INDEX ON daily_order_summary (order_date, country);\n\n-- 주기적으로 다시 계산 — 읽기를 막지 않으려면 CONCURRENTLY\nREFRESH MATERIALIZED VIEW CONCURRENTLY daily_order_summary;"
+      },
+      {
+        type: "p",
+        text: "판단 기준을 셋으로 정리한다. 첫째, 읽기 경로가 고정돼 있다 — 같은 모양의 질의가 반복된다. 둘째, 측정이 느리다고 말한다 — EXPLAIN과 실행 시간의 기록이 근거다. 셋째, 어긋남의 허용 범위를 그릴 수 있다 — 몇 분까지 늦어도 되는가, 무효화는 무엇을 기준으로 하는가. 셋째가 없으면 원본과 사본이 어긋났을 때 어느 쪽이 옳은지 판단할 근거도 없다. 세 조건이 함께 모일 때만 중복을 산다."
+      },
+      {
+        type: "quiz",
+        question: "일반 view와 materialized view의 차이는?",
+        options: [
+          "일반 view는 읽기 전용이고 materialized view는 쓸 수 있다",
+          "일반 view는 저장 없이 질의마다 실행되고, materialized view는 결과를 물리적으로 저장해 갱신이 필요하다",
+          "materialized view는 표준이라 모든 데이터베이스에 있다",
+          "일반 view는 인덱스를 못 쓰고 materialized view는 자동으로 인덱스가 붙는다"
+        ],
+        answer: 1,
+        explain: "materialized view는 저장된 결과를 읽으므로 빠르지만, 원본이 바뀌어도 스스로는 바뀌지 않는다 — REFRESH가 필요하다는 것이 본질이다. MySQL에는 없는 기능이기도 하다."
+      },
+      {
+        type: "link",
+        href: "https://www.postgresql.org/docs/current/sql-creatematerializedview.html",
+        label: "PostgreSQL",
+        title: "CREATE MATERIALIZED VIEW",
+        detail: "생성과 REFRESH, CONCURRENTLY의 조건을 정리한 공식 문서."
+      },
+      {
+        type: "link",
+        href: "https://www.postgresql.org/docs/current/rules-materializedviews.html",
+        label: "PostgreSQL",
+        title: "Materialized Views",
+        detail: "구현 방식과 주의점을 다루는 매뉴얼 장."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "가장 무거운 읽기 질의 하나의 실행 시간을 재고, 하루에 불리는 횟수를 곱해 본다. 그 비용이 눈에 띄고 질의 모양이 고정돼 있다면 캐시 테이블 후보다. 다만 그 전에 EXPLAIN으로 인덱스가 쓰이는지부터 확인한다 — 측정 없는 반정규화는 부채만 산다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 63,
+    date: "2026.10.16",
+    weekday: "금",
+    title: "BCNF와 결정자 — 3NF로 부족한 순간, 정규화의 보상",
+    dek: "3NF는 결정자가 후보키가 아니어도 허용하는 예외가 하나 있다. BCNF는 그 예외까지 닫고, 그 보상으로 하나의 성질을 잃는다.",
+    minutes: 9,
+    tags: ["데이터베이스", "정규화", "설계"],
+    takeaway: "모든 결정자가 후보키일 때 BCNF다 — 키가 아닌 결정자는 예외가 아니라 테이블을 나눌 신호다.",
+    next: "정규형을 깨는 설계 — 반정규화의 기준.",
+    blocks: [
+      {
+        type: "p",
+        text: "결정자부터. X → Y에서 X가 결정자다 — X를 알면 Y가 하나로 정해진다. 후보키는 테이블의 모든 컬럼을 결정하는 결정자의 특수한 경우다. BCNF(보이스-코드 정규형)의 조건은 한 줄이다 — 모든 결정자가 후보키(슈퍼키)여야 한다. 즉 'X를 알면 뒤가 정해진다'는 관계는 X가 후보키일 때만 허용한다."
+      },
+      {
+        type: "p",
+        text: "3NF는 여기서 한 칸 물러선다 — 결정자 X가 후보키가 아니더라도, 결정되는 컬럼 Y가 후보키의 일부(주요 속성)라면 허용한다. 이 예외가 남기는 구멍을 고전 예시로 본다. 학생이 과목을 수강하고, 과목마다 담당 교수가 하나로 정해진다(teacher → course). 수강 테이블의 키는 (student, teacher)와 (student, course), 두 개다. teacher → course라는 결정자가 있는데 teacher는 후보키가 아니다. 결정되는 course가 주요 속성이므로 3NF는 만족된다 — BCNF는 아니다."
+      },
+      {
+        type: "p",
+        text: "이 구멍이 실제로 무엇을 깨는가. 교수가 과목을 옮긴다고 하자. 수강 행들이 여러 개 있으므로 teacher → course라는 사실이 수십 행에 중복돼 있고, 한 행만 고치면 데이터베이스가 모순을 품는다. 더 실질적인 손해는 제약을 걸 수 없다는 점이다 — '같은 (student, course) 짝이 두 번 나오면 안 된다'는 규칙을 유니크 제약으로 못 건다. 두 후보키가 서로를 가로막기 때문이다. 중복이 구조적으로 허용되는 빈틈이 남는다."
+      },
+      {
+        type: "p",
+        text: "BCNF로 분해하면 둘로 갈라진다 — (teacher, course)에 담당 사실을, (student, teacher)에 수강 사실을 둔다. 모든 결정자가 후보키가 됐다. 그리고 여기서 보상이 등장한다. 원래 있던 (student, course) → teacher라는 의존성은 어느 테이블에도 함수 종속으로 남지 않는다 — '이 학생이 이 과목을 듣는다면 담당 교수는'을 알려면 두 테이블을 조인해야 한다. 3NF는 의존성 보존을 항상 달성할 수 있고, BCNF는 항상 그렇지 못하다. 이것이 BCNF의 가격표다."
+      },
+      {
+        type: "code",
+        language: "sql",
+        caption: "BCNF 분해 — 결정자 하나가 테이블 하나로",
+        content: "CREATE TABLE course_teachers (\n  teacher  TEXT PRIMARY KEY,   -- 교수는 과목 하나만 담당한다\n  course   TEXT NOT NULL\n);\n\nCREATE TABLE enrollments (\n  student  TEXT NOT NULL,\n  teacher  TEXT NOT NULL,\n  PRIMARY KEY (student, teacher)\n);\n\n-- (student, course) → teacher는 조인으로만 회수된다 — BCNF의 보상"
+      },
+      {
+        type: "p",
+        text: "실무에서 BCNF 위반은 드물지만 3NF에서 멈춘 스키마에 남는다. 찾는 방법은 '키가 두 개 이상인 테이블에서, 한 키의 부분집합이 다른 컬럼을 결정하는가'를 묻는 것이다. 분해하지 않기로 결정했다면 최소한 애플리케이션 검증과 정기 일관성 점검 쿼리로 그 빈틈을 감시한다. 정규화의 보상이 늘 나은 것은 아니다 — 무엇을 잃는지 알고 고르는 것이 설계다."
+      },
+      {
+        type: "quiz",
+        question: "teacher → course 결정자가 있는데 teacher는 후보키가 아니다. 3NF는 만족한다. BCNF 관점의 판단은?",
+        options: [
+          "3NF를 만족하므로 문제없다",
+          "결정자가 후보키가 아니므로 BCNF 위반 — 분해 대상이다",
+          "결정되는 컬럼이 텍스트라 문제없다",
+          "외래키가 없으므로 BCNF 위반이다"
+        ],
+        answer: 1,
+        explain: "BCNF는 모든 결정자가 후보키일 것을 요구한다. 3NF의 예외 조건(주요 속성 결정)이 여기서 남는 구멍이 바로 이 경우다."
+      },
+      {
+        type: "link",
+        href: "https://en.wikipedia.org/wiki/Boyce%E2%80%93Codd_normal_form",
+        label: "Wikipedia",
+        title: "Boyce–Codd normal form",
+        detail: "3NF와 BCNF의 정확한 차이와 의존성 보존 논점을 정리한 개관."
+      },
+      {
+        type: "link",
+        href: "https://www.bkent.net/Doc/simple5.htm",
+        label: "William Kent",
+        title: "A Simple Guide to Five Normal Forms in Relational Database Theory",
+        detail: "정규형을 갱신 이상의 관점에서 설명하는 고전. BCNF 장면의 원전 격인 글이다."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "스키마에서 기본키가 아닌 다른 후보키가 있는 테이블을 찾는다. 한 키의 부분집합이 다른 컬럼을 결정하는지 물어 보고, 있다면 BCNF 후보다. 분해했을 때 잃는 의존성(조인으로만 회수되는 것)이 무엇인지 적어 두고, 유니크 제약으로 못 거는 조합이 없는지 함께 점검한다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 62,
+    date: "2026.10.15",
+    weekday: "목",
+    title: "3NF와 이행적 종속 — 컬럼 분리 기준, 성능과 정규형의 균형점",
+    dek: "키가 아닌 컬럼이 다른 키가 아닌 컬럼을 결정한다면, 그것은 이 컬럼의 속성이 아니라 다른 사실이다. 3NF와 성능 사이의 판단 기준을 잡는다.",
+    minutes: 8,
+    tags: ["데이터베이스", "정규화", "설계"],
+    takeaway: "키가 아닌 컬럼이 다른 컬럼을 결정하면 그 컬럼은 다른 테이블로 간다 — 3NF는 사실 하나당 한 곳으로 수렴한다.",
+    next: "3NF로도 남는 결정자 — BCNF.",
+    blocks: [
+      {
+        type: "p",
+        text: "3NF의 조건이다 — 2NF를 만족하고, 키가 아닌 컬럼 사이의 이행적 종속이 없어야 한다. orders 테이블에 id → customer_id → customer_name 사슬이 있다고 하자. customer_name은 id에 직접 의존하지 않는다 — customer_id를 거쳐서 정해진다. 이것이 이행적(전이적) 종속이다. 문제의 본질은 고객 이름이 고객의 사실이지 주문의 사실이 아니라는 데 있다."
+      },
+      {
+        type: "p",
+        text: "어제 본 2NF와 똑같은 증상이 다른 위치에서 나온다. 고객 이름이 바뀌면 주문 테이블의 수천 행을 고쳐야 하고, 하나라도 남기면 데이터베이스는 서로 모순된 이름을 품는다. 삽입 이상도 있다 — 주문한 적 없는 고객의 이름은 주문이 생길 때까지 등록할 곳이 없다. 고객 사실을 주문 테이블이 보관하는 순간부터 이런 대가가 붙는다."
+      },
+      {
+        type: "p",
+        text: "분리는 기계적으로 된다 — customer_id에 딸린 고객 사실을 customers 테이블로 옮기고, orders에는 customer_id만 남긴다. 고객 이름이 필요하면 조인한다. 여기서 반드시 나오는 반론이 성능이다 — 조인은 비싸다는 것이다. 이 관점은 숫자로 검증할 가치가 있다. 인덱스가 있는 조인은 인덱스 조회 몇 번의 비용이고, '조인이 느리다'는 대부분의 사례는 조인이 인덱스를 못 타기 때문이다. 조인 자체가 아니라 조인이 타는 길이 문제다."
+      },
+      {
+        type: "table",
+        caption: "정규화 유지와 중복 허용의 대가",
+        head: ["", "정규화 유지", "중복 허용"],
+        rows: [
+          ["쓰기", "사실 한 곳만 고친다", "모든 사본을 함께 고쳐야 한다"],
+          ["읽기", "조인이 따른다", "조인 없이 한 번에 읽는다"],
+          ["무결성", "제약으로 보장된다", "애플리케이션이 책임지고 동기화한다"]
+        ]
+      },
+      {
+        type: "p",
+        text: "그래서 균형점은 원칙과 예외로 잡는다. 원칙은 3NF — 사실 하나당 한 곳. 예외는 측정이 요구할 때만 열고, 예외로 중복을 둘 때는 갱신 주체를 하나로 정한다. '성능 때문에'라는 이유로 예외를 먼저 여는 스키마는 측정이 아니라 불안에서 출발한다. 느린 쿼리를 먼저 잡고, 그 원인이 조인임을 확인한 뒤에 중복을 논한다. 이 순서를 뒤집으면 중복이 늘어난 뒤에도 느린 쿼리는 그대로 남는다."
+      },
+      {
+        type: "quiz",
+        question: "orders에 customer_city 컬럼이 있고, city가 customer_id에 의해 정해진다. 진단은?",
+        options: [
+          "부분 함수 종속 — 2NF 위반이다",
+          "이행적 종속 — 3NF 위반이다, customers로 분리한다",
+          "결정자가 없으므로 문제없다",
+          "캐시 컬럼이므로 정규형과 무관하다"
+        ],
+        answer: 1,
+        explain: "id → customer_id → customer_city 사슬의 이행적 종속이다. 도시는 고객의 사실이다. 참고로 2NF 위반은 키의 일부가 결정하는 경우 — 복합키가 없는 이 테이블에서는 나올 수 없다."
+      },
+      {
+        type: "link",
+        href: "https://en.wikipedia.org/wiki/Third_normal_form",
+        label: "Wikipedia",
+        title: "Third normal form",
+        detail: "정의와 '3NF면 BCNF를 제외한 갱신 이상이 사라진다'는 논점을 정리한 개관."
+      },
+      {
+        type: "link",
+        href: "https://www.bkent.net/Doc/simple5.htm",
+        label: "William Kent",
+        title: "A Simple Guide to Five Normal Forms in Relational Database Theory",
+        detail: "이행적 종속을 갱신 이상의 사례로 보여 주는 고전 글."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "테이블 하나를 골라 키가 아닌 컬럼끼리의 의존을 점검한다 — A가 정해지면 B도 정해지는 쌍이 있는가. 있으면 B는 다른 사실이다. 어느 테이블의 사실인지 이름을 붙여 보면, 분리할 테이블의 이름과 경계가 함께 나온다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 61,
+    date: "2026.10.14",
+    weekday: "수",
+    title: "2NF와 부분 함수 종속 — 복합키의 함정, 인조키 도입의 효과",
+    dek: "2NF는 복합키가 있을 때만 문제되는 규칙이다. 키의 일부에만 의존하는 컬럼이 낳는 갱신 이상과, 인조키가 문제를 없애는 게 아니라 감추는 이유를 본다.",
+    minutes: 8,
+    tags: ["데이터베이스", "정규화", "설계"],
+    takeaway: "복합키의 일부에만 의존하는 컬럼은 별개의 사실이다 — 2NF 위반은 테이블을 두 사실로 쪼개라는 신호다.",
+    next: "키가 아닌 컬럼끼리 의존할 때 — 3NF와 이행적 종속.",
+    blocks: [
+      {
+        type: "p",
+        text: "2NF의 조건이다 — 1NF를 만족하고, 모든 키가 아닌 컬럼이 복합키 전체에 의존해야 한다(완전 함수 종속). 키의 일부에만 의존하면 부분 함수 종속이고 2NF 위반이다. 이 규칙은 복합키(두 컬럼 이상의 키)가 있을 때만 적용된다. 단일 컬럼 키의 테이블은 정의상 2NF 위반이 나올 수 없다 — 그래서 2NF는 '복합키의 규칙'이라 불린다."
+      },
+      {
+        type: "p",
+        text: "장면을 만들어 본다 — 주문 항목 테이블. 키가 (order_id, product_id)다. quantity는 두 컬럼을 다 알아야 정해진다(어느 주문의, 어느 상품인지) — 완전 종속이라 문제없다. product_name은 product_id만 알면 정해진다 — 부분 종속이다. 상품명은 상품의 사실이지 '주문-상품 짝'의 사실이 아니므로, 이 테이블이 서로 다른 두 사실을 한 데 뭉쳐 둔 것이 문제의 뿌리다."
+      },
+      {
+        type: "table",
+        caption: "부분 종속이 남기는 갱신 이상 세 가지",
+        head: ["이상", "언제", "무엇이 깨진다"],
+        rows: [
+          ["갱신 이상", "상품명이 바뀔 때", "수천 개의 주문 행을 함께 고쳐야 한다 — 하나만 남으면 모순"],
+          ["삽입 이상", "아직 주문된 적 없는 상품을 등록할 때", "주문 항목 행이 없으므로 상품명을 둘 곳이 없다"],
+          ["삭제 이상", "상품의 마지막 주문이 삭제될 때", "상품명이라는 사실이 데이터베이스에서 통째로 사라진다"]
+        ]
+      },
+      {
+        type: "p",
+        text: "분해는 기계적이다 — order_items(주문 항목 사실: order_id, product_id, quantity)와 products(상품 사실: product_id, product_name, price)로 갈라낸다. 상품명의 변화는 이제 한 행의 갱신이다. 주문 항목을 읽을 때 상품명이 필요하면 조인한다. 부분 종속을 찾는 요령은 간단하다 — 각 키 컬럼에 하나씩 손가락을 얹고, 다른 컬럼들이 그것만으로 정해지는지 하나씩 물어 본다."
+      },
+      {
+        type: "p",
+        text: "여기서 '그럼 인조키를 쓰면 되지 않나'라는 질문이 나온다. AUTO_INCREMENT id를 붙이면 복합키가 사라지고 2NF 위반은 정의상 불가능해진다. 그러나 문제가 해소된 것이 아니라 보이지 않게 된 것이다. product_name이 여전히 주문 항목 테이블에 있다면 갱신 이상은 그대로다. 더 나쁜 것은 (order_id, product_id) 짝에 유니크 제약을 걸지 않으면 같은 상품이 같은 주문에 두 번 등록된다는 점이다. 인조키는 종속 검토를 대체하지 않는다 — 검토가 끝난 뒤에 편의를 위해 쓰는 도구다."
+      },
+      {
+        type: "quiz",
+        question: "(order_id, product_id)가 키인 테이블에 product_price가 있다. product_id만으로 가격이 정해진다. 판단은?",
+        options: [
+          "완전 종속이므로 문제없다",
+          "부분 함수 종속 — products로 분리한다. 단 '주문 시점 가격 스냅샷'이라면 별개의 사실로 남긴다",
+          "가격은 자주 바뀌므로 정규형과 무관하다",
+          "인조키를 붙이면 해결된다"
+        ],
+        answer: 1,
+        explain: "product_id만으로 정해지는 값은 상품의 사실이다. 다만 주문 당시의 가격을 기록하겠다는 결정이라면 그것은 주문 항목의 사실이므로 이곳에 남는다 — 종속의 방향이 아니라 사실의 종류가 기준이다."
+      },
+      {
+        type: "link",
+        href: "https://en.wikipedia.org/wiki/Second_normal_form",
+        label: "Wikipedia",
+        title: "Second normal form",
+        detail: "완전/부분 함수 종속의 정의와 예시 테이블."
+      },
+      {
+        type: "link",
+        href: "https://www.bkent.net/Doc/simple5.htm",
+        label: "William Kent",
+        title: "A Simple Guide to Five Normal Forms in Relational Database Theory",
+        detail: "정규형을 갱신·삽입·삭제 이상의 관점에서 설명하는 고전 글."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "복합키 테이블의 각 키 컬럼에 손가락을 얹고, 다른 컬럼들이 그것만으로 정해지는지 물어 본다. 정해지는 컬럼이 있으면 부분 종속이다. 인조키를 쓰는 테이블이라면, 인조키와 별개로 사업적 의미의 키(order_id, product_id 같은)가 유니크 제약으로 존재하는지 확인한다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
+    no: 60,
+    date: "2026.10.12",
+    weekday: "월",
+    title: "1NF의 실무적 의미 — 원자값, 반복 컬럼, JSON 컬럼과 정규형",
+    dek: "제1정규형은 표가 깔끔해 보이는 문제가 아니라 질의와 무결성이 유지되는 최소 조건이다. 반복 컬럼과 콤마 값, JSON 컬럼이 1NF와 만나는 지점을 본다.",
+    minutes: 8,
+    tags: ["데이터베이스", "정규화", "SQL"],
+    takeaway: "1NF는 칸마다 값 하나다 — 반복되는 컬럼과 콤마로 이어진 값은 질의와 무결성을 함께 깬다.",
+    next: "복합키에서 시작하는 문제 — 2NF와 부분 함수 종속.",
+    blocks: [
+      {
+        type: "p",
+        text: "정규화 이야기의 출발점인 1NF(제1정규형)부터. 교과서는 '모든 속성이 원자값을 가진다'고 정의하지만, 원자라는 말은 만능 칼이 아니다 — 전화번호를 통째로 저장할 것인가 지역번호로 쪼갤 것인가는 용도의 문제지 원자성의 문제가 아니다. 실무에서 쓸 만한 검사는 두 가지로 줄어든다. 같은 종류의 값이 컬럼을 가로질러 반복되는가(반복 컬럼), 하나의 칸에 여러 값이 들어 있는가(콤마 이어 붙이기, 배열)."
+      },
+      {
+        type: "p",
+        text: "반복 컬럼의 모양이다 — order_item_1, order_item_2, order_item_3. 이 테이블은 세 가지 비용을 낸다. 질의가 컬럼 수만큼 늘어나고, 네 번째 상품을 담는 시점에 스키마를 고쳐야 하고, 상품별 집계는 세 컬럼을 UNION해야 한다. 문제의 뿌리는 컬럼이 값이 아니라 순번을 담고 있다는 것이다. 같은 종류의 값이 여러 개라면 그것은 행이어야 한다 — order_items 테이블로 간다."
+      },
+      {
+        type: "code",
+        language: "sql",
+        caption: "반복 컬럼은 행으로 간다",
+        content: "-- 1NF 위반: 순번이 컬럼 이름에 박혀 있다\nCREATE TABLE orders_bad (\n  id           BIGINT PRIMARY KEY,\n  ordered_at   TIMESTAMP,\n  item_name_1  TEXT,\n  item_name_2  TEXT,\n  item_name_3  TEXT\n);\n\n-- 1NF: 같은 종류의 값은 행으로 간다\nCREATE TABLE order_items (\n  order_id  BIGINT NOT NULL,\n  name      TEXT NOT NULL,\n  PRIMARY KEY (order_id, name)\n);"
+      },
+      {
+        type: "p",
+        text: "두 번째 위반은 tags 컬럼에 'sql,index,btree'처럼 콤마로 이어 붙인 값이다. 이 값에서 'index 태그가 붙은 글'을 찾으려면 LIKE '%index%'를 쓰게 되는데, 'indexing'도 함께 걸리고 정확한 일치는 불가능하다. 인덱스도 못 건다 — 정렬된 구조 안에 쪼개진 값이 존재하지 않기 때문이다. 오타와 중복 역시 아무 장치가 없다. 태그는 tags 테이블과 조인 테이블로 간다."
+      },
+      {
+        type: "p",
+        text: "그러면 JSON 컬럼은 어떤가 — PostgreSQL의 jsonb, MySQL의 JSON 타입은 한 칸에 구조 전체를 담는다. 엄밀히 말하면 1NF를 깬다. 그러나 실무의 판단은 단정 대신 질문 두 개로 간다. 이 필드가 질의의 키가 되는가 — 그렇다면 컬럼으로 뽑아야 인덱스와 제약이 붙는다. 스키마가 요청마다 달라지는 확장 속성인가 — 그렇다면 JSON이 현실적인 선택일 수 있다. 대가는 분명하다. JSON 안의 값은 데이터베이스의 무결성 제약(CHECK, 외래키, 유니크) 대부분을 받지 못한다. 원자성의 정의가 모델의 용도에 의존한다는 논쟁이 표준 논의에서도 계속되는 이유다."
+      },
+      {
+        type: "quiz",
+        question: "tags 컬럼이 'a,b,c' 형태로 값을 이어 붙이고 있다. 가장 근본적인 문제는?",
+        options: [
+          "저장 공간을 낭비해서",
+          "정확한 일치 검색, 인덱스, 무결성 제약이 모두 불가능해서",
+          "출력할 때 콤마를 다시 붙여야 해서",
+          "백업이 느려져서"
+        ],
+        answer: 1,
+        explain: "하나의 칸에 여러 값이 담기면 데이터베이스는 그 값들을 개별적으로 다룰 수 없다. LIKE 검색의 오탐, 인덱스 부재, 무결성 장치의 부재가 모두 이 한 원인에서 나온다."
+      },
+      {
+        type: "link",
+        href: "https://en.wikipedia.org/wiki/First_normal_form",
+        label: "Wikipedia",
+        title: "First normal form",
+        detail: "원자성 정의의 논쟁(원자성은 문맥에 의존한다)까지 정리한 개관."
+      },
+      {
+        type: "link",
+        href: "https://www.postgresql.org/docs/current/datatype-json.html",
+        label: "PostgreSQL",
+        title: "JSON Types",
+        detail: "jsonb의 저장 방식과 인덱스 가능 범위 — JSON 컬럼 판단의 기준 자료."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "다루는 스키마에서 컬럼명에 숫자가 붙은 것과 콤마로 값이 이어진 것을 찾아 본다. '몇 개까지 담을 것인가'라는 질문에 답이 없는 컬럼은 반복 컬럼이다 — 행이 될 테이블의 이름을 붙여 둔다. 그리고 질의 키가 되는 필드가 JSON 안에 갇혀 있지 않은지도 함께 점검한다."
+      }
+    ],
+    series: "데이터베이스 정규화"
+  },
+
+  {
     no: 39,
     date: "2026.09.13",
     weekday: "일",
