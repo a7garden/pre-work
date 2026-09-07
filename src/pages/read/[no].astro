@@ -26,20 +26,21 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
 
 ---
 <Layout title={`제${issue.no}호 · ${issue.title}`} description={issue.dek} progress>
-  <article class="issue">
-    <a class="back-link mono" href="/"><Icon name="arrow-left" size={16} />전체 목록</a>
+  <article class="issue" data-pagefind-body>
+    <a data-pagefind-ignore class="back-link mono" href="/"><Icon name="arrow-left" size={16} />전체 목록</a>
 
     <header class="issue__head">
-      <p class="issue__stamp mono">
+      <p class="issue__stamp mono" data-pagefind-ignore>
         <span>제{issue.no}호</span>
         <span><Icon name="calendar" size={16} />{issue.date} ({issue.weekday})</span>
         <span><Icon name="clock" size={16} />{issue.minutes}분</span>
-        <button class="copy-link" type="button" data-copy-link aria-label="이 글의 주소 복사">
+        <button class="copy-link" type="button" data-copy-link aria-label="이 글의 주소 복사" aria-live="polite">
           <span class="copy-link__idle"><Icon name="copy" size={16} />주소 복사</span>
           <span class="copy-link__done"><Icon name="check" size={16} />복사됨</span>
+          <span class="copy-link__error">복사 실패 · 재시도</span>
         </button>
       </p>
-      <h1>{issue.title}</h1>
+      <h1 data-pagefind-meta="title">{issue.title}</h1>
       <p class="issue__dek">{issue.dek}</p>
       <div class="tag-list">
         {issue.series && <span class="issue__series-chip mono">{issue.series}</span>}
@@ -53,7 +54,9 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
     </p>
 
     {issue.series && (
-      <aside class="issue__series">
+      <details class="series-contents" data-pagefind-ignore>
+        <summary>{issue.series} · {seriesPart}/{seriesIssues.length}편</summary>
+        <aside class="issue__series">
         <p class="mono">시리즈 · {issue.series} ({seriesPart}/{seriesIssues.length})</p>
         <ol>
           {seriesIssues.map((s) => (
@@ -66,6 +69,7 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
           ))}
         </ol>
       </aside>
+      </details>
     )}
 
     <div class="doc issue__body">
@@ -74,12 +78,12 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
 
     {issue.next && (
       <aside class="issue__next">
-        <p class="mono">내일 이어서</p>
+        <p class="mono">이어서 읽을 주제</p>
         <p>{issue.next}</p>
       </aside>
     )}
 
-    <nav class="issue__nav" aria-label="다른 호로 이동">
+    <nav data-pagefind-ignore class="issue__nav" aria-label="다른 호로 이동">
       {older ? (
         <a href={`/read/${older.no}/`} class="issue__nav-link">
           <span class="mono"><Icon name="arrow-left" size={16} />제{older.no}호</span>
@@ -103,7 +107,8 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
     if (window.scrollY + window.innerHeight < document.documentElement.scrollHeight - 200) return;
     let read = [];
     try {
-      read = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+      const saved = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+      read = Array.isArray(saved) ? saved : [];
     } catch (e) {
       read = [];
     }
@@ -136,12 +141,19 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
   /* 주소 복사 — 라벨 스왑이 피드백이다. 토스트는 없다 */
   const copyBtn = document.querySelector<HTMLButtonElement>("[data-copy-link]");
   copyBtn?.addEventListener("click", async () => {
+    copyBtn.disabled = true;
+    copyBtn.setAttribute("aria-busy", "true");
     try {
       await navigator.clipboard.writeText(window.location.href);
       copyBtn.dataset.state = "copied";
       window.setTimeout(() => {
         delete copyBtn.dataset.state;
       }, 2500);
-    } catch (e) {}
+    } catch {
+      copyBtn.dataset.state = "error";
+    } finally {
+      copyBtn.disabled = false;
+      copyBtn.removeAttribute("aria-busy");
+    }
   });
 </script>

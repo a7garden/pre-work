@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-08",
+  "system": "design.md",
+  "fonts": {
+    "display": "system sans",
+    "body": "system sans",
+    "mono": "IBM Plex Mono",
+    "source": "tokens.css"
+  },
+  "palette": "Cobalt OKLCH light/dark",
+  "motion": "no motion library, interaction only",
+  "spacing": "4pt named CSS tokens",
+  "framework": "Astro 7",
+  "routes": {
+    "/": "Latest article, series entry and filtered archive",
+    "/read/[no]/": "Article with quiz and series contents",
+    "/tags/": "Tag index",
+    "/tags/[tag]/": "Articles by tag",
+    "/search/": "Pagefind full-text search",
+    "/about/": "Publication and series catalog"
+  }
+}

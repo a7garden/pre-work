@@ -1,68 +1,59 @@
 # pre-work
 
-일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 뉴스레터.
-매일 한 편, 10분 안쪽 칼럼을 읽고 오늘 남길 한 문장과 오늘 해 볼 것 하나를 가져간다.
+일 하기 전 10분, 개발자를 위한 짧은 읽기.
+한 편을 읽고 오늘 남길 한 문장과 오늘 해 볼 것 하나를 가져간다.
 
-## 진행 상황
+[사이트 열기](https://a7garden.github.io/pre-work/)
 
-> **제35호 진행 중.** 시리즈 6개 · 누적 293분 · 태그 75개.
-> 현재 진행 중 시리즈: [에이전트 시대의 개발자](https://a7garden.github.io/pre-work/read/35/).
-> 시리즈 카탈로그와 회차 현황은 [소개 페이지](https://a7garden.github.io/pre-work/about/#series-catalog)에서 본다.
-
-## 이 뉴스레터가 도는 방식
-
-1. **요청** — 누구나 [GitHub 이슈](https://github.com/a7garden/pre-work/issues/new?template=publish.yml)로 읽고 싶은 주제를 던진다.
-2. **승인** — 운영자가 요청을 검토해 `publish` 라벨을 붙인다. 라벨이 곧 발행 승인이다.
-3. **발행** — 매일 자정 파이프라인(launchd)이 승인된 주제를 저작 규칙에 맞는 칼럼으로 발행해 커밋·push한다. push하면 GitHub Actions가 GitHub Pages에 배포한다.
+2026년 9월 8일 개편: 최신 기사와 시리즈 시작점을 나란히 배치하고, 전체 호의
+시리즈 필터와 접을 수 있는 본문 목차를 추가했다. ‘실패를 다루는 코드’ 특집
+제140–149호 10편을 함께 발행했다. 각 편은 6–7분, 특집 전체는 62분이다.
 
 ## 화면
 
-| 경로 | 무엇 |
+| 경로 | 내용 |
 | :-- | :-- |
-| `/` | 오늘 읽을 칼럼 + 지금 이어지는 시리즈 + 지난 칼럼 + 칼럼 요청 안내 |
-| `/about/` | 뉴스레터 소개, 운영 방식, 시리즈 카탈로그 |
-| `/daily/` | 데일리 아카이브 (뉴스레터 본체) |
-| `/drills/` | 코드 읽기 훈련 — 줄을 눌러 해설을 열고, 객관식으로 자가 점검 |
-| `/framework/` `/stack/` `/infra/` | 칼럼이 인용하는 레퍼런스 — 공공기관 SI 레거시 스택·망분리 구조 |
-| `/glossary/` | 용어 사전 — 본문의 점선 밑줄과 같은 데이터 |
-| `/rss.xml` | RSS 구독 |
+| `/` | 최신 기사, 시리즈 시작점, 시리즈별 전체 호 필터 |
+| `/read/<no>/` | 기사 전문, 자가 점검, 시리즈 목차, 이전·다음 호 |
+| `/tags/` | 주제별 태그 목록 |
+| `/tags/<tag>/` | 해당 태그의 기사 |
+| `/search/` | 제목과 본문 검색 |
+| `/about/` | 소개, 주제 요청 방법, 시리즈 카탈로그 |
+| `/rss.xml` | 기사 전문 RSS |
 
-## 칼럼 추가하기
+`/` 키로 검색, 기사에서 `←`·`→` 키로 이전·다음 호를 이동한다.
+테마 선택과 읽은 호 표시는 해당 브라우저에 저장된다.
 
-발행 파이프라인이 매일 자정에 승인된 이슈를 처리한다. 직접 추가할 때는:
+## 기사 추가
 
 ```bash
-npm run new:issue            # 오늘 날짜로 다음 호 뼈대 생성
-npm run new:issue -- 2026-09-07
+npm run new:issue                         # 오늘 날짜로 다음 호
+npm run new:issue -- 2026-09-09           # 날짜 지정
+npm run new:issue -- 2026-09-09 --count 10 # 같은 날짜에 특집 10편
 ```
 
-내용은 전부 타입이 붙은 데이터 파일에 있다. 화면은 데이터에서 파생된다.
+다음 호 번호는 기존 최댓값에서 이어진다. 원고는 `src/data/issues.ts`, 블록 문법은
+`src/data/blocks.ts`, 저작 규칙은 [CONTENT.md](CONTENT.md)에 있다. 저장소에 이관된
+기존 기사의 날짜는 당시 연재 순서를 나타내며, 새 기사는 실제 발행 날짜를 쓴다.
+목록과 이전·다음 이동은 호 번호를 기준으로 정렬한다.
 
-| 파일 | 무엇 |
-| :-- | :-- |
-| `src/data/issues.ts` | 데일리 한 편 |
-| `src/data/drills.ts` | 코드 읽기 훈련 |
-| `src/data/glossary.ts` | 용어 — 추가하면 사이트 전체 본문에 자동 연결 |
-| `src/data/blocks.ts` | 위 셋이 공유하는 블록 타입 정의 |
+주제 요청은 [GitHub 이슈](https://github.com/a7garden/pre-work/issues/new?template=publish.yml)로
+받는다. 운영자가 `publish` 라벨을 붙인 요청은 발행 파이프라인이 처리한다.
 
-블록 종류와 저작 규칙은 [CONTENT.md](CONTENT.md)에 정리되어 있다.
-
-## 용어 자동 연결
-
-`src/lib/annotate.ts` 가 문단 텍스트를 훑어 사전에 있는 표기를 찾아 `<Term>` 으로 감싼다.
-
-- 긴 표기가 먼저 매칭된다 (`Spring Boot` 가 `Spring` 보다 우선).
-- 영문 표기는 앞뒤 경계를 확인해 단어 중간에서는 걸리지 않는다 (`NoticeService` 안의 `Service` 는 연결되지 않는다).
-- 같은 용어는 한 페이지에 한 번만 연결된다 (`seen` 집합을 페이지가 넘겨준다).
-- 연결하고 싶지 않은 용어에는 `noauto: true` 를 준다.
-
-## 개발
+## 개발과 배포
 
 ```bash
-npm install
-npm run dev          # http://localhost:4321
-npm run build        # astro build + pagefind 검색 인덱스
+npm ci
+npx astro dev --background
+npx astro dev status
+npx astro dev logs
+npx astro dev stop
+npm run build                            # Astro + Pagefind 검색 색인
 npm run preview
 ```
 
-기여는 칼럼 요청 이슈로. 코드 변경은 fork 후 PR.
+`main`에 push하면 GitHub Actions가 빌드, 검색 색인 생성, `/pre-work/` 하위 경로
+변환을 거쳐 GitHub Pages에 배포한다. 검색 검증은 `npm run build` 후 preview에서 한다.
+
+디자인 기준은 [design.md](design.md), 공통 토큰 원본은 [tokens.css](tokens.css)다.
+`src/styles/tokens.css`가 원본을 가져오며 `src/styles/global.css`에서 사용한다.

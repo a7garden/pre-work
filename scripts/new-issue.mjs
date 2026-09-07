@@ -13,7 +13,15 @@ import { readFile, writeFile } from "node:fs/promises";
 const FILE = new URL("../src/data/issues.ts", import.meta.url);
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-const arg = process.argv[2];
+const args = process.argv.slice(2);
+const countAt = args.indexOf("--count");
+const count = countAt === -1 ? 1 : Number(args[countAt + 1]);
+if (!Number.isInteger(count) || count < 1 || count > 20) {
+  console.error("--count는 1부터 20까지의 정수여야 합니다.");
+  process.exit(1);
+}
+if (countAt !== -1) args.splice(countAt, 2);
+const arg = args[0];
 const when = arg ? new Date(`${arg}T09:00:00`) : new Date();
 if (Number.isNaN(when.getTime())) {
   console.error(`날짜를 읽을 수 없습니다: ${arg} (예: 2026-09-07)`);
@@ -41,9 +49,9 @@ if (source.includes(`date: "${date}"`) || source.includes(`"date": "${date}"`)) 
   process.exit(1);
 }
 
-const skeleton = `
+const skeleton = Array.from({ length: count }, (_, index) => `
   {
-    no: ${nextNo},
+    no: ${nextNo + count - 1 - index},
     date: "${date}",
     weekday: "${weekday}",
     title: "제목을 쓴다",
@@ -61,12 +69,12 @@ const skeleton = `
       },
     ],
   },
-`;
+`).join("");
 
 const out =
   source.slice(0, at + anchor.length) + skeleton + source.slice(at + anchor.length);
 await writeFile(FILE, out, "utf8");
 
-console.log(`제${nextNo}호 (${date} ${weekday}) 뼈대를 추가했습니다.`);
+console.log(`제${nextNo}호${count > 1 ? `–제${nextNo + count - 1}호` : ""} (${date} ${weekday}) 뼈대를 추가했습니다.`);
 console.log("  src/data/issues.ts 맨 앞을 열어 제목과 블록을 채우세요.");
 console.log("  블록 종류와 저작 규칙: CONTENT.md");

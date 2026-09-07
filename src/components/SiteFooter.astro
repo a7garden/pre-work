@@ -9,8 +9,8 @@ const links = [
   { href: "/about/", label: "소개" },
 ];
 ---
-<footer class="foot-index">
-  <span><strong>pre-work</strong> · 일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 읽거리</span>
+<footer class="foot-index" data-pagefind-ignore>
+  <span><strong>pre-work</strong> · 일 하기 전 10분. 읽고, 하나를 남깁니다.</span>
   <nav class="foot-index__links" aria-label="빠른 이동">
     {links.map((l) => (
       <a href={l.href}>

@@ -55,7 +55,8 @@ const total = tagged.reduce((n, issue) => n + issue.minutes, 0);
   const KEY = "pw-read";
   let read: string[] = [];
   try {
-    read = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    const saved = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    read = Array.isArray(saved) ? saved : [];
   } catch (e) {
     read = [];
   }

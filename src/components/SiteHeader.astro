@@ -20,7 +20,7 @@ function isActive(href: string) {
 }
 ---
 
-<header class="site-header">
+<header class="site-header" data-pagefind-ignore>
   <a class="site-header__brand" href="/">
     <span class="site-header__mark">pre-work</span>
     <span class="site-header__sub">일 하기 전 10분</span>
@@ -48,6 +48,7 @@ function isActive(href: string) {
       document.documentElement.getAttribute("data-theme")
       ?? (prefersDark() ? "dark" : "light");
     btn?.setAttribute("data-next", dark === "dark" ? "light" : "dark");
+    btn?.setAttribute("aria-label", dark === "dark" ? "밝은 테마로 전환" : "어두운 테마로 전환");
   };
   paint();
 

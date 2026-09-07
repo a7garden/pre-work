@@ -4,11 +4,7 @@ import { issues } from "../data/issues";
 import Icon from "../components/Icon.astro";
 
 const latest = issues[0];
-const rest = issues.slice(1);
 const total = issues.reduce((n, i) => n + i.minutes, 0);
-
-/* "지금 이어지는 시리즈" — 가장 최근에 발행된 시리즈를 보여 준다.
- * 같은 시리즈의 호들을 오래된 순으로 모아 읽는 순서를 그대로 보여 준다. */
 const seriesGroups = new Map<string, typeof issues>();
 for (const issue of issues) {
   if (!issue.series) continue;
@@ -17,109 +13,71 @@ for (const issue of issues) {
   seriesGroups.set(issue.series, list);
 }
 const activeSeriesName = [...seriesGroups.entries()]
-  .map(([name, list]) => ({ name, latest: Math.max(...list.map((i) => i.no)) }))
-  .sort((a, b) => b.latest - a.latest)[0]?.name;
+  .sort((a, b) => Math.max(...b[1].map(i => i.no)) - Math.max(...a[1].map(i => i.no)))[0]?.[0];
 const activeSeries = activeSeriesName
-  ? [...(seriesGroups.get(activeSeriesName) ?? [])].sort((a, b) => a.no - b.no)
+  ? [...seriesGroups.get(activeSeriesName)!].sort((a, b) => a.no - b.no)
   : [];
 ---
-
-<Layout
-  title="오늘"
-  description="일 하기 전 10분, 개발자가 꾸준히 성장하기 위한 읽거리입니다."
->
-  <header class="today-head">
-    <p class="today-head__eyebrow mono">오늘 읽을 것</p>
-    <a class="today" href={`/read/${latest.no}/`}>
-      <div class="today__stamp mono">
-        <span>제{latest.no}호</span>
-        <span><Icon name="calendar" size={16} />{latest.date} ({latest.weekday})</span>
-        <span><Icon name="clock" size={16} />{latest.minutes}분</span>
-      </div>
-      <h1>{latest.title}</h1>
-      <p class="today__dek">{latest.dek}</p>
-      <p class="today__takeaway">
-        <span class="mono">한 문장</span>
-        <span>{latest.takeaway}</span>
-      </p>
-      <span class="today__go">읽기 시작 <Icon name="arrow-right" size={16} /></span>
-    </a>
-  </header>
-
-  {activeSeries.length > 0 && (
-    <section class="workspace-section" aria-labelledby="active-series-heading">
-      <div class="section-title">
-        <div>
-          <p class="mono">지금 이어지는 시리즈</p>
-          <h2 id="active-series-heading">{activeSeriesName}</h2>
-        </div>
-        <a class="section-title__meta mono" href="/about/#series-catalog">전체 시리즈 {seriesGroups.size}개 <Icon name="arrow-right" size={16} /></a>
-      </div>
-      <aside class="issue__series active-series">
-        <p class="mono">시리즈 · {activeSeriesName} · {activeSeries.length}편 진행 중</p>
+<Layout title="전체 호" description="일 하기 전 10분. 개발자의 일에 남는 한 문장과 오늘 해 볼 것 하나.">
+  <div class="edition-line"><span>개발자를 위한 짧은 읽기</span><span class="mono">{latest.date} · {latest.weekday}요일</span></div>
+  <div class="front-page">
+    <header class="lead-story">
+      <div class="story-meta"><span class="latest-label">최신 발행</span><span class="mono">제{latest.no}호</span><span class="with-icon"><Icon name="clock" size={16} />{latest.minutes}분</span></div>
+      <h1><a href={`/read/${latest.no}/`}>{latest.title}</a></h1>
+      <p class="lead-story__dek">{latest.dek}</p>
+      <a class="read-button" href={`/read/${latest.no}/`}>읽기 시작<Icon name="arrow-right" size={16} /></a>
+      <div class="lead-story__sentence"><p>오늘 남길 한 문장</p><p>{latest.takeaway}</p></div>
+    </header>
+    {activeSeries.length > 0 && (
+      <section class="series-desk" aria-labelledby="active-series-heading">
+        <div class="series-desk__meta"><span>함께 읽는 시리즈</span><span class="mono">{activeSeries.length}편</span></div>
+        <h2 id="active-series-heading">{activeSeriesName}</h2>
+        <p class="series-desk__intro">한 주제를 차근차근. 첫 편부터 읽거나 지금 필요한 글을 골라 보세요.</p>
         <ol>
-          {activeSeries.map((s) => (
-            <li aria-current={s.no === latest.no ? "page" : undefined}>
-              <a href={`/read/${s.no}/`}>
-                <span class="mono">제{s.no}호</span>
-                <span>{s.title}</span>
-              </a>
-            </li>
+          {activeSeries.slice(0, 4).map((s, index) => (
+            <li><a href={`/read/${s.no}/`}><span class="mono">{String(index + 1).padStart(2, "0")}</span><span>{s.title}</span><Icon name="arrow-up-right" size={16} /></a></li>
           ))}
         </ol>
-      </aside>
-    </section>
-  )}
+        <a class="series-desk__start" href={`/read/${activeSeries[0].no}/`}>첫 편부터 읽기<Icon name="arrow-right" size={16} /></a>
+        <a class="series-desk__all" href="/about/#series-catalog">시리즈 전체 보기</a>
+      </section>
+    )}
+  </div>
 
-  <section class="workspace-section" aria-labelledby="archive-heading">
-    <div class="section-title">
-      <div>
-        <p class="mono">아카이브</p>
-        <h2 id="archive-heading">그동안의 호</h2>
-      </div>
-      <span class="section-title__meta mono">{issues.length}개 호 · 누적 {total}분</span>
+  <section class="archive" aria-labelledby="archive-heading">
+    <div class="archive__heading"><h2 id="archive-heading">전체 호</h2><span class="mono">{issues.length}편 · {total}분의 읽기</span></div>
+    <div class="archive__tools">
+      <label class="series-filter">시리즈<select id="series-filter" aria-label="시리즈 선택"><option value="">전체 시리즈</option>{[...seriesGroups.keys()].map(name => <option value={name}>{name}</option>)}<option value="standalone">단독 칼럼</option></select></label>
+      <a href="/search/" class="archive__search"><Icon name="search" size={16} />본문 검색<kbd class="kbd">/</kbd></a>
     </div>
-    <ol class="issue-list">
-      {rest.map((issue) => (
-        <li>
+    <p class="archive__result" id="archive-result" aria-live="polite">전체 {issues.length}편 · 최신 호 순</p>
+    <ol class="issue-list archive-list">
+      {issues.map(issue => (
+        <li data-series={issue.series ?? "standalone"}>
           <a href={`/read/${issue.no}/`} data-read-mark={`issue-${issue.no}`}>
-            <span class="issue-list__no mono">제{issue.no}호</span>
-            <div class="issue-list__main">
-              <p class="issue-list__title">{issue.title}</p>
-              <p class="issue-list__dek">{issue.dek}</p>
-              <div class="tag-list">{issue.tags.map((tag) => <span>{tag}</span>)}</div>
-            </div>
-            <div class="issue-list__meta mono">
-              <span>{issue.date} ({issue.weekday})</span>
-              <span class="with-icon"><Icon name="clock" size={16} />{issue.minutes}분</span>
-              <span class="issue-list__read" data-read-badge>읽음</span>
-            </div>
+            <span class="issue-list__no mono">{String(issue.no).padStart(3, "0")}</span>
+            <div class="issue-list__main"><p class="issue-list__title">{issue.title}</p><p class="issue-list__dek">{issue.dek}</p><div class="tag-list">{issue.tags.slice(0, 3).map(tag => <span>{tag}</span>)}</div></div>
+            <div class="issue-list__meta mono"><span>{issue.date}</span><span>{issue.minutes}분 읽기</span><span class="issue-list__read" data-read-badge>읽음</span></div>
+            <Icon name="arrow-up-right" size={20} class="issue-list__arrow" />
           </a>
         </li>
       ))}
     </ol>
   </section>
-
-  <aside class="note-add-guide">
-    <div>
-      <p class="mono">칼럼 요청</p>
-      <h2>읽고 싶은 주제를 이슈로 던지면 칼럼이 됩니다</h2>
-      <p>요청은 누구나 할 수 있습니다. 주제를 선별해 발행 대기를 붙이면 자정 파이프라인이 칼럼으로 발행해 배포합니다.</p>
-    </div>
-    <a class="note-add-guide__file" href="https://github.com/a7garden/pre-work/issues/new?template=publish.yml"><Icon name="arrow-up-right" size={16} />GitHub 이슈로 요청하기</a>
-  </aside>
+  <aside class="request-note"><div><h2>다음에는 무엇을 읽을까요?</h2><p>막혔던 코드, 더 알고 싶은 개념. 다음 칼럼의 주제를 보내 주세요.</p></div><a href="https://github.com/a7garden/pre-work/issues/new?template=publish.yml">주제 제안하기<Icon name="arrow-up-right" size={16} /></a></aside>
 </Layout>
-
 <script>
-  /* 읽은 호를 기억해 목록에 표시한다 — 이 브라우저 안에서만 남는다 */
-  const KEY = "pw-read";
-  let read: string[] = [];
-  try {
-    read = JSON.parse(localStorage.getItem(KEY) ?? "[]");
-  } catch (e) {
-    read = [];
-  }
-  document.querySelectorAll<HTMLElement>("[data-read-mark]").forEach((el) => {
-    if (read.includes(el.dataset.readMark!)) el.dataset.read = "true";
+  let read: unknown = [];
+  try { read = JSON.parse(localStorage.getItem("pw-read") ?? "[]"); } catch {}
+  document.querySelectorAll<HTMLElement>("[data-read-mark]").forEach(el => {
+    if (Array.isArray(read) && read.includes(el.dataset.readMark)) el.dataset.read = "true";
+  });
+  const filter = document.querySelector<HTMLSelectElement>("#series-filter");
+  const items = [...document.querySelectorAll<HTMLElement>(".archive-list > li")];
+  const result = document.querySelector<HTMLElement>("#archive-result");
+  filter?.addEventListener("change", () => {
+    let count = 0;
+    for (const item of items) { item.hidden = !!filter.value && item.dataset.series !== filter.value; if (!item.hidden) count++; }
+    if (result) result.textContent = `${filter.selectedOptions[0].textContent} · ${count}편 · 최신 호 순`;
   });
 </script>

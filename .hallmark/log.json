@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-09-08",
+    "scope": "app",
+    "macrostructure": "Workbench (lead + series desk) / Long Document (read) / Index-first (archive·tags·search)",
+    "theme": "Cobalt",
+    "enrichment": "none",
+    "brief": "Reading desk redesign with a series filter, centered article column, collapsible contents, and 10 new articles on handling failures"
+  },
+  {
     "date": "2026-09-06",
     "scope": "app",
     "macrostructure": "Workbench (home) / Long Document (read) / Index-First (tags·search)",

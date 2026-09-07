@@ -8,7 +8,7 @@ import Icon from "../components/Icon.astro";
     <div>
       <p class="workspace-head__eyebrow mono"><Icon name="search" size={16} />SEARCH</p>
       <h1>검색</h1>
-      <p>발행된 호 전체를 대상으로 찾습니다. 낱말이 정확할수록 잘 찾힙니다 — 이 사이트의 검색 색인도 BM25 계열 랭킹으로 만들어집니다.</p>
+      <p>기억나는 개념이나 코드 속 낱말로, 다시 읽고 싶은 글을 찾아보세요.</p>
       <p class="search-hint mono">어디서든 <kbd class="kbd">/</kbd> 키를 누르면 이 페이지로 옵니다.</p>
     </div>
   </header>
@@ -27,7 +27,7 @@ import Icon from "../components/Icon.astro";
     if (window.PagefindUI && el) {
       /* GitHub Pages는 저장소 하위 경로에 올라가므로 결과 주소의 기준을 맞춘다 */
       var base = window.location.pathname.indexOf("/pre-work/") === 0 ? "/pre-work/" : "/";
-      new window.PagefindUI({ element: "#search", showSubResults: true, baseUrl: base });
+      new window.PagefindUI({ element: "#search", showSubResults: true, baseUrl: base, translations: { placeholder: "어떤 주제를 찾고 있나요?", zero_results: "[SEARCH_TERM]에 대한 글이 없습니다. 다른 낱말로 검색해 보세요.", clear_search: "검색 지우기", load_more: "더 보기", searching: "찾는 중…", many_results: "[COUNT]편의 글", one_result: "1편의 글" } });
       if (fallback) fallback.hidden = true;
       /* `/` 키로 여기에 도착했으면 곧바로 입력란으로 보낸다 */
       try {
