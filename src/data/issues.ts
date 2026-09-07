@@ -25,6 +25,763 @@ export type Issue = {
 };
 export const issues: Issue[] = [
   {
+    no: 139,
+    date: "2027.02.04",
+    weekday: "목",
+    title: "컨테이너와 가상환경 — 환경 재현의 세 겹",
+    dek: "\"내 컴퓨터에서는 되는데\"의 격차는 세 겹으로 나뉜다 — 언어 의존성, 시스템 패키지, 도구 체인. 어느 겹이 문제인지가 Docker와 uv 중 무엇이 답인지 정한다.",
+    minutes: 9,
+    tags: ["개발 환경", "Docker", "devcontainer", "uv"],
+    takeaway: "환경 재현은 한 도구가 아니라 겹이다 — 언어 의존성부터 에디터까지, 어디까지 고정할지가 도구를 정한다.",
+    blocks: [
+      {
+        type: "p",
+        text: "새로 클론한 프로젝트가 안 돌아갈 때 차이는 대개 세 겹 중 하나에 있다. 첫 겹은 언어 패키지의 버전이다. 라이브러리가 다르면 같은 코드가 다르게 동작한다. 두 번째 겹은 시스템이다. 네이티브 확장이 기대하는 C 라이브러리, 데이터베이스의 메이저 버전, 셸 유틸리티의 존재 여부. 세 번째 겹은 도구 체인이다. 에디터와 확장, 포맷터, 로컬 스크립트. 문제를 진단하지 않고 Docker부터 까는 관습이 생긴 이유는 세 겹을 한 번에 덮을 수 있어서지만, 비용도 전부 치르게 된다."
+      },
+      {
+        type: "p",
+        text: "첫 겹은 언어 도구가 푼다. lock 파일과 가상환경이면 충분하다. JS 쪽은 잠금 기반 매니저가, Python 쪽은 uv가 이 겹의 재현을 수 초로 줄였다. uv sync 한 번으로 가상환경이 lock 파일과 일치하게 된다. \"버전이 안 맞아서\"로 시작하는 문제의 대부분은 여기서 끝난다. 이 단계에서 컨테이너가 필요한 경우는 거의 없다."
+      },
+      {
+        type: "p",
+        text: "두 번째 겹부터 이미지가 등장한다. Dockerfile은 기본 OS, 시스템 패키지, 언어 런타임, 프로젝트 의존성까지 하나의 이미지로 고정한다. 이미지란 의존성 전체의 스냅샷이고, CI와 배포 환경이 같은 이미지를 쓰면 재현 범위가 기계 전체로 넓어진다. 네이티브 빌드가 깨지거나 서비스별 데몬 버전이 갈리는 문제는 이 겹의 도구다."
+      },
+      {
+        type: "p",
+        text: "세 번째 겹은 devcontainer다. devcontainer.json은 이미지 위에 에디터 확장, 포트, 시작 명령까지 선언해서 터미널과 편집기가 컨테이너 안에서 일하도록 만든다. 팀 전체가 같은 개발 환경을 쓰게 하는 선언적 리드미다. containers.dev라는 열린 규격으로 정해져 있어 지원 에디터가 늘었다. 이 겹까지 가면 새 팀원의 셋업이 저장소 클론 한 번으로 끝난다."
+      },
+      {
+        type: "flow",
+        caption: "환경 재현의 세 겹 — 아래로 갈수록 고정 범위가 넓어진다",
+        steps: [
+          { label: "lock 파일", detail: "언어 의존성 고정 — 재현에 수 초 (pnpm, uv)" },
+          { label: "이미지", detail: "시스템 패키지와 런타임까지 고정 — 재현에 수 분 (Dockerfile)" },
+          { label: "devcontainer", detail: "에디터·확장·시작 명령까지 고정 — 팀 전체 공유 (devcontainer.json)" }
+        ]
+      },
+      {
+        type: "p",
+        text: "겹이 올라갈수록 재현 범위는 넓어지지만 반복 비용도 커진다. 이미지 빌드는 수 분이 걸리고, 컨테이너 안에서 파일 감시와 디버거는 여전히 마찰이 있다. 언어 도구만으로 재현되는 프로젝트에 컨테이너는 유지비만 남는다. 반대로 OS가 섞인 팀, 시스템 의존성이 무거운 프로젝트라면 devcontainer가 리드미의 \"제대로 따라 하면 됩니다\"보다 정확하다. 아래 겹부터 차례로 붙이는 것이 순서다."
+      },
+      {
+        type: "quiz",
+        question: "언어 패키지 버전만 어긋난 것이 원인인 프로젝트의 최소 재현 단계는?",
+        options: [
+          "Dockerfile을 작성해 이미지를 만든다",
+          "lock 파일과 가상환경을 맞춘다",
+          "devcontainer.json을 추가한다",
+          "팀 전용 가상 머신 이미지를 배포한다"
+        ],
+        answer: 1,
+        explain: "언어 의존성의 어긋남은 잠금 파일과 가상환경이면 해결된다. 이미지와 devcontainer는 시스템 패키지, 도구 체인처럼 더 바깥 겹을 고정할 때 쓴다."
+      },
+      {
+        type: "link",
+        href: "https://docs.docker.com/get-started/overview/",
+        label: "Docker Docs",
+        title: "What is a container?",
+        detail: "이미지와 컨테이너가 무엇을 고정하는지의 공식 정의."
+      },
+      {
+        type: "link",
+        href: "https://containers.dev/",
+        label: "containers.dev",
+        title: "Development Containers",
+        detail: "devcontainer.json 규격과 지원 도구 목록."
+      },
+      {
+        type: "link",
+        href: "https://docs.astral.sh/uv/",
+        label: "Astral",
+        title: "uv 문서",
+        detail: "첫 겹의 재현을 수 초로 만드는 Python 도구."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "지금 진행 중인 프로젝트의 의존성을 세 줄로 적어 본다 — 언어 패키지, 시스템 의존성, 도구 체인. 각 줄이 lock 파일, 이미지, devcontainer 어디에 고정돼 있는지 표시하면 재현되지 않는 부분이 드러난다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 138,
+    date: "2027.02.03",
+    weekday: "수",
+    title: "API 클라이언트 고르기 — Postman, Bruno, HTTPie",
+    dek: "같은 문제를 세 도구가 다르게 푼다. 요청을 어디에 저장하는지가 기능 목록보다 먼저 판단 기준이 된다.",
+    minutes: 8,
+    tags: ["API", "도구", "워크플로"],
+    takeaway: "API 클라이언트의 선택 기준은 기능이 아니라 컬렉션의 거처다 — git에 있으면 팀 자산, 계정 안에 있으면 개인 자산이다.",
+    next: "컨테이너와 가상환경 — 환경 재현의 세 겹.",
+    blocks: [
+      {
+        type: "p",
+        text: "API를 다루는 도구는 크게 셋이다. GUI 중심의 Postman, 파일 기반 GUI인 Bruno, 터미널의 HTTPie와 curl. 셋 모두 요청을 만들고 저장하고 다시 실행하는 같은 문제를 푼다. 답이 갈리는 이유는 요청 정의를 어디에 두는지에 대한 판단 차이다."
+      },
+      {
+        type: "p",
+        text: "Postman은 기능의 폭이 가장 넓다. 환경 변수, 요청 전후 스크립트, 목업 서버, 문서화, 팀 동기화까지 서비스로 묶여 있다. 컬렉션은 기본적으로 계정에 저장되고, 팀 단위 기능은 클라우드를 전제로 한다. 요청 정의를 내보내기로 뽑아 git에 넣을 수도 있지만 기본 흐름은 저장소 밖이다. 규모가 큰 팀이 API 플랫폼 전체를 필요로 할 때 자리가 있다."
+      },
+      {
+        type: "p",
+        text: "Bruno는 반대로 파일에서 출발한다. 요청 하나가 .bru라는 텍스트 파일이고, 컬렉션은 그냥 디렉터다. 저장소에 커밋되므로 코드와 같은 PR에서 바뀌고 리뷰 대상이 된다. 계정도 로그인도 없고 오프라인에서 완전히 동작한다. 클라우드 동기화 같은 서버 기능이 없다는 것이 설계상의 한계이자 특징이다."
+      },
+      {
+        type: "p",
+        text: "HTTPie와 curl은 터미널에 산다. 명령 한 줄이 요청 정의이자 문서다. README의 예제 명령이 곧 재현 수단이고, CI 파이프라인에서 스크립트로 쓰기에 가장 자연스럽다. 대신 요청 묶음을 관리하는 화면은 없으므로 반복 요청은 셸 별칭이나 스크립트로 굳힌다."
+      },
+      {
+        type: "table",
+        caption: "세 방식의 비교 — 컬렉션이 어디에 사는가",
+        head: ["", "Postman", "Bruno", "HTTPie · curl"],
+        rows: [
+          ["형태", "GUI + 클라우드", "GUI + 파일", "터미널"],
+          ["컬렉션 저장", "계정 동기화 (내보내기 가능)", ".bru 텍스트 파일", "명령 · 스크립트"],
+          ["버전 관리", "내보낸 파일을 직접 커밋", "PR 리뷰 대상", "README · 스크립트로 공유"],
+          ["자동화", "별도 CLI", "CLI 내장", "본체가 곧 스크립트"]
+        ]
+      },
+      {
+        type: "p",
+        text: "선택은 개인 취향보다 팀의 계약에 가깝다. 먼저 정할 것은 요청 컬렉션이 어디에 커밋되는가다. 엔드포인트가 바뀔 때 요청 정의가 같은 PR에서 바뀌어야 하는 팀이라면 파일 기반이 맞고, 요청 이력과 권한, 문서를 서비스에서 관리하는 팀이라면 클라우드 계정이 맞다. 탐색 단계에서는 어느 쪽이든 도달하므로 사고 비용을 크게 쓰지 않아도 된다."
+      },
+      {
+        type: "quiz",
+        question: "새 엔드포인트가 추가될 때마다 요청 정의를 같은 PR에서 함께 커밋하고 싶다. 가장 잘 맞는 방식은?",
+        options: [
+          "Postman 클라우드 컬렉션에 요청을 추가한다",
+          "Bruno 컬렉션을 저장소에 두고 함께 커밋한다",
+          "curl 명령을 팀 채널에 공유한다",
+          "각자 로컬에 요청을 만들어 둔다"
+        ],
+        answer: 1,
+        explain: "요청 정의가 코드와 같은 리뷰 흐름에 들어가야 한다면 파일 기반 컬렉션이 정답이다. 클라우드 컬렉션은 저장소 밖에서 바뀌고, 채널 공유는 이력이 남지 않는다."
+      },
+      {
+        type: "link",
+        href: "https://docs.usebruno.com/",
+        label: "Bruno",
+        title: "Bruno 문서",
+        detail: ".bru 파일 형식과 git 중심 워크플로의 설명."
+      },
+      {
+        type: "link",
+        href: "https://learning.postman.com/",
+        label: "Postman",
+        title: "Postman 학습 문서",
+        detail: "환경·스크립트·팀 동기화 등 플랫폼 기능의 범위."
+      },
+      {
+        type: "link",
+        href: "https://httpie.io/docs",
+        label: "HTTPie",
+        title: "HTTPie 문서",
+        detail: "터미널에서 요청을 명령으로 다루는 방식."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "팀의 API 요청들이 지금 어디에 저장돼 있는지 확인한다 — 개인 계정, 개인 파일, 아니면 저장소. 다음에 엔드포인트가 추가되면 요청 정의 변경이 같은 PR에 들어오는지 보고, 아니라면 파일 기반 도구 하나를 곁에 두어 본다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 137,
+    date: "2027.02.02",
+    weekday: "화",
+    title: "로그를 grep하지 않는 법",
+    dek: "grep이 로그 읽기의 기본기라는 말은 로그가 구조화되지 않았다는 뜻이다. jq와 lnav는 정규식 조합의 시간을 질의의 시간으로 바꾼다.",
+    minutes: 9,
+    tags: ["로그", "jq", "lnav", "관찰 가능성"],
+    takeaway: "grep이 기본기라는 말은 로그가 구조화되지 않았다는 신호다 — 구조화 로그와 jq, lnav는 파싱 시간을 질의 시간으로 바꾼다.",
+    next: "API 클라이언트 고르기 — Postman, Bruno, HTTPie.",
+    blocks: [
+      {
+        type: "p",
+        text: "텍스트 로그에서 \"ERROR가 포함된 줄\"을 찾는 것은 쉽다. 그런데 질문은 언제 더 구체적이다. 1초를 넘긴 요청만, 사용자 ID와 함께, 경로별 건수로. 텍스트 로그에서 이 답을 내려면 cut과 awk와 정규식을 이어 붙이고 필드 순서를 눈으로 확인한다. 포맷이 바뀌는 배포 한 번이면 조합 전체가 무너진다."
+      },
+      {
+        type: "p",
+        text: "구조화 로그는 다르게 시작한다. 한 줄이 하나의 JSON 객체다. 레벨, 메시지, 경로, 걸린 시간이 이름이 붙은 필드로 온다. 로깅 라이브러리의 구조화 출력을 켜면 만들어지고, 12-factor가 말하는 로그 — 표준 출력으로 흘려 보내는 이벤트 스트림 — 와 잘 맞는다. 파일 위치를 애플리케이션이 정하지 않는다는 원칙도 함께 온다."
+      },
+      {
+        type: "p",
+        text: "JSON 라인이 오면 jq가 남은 일을 한다. 필터 한 줄이 정규식 여러 개의 일을 대신하고, 필드가 바뀌면 고칠 곳도 한 군데이다."
+      },
+      {
+        type: "code",
+        language: "bash",
+        caption: "JSON 라인 로그를 jq로 질의한다",
+        content: "kubectl logs deploy/api -c api --since=1h | jq 'select(.level == \"error\") | {msg, route, took_ms}'\n\n# 경로별 에러 건수\nkubectl logs deploy/api -c api --since=1h | jq -s 'group_by(.route) | map({route: .[0].route, count: length})'"
+      },
+      {
+        type: "p",
+        text: "이미 돌아가는 시스템의 텍스트 로그는 바로 못 바꾼다. 이때 lnav가 중간 지점이 된다. 로그 뷰어가 포맷을 자동으로 인식해 필드를 잡아 주고, SQL로 질의한다. SELECT route, count(*) FROM loglines WHERE level = 'error' GROUP BY route 처럼 접근 로그 같은 남의 포맷도 스키마로 다룬다. 사람이 정규식으로 필드 위치를 외우던 일을 도구의 포맷 정의가 대신한다."
+      },
+      {
+        type: "p",
+        text: "실천 순서는 단순하다. 내가 쓴 코드의 로그부터 JSON 라인으로 바꾸고, 바꿀 수 없는 포맷은 lnav로 읽고, grep은 첫 걸러기로만 쓴다. grep이 나쁜 도구여서가 아니다. 검색의 단위가 줄이 아니라 필드일 때 정규식은 엉뚱한 비용을 치른다."
+      },
+      {
+        type: "quiz",
+        question: "JSON 라인 로그에서 level이 error인 이벤트만 고르는 jq 필터는?",
+        options: [
+          ".level == \"error\"",
+          "select(.level == \"error\")",
+          "grep error 를 먼저 붙이고 jq로 넘긴다",
+          "map(.level) | select(error)"
+        ],
+        answer: 1,
+        explain: "select()가 조건에 맞는 이벤트만 통과시킨다. 첫 번째는 비교식 그 자체일 뿐 필터가 아니고, grep을 먼저 쓰면 줄 단위 검색으로 되돌아간다."
+      },
+      {
+        type: "link",
+        href: "https://jqlang.github.io/jq/manual/",
+        label: "jq",
+        title: "jq 매뉴얼",
+        detail: "필터 언어 전체. select와 group_by부터 시작한다."
+      },
+      {
+        type: "link",
+        href: "https://lnav.org/",
+        label: "lnav",
+        title: "lnav",
+        detail: "포맷 자동 인식과 SQL 질의를 갖춘 로그 뷰어."
+      },
+      {
+        type: "link",
+        href: "https://12factor.net/logs",
+        label: "12factor.net",
+        title: "Logs — 이벤트 스트림",
+        detail: "로그를 표준 출력의 스트림으로 다루는 원칙."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "최근에 읽은 로그 파일 한 줄을 골라 필드 목록을 적어 본다. 내가 쓴 서비스의 로그라면 다음 배포부터 구조화 출력으로 바꿔 보고, 남의 포맷이라면 lnav로 한 번 열어 SQL 질의 하나를 돌려 본다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 136,
+    date: "2027.02.01",
+    weekday: "월",
+    title: "dotfiles 관리의 세 가지 방식",
+    dek: "새 머신 셋업이 반복될수록 설정 파일은 저장소에 있어야 한다. git 그 자체, yadm, chezmoi는 같은 문제의 다른 크기 답이다.",
+    minutes: 8,
+    tags: ["dotfiles", "git", "개발 환경"],
+    takeaway: "dotfiles 도구의 차이는 저장이 아니라 머신별 차이와 시크릿을 어디까지 맡기느냐다 — 머신이 두 대까지라면 git 저장소면 충분하다.",
+    next: "로그를 grep하지 않는 법 — jq, lnav, 구조화 로그의 가치.",
+    blocks: [
+      {
+        type: "p",
+        text: "dotfiles는 점으로 시작하는 설정 파일들 — 셸 설정, git 설정, 에디터 설정 — 을 가리키는 관행적 이름이다. 개수는 많지 않다. 그런데 새 머신이 생기거나 실수로 지웠을 때 그 파일들은 다시 타이핑하기엔 너무 길고 기억하기엔 너무 오래됐다. 저장소 하나면 해결되는 문제인데, 도구가 세 겹으로 나뉘어 있다."
+      },
+      {
+        type: "p",
+        text: "첫 번째 방식은 git 그 자체다. 저장소에 설정 파일을 두고 홈 디렉터에 심볼릭 링크를 걸거나, $HOME을 작업 트리로 쓰는 bare 저장소 기법을 쓴다. bare 기법은 git 설정 두 개로 홈 디렉터 전체를 저장소처럼 다룬다 — .git 폴더가 홈에 생기지 않아 다른 파일들이 방해받지 않는다. git만 알면 되고 도구가 추가되지 않는다. 머신별 차이는 파일을 나눠 직접 관리한다."
+      },
+      {
+        type: "p",
+        text: "두 번째는 yadm이다. git을 감싼 래퍼로, bare 저장소 기법을 자동화한다. yadm add ~/.zshrc 한 줄이 끝이고, 머신별 대체 파일과 설정 암호화를 갖추고 있다. git 지식이 그대로 통하면서 준비 작업이 사라진다."
+      },
+      {
+        type: "p",
+        text: "세 번째는 chezmoi다. 저장소의 소스 상태와 실제 파일을 분리하고, 템플릿으로 머신별 차이를 처리한다. 같은 .gitconfig라도 회사 머신에서는 회사 이메일, 개인 노트북에서는 개인 이메일로 채워지는 식이다. 시크릿 매니저 연동으로 토큰을 저장소에 넣지 않고, diff와 apply로 변경을 미리 보고 반영한다. 기능이 가장 많은 대신 배울 것도 가장 많다."
+      },
+      {
+        type: "table",
+        caption: "세 방식의 비교",
+        head: ["방식", "필요한 도구", "머신별 차이", "시크릿"],
+        rows: [
+          ["git + 링크 (bare 포함)", "git만", "파일을 나눠 수동 관리", "직접 해결해야"],
+          ["yadm", "yadm (git 래퍼)", "대체 파일 지원", "암호화 지원"],
+          ["chezmoi", "chezmoi", "템플릿으로 분기", "시크릿 매니저 연동"]
+        ]
+      },
+      {
+        type: "p",
+        text: "선택 기준은 규모다. 파일 몇 개와 머신 한두 대라면 git 저장소가 끝이고, 머신이 늘고 OS가 섞이기 시작하면 yadm이나 chezmoi가 차이 관리를 대신한다. 도구보다 중요한 것은 저장소가 존재한다는 것과 시크릿이 저장소에 없다는 것이다. 이 두 줄만 지키면 어떤 방식이든 나중에 다른 방식으로 옮겨 갈 수 있다."
+      },
+      {
+        type: "quiz",
+        question: "bare 저장소 기법에서 git 명령마다 --git-dir과 --work-tree를 붙이는 별칭을 만드는 이유는?",
+        options: [
+          "저장소를 압축해서 속도를 높이기 위해",
+          "홈 디렉터를 작업 트리로 쓰면서 .git은 다른 곳에 두기 위해",
+          "원격 저장소와의 충돌을 막기 위해",
+          "심볼릭 링크를 자동으로 만들기 위해"
+        ],
+        answer: 1,
+        explain: "홈 디렉터를 작업 트리로 쓰면 편리하지만 .git이 홈에 생기면 다른 도구들이 어지럽혀진다. 저장소 위치와 작업 트리를 분리 지정해 홈을 깨끗하게 유지한다."
+      },
+      {
+        type: "link",
+        href: "https://www.chezmoi.io/",
+        label: "chezmoi",
+        title: "chezmoi 문서",
+        detail: "템플릿과 시크릿 연동이 필요해질 때의 기준점."
+      },
+      {
+        type: "link",
+        href: "https://yadm.io/",
+        label: "yadm",
+        title: "yadm",
+        detail: "git을 그대로 쓰는 dotfiles 관리자."
+      },
+      {
+        type: "link",
+        href: "https://www.atlassian.com/git/tutorials/dotfiles",
+        label: "Atlassian",
+        title: "The best way to store your dotfiles",
+        detail: "bare 저장소 기법의 유명한 정리 글."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "~/.zshrc와 ~/.gitconfig 두 파일을 로컬 git 저장소에 넣어 본다 — 원격 없이 시작해도 된다. 홈 디렉터에 심볼릭 링크로 연결한 뒤 새 터미널을 열어 설정이 그대로 살아 있는지 확인한다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 135,
+    date: "2027.01.29",
+    weekday: "금",
+    title: "패키지 매니저의 진화 — npm→pnpm, pip→uv",
+    dek: "세대가 바뀐 매니저들의 공통점은 빠름이 아니라 구조다. 전역 캐시와 엄격한 잠금이 먼저고, 속도는 그 결과다.",
+    minutes: 9,
+    tags: ["패키지 매니저", "npm", "pnpm", "uv"],
+    takeaway: "새 패키지 매니저가 푸는 문제는 속도가 아니라 저장 구조와 잠금이다 — 전역 캐시와 엄격한 격리가 먼저고 빠름은 부산물이다.",
+    next: "dotfiles 관리 — chezmoi, yadm, 단순 git의 비교.",
+    blocks: [
+      {
+        type: "p",
+        text: "npm이 만든 표준 레이아웃은 프로젝트마다 node_modules를 통째로 갖는 것이다. 의존성 수십 개짜리 프로젝트가 열 개 있으면 같은 패키지가 열 번 복사된다. 트리를 평평하게 펴는 호이스팅 덕에 문제도 생긴다. package.json에 선언하지 않은 패키지도 node_modules에서 임포트되는 유령 의존성이다. 로컬에서는 돌다가 다른 환경에서 깨지는 전형적 원인이다."
+      },
+      {
+        type: "p",
+        text: "pnpm은 저장 방식을 바꾼다. 패키지 실체는 전역 저장소에 한 번만 있고, 프로젝트의 node_modules는 하드 링크로 그 실체를 가리킨다. 의존성은 심볼릭 링크로 격리돼 선언되지 않은 임포트는 실패한다. 디스크는 아끼고 유령 의존성은 사라진다. 설치가 빠른 이유도 구조다 — 캐시에 이미 있으면 남은 일은 링크뿐이다."
+      },
+      {
+        type: "p",
+        text: "Python 쪽 세대 교체가 uv다. 가상환경마다 패키지를 처음부터 설치하던 pip와 달리 전역 캐시를 쓰고, 다운로드와 설치를 병렬로 처리한다. 프로젝트는 pyproject 표준에 uv.lock을 더해 전수 고정하고, uv run이 환경이 맞는지 스스로 확인한 뒤 명령을 실행한다. pip보다 수십 배 빠르다는 수치는 공식 문서가 공개한 측정이니 직접 확인하는 편이 안전하다 — 출처 링크를 남겨 둔다."
+      },
+      {
+        type: "p",
+        text: "두 사례를 나란히 놓으면 표가 된다. 이전 세대는 프로젝트 단위 저장과 느슨한 고정, 다음 세대는 전역 캐시와 전수 고정이 기본값이다."
+      },
+      {
+        type: "table",
+        caption: "이전 세대와 다음 세대의 대비",
+        head: ["항목", "npm · pip", "pnpm · uv"],
+        rows: [
+          ["패키지 저장", "프로젝트마다 전체 설치", "전역 캐시 + 링크"],
+          ["의존성 격리", "호이스팅 — 유령 의존성 가능", "선언된 것만 임포트"],
+          ["잠금 파일", "npm은 기본, pip는 고정이 선택", "둘 다 기본이며 전수 고정"],
+          ["설치 과정", "순차 실행", "병렬 다운로드 + 캐시 재사용"]
+        ]
+      },
+      {
+        type: "p",
+        text: "갈아타기는 lock 파일부터 시작한다. JS 프로젝트는 node_modules를 지우고 pnpm import로 package-lock.json을 읽어 옮긴다. Python은 uv pip install 같은 호환 인터페이스로 부드럽게 들어간다. 마이그레이션의 본체는 명령어 교체가 아니라 \"이 프로젝트의 정확한 상태를 무엇이 증명하는가\"를 lock 파일로 옮기는 일이다."
+      },
+      {
+        type: "quiz",
+        question: "pnpm 프로젝트에서 package.json에 선언하지 않은 패키지를 임포트하면 어떻게 되는가?",
+        options: [
+          "node_modules에 있으면 임포트된다",
+          "임포트가 실패한다 — 선언된 의존성만 보인다",
+          "자동으로 package.json에 추가된다",
+          "경고만 출력하고 실행된다"
+        ],
+        answer: 1,
+        explain: "pnpm은 의존성을 심볼릭 링크로 격리해 선언되지 않은 패키지가 해석되지 않게 만든다. 유령 의존성을 구조적으로 막는 것이 이 설계의 목적이다."
+      },
+      {
+        type: "link",
+        href: "https://pnpm.io/motivation",
+        label: "pnpm",
+        title: "pnpm의 동기",
+        detail: "전역 저장소와 링크 구조, 유령 의존성 문제의 원전 설명."
+      },
+      {
+        type: "link",
+        href: "https://docs.astral.sh/uv/",
+        label: "Astral",
+        title: "uv 문서",
+        detail: "캐시·병렬 설치·lock 파일의 공식 설명과 성능 측정."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "사이드 프로젝트 하나를 골라 pnpm install 또는 uv sync를 돌려 본다. 바꾸기 전후의 설치 시간과 node_modules(또는 가상환경) 크기를 기록해 두면 내 컴퓨터에서의 수치가 남는다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 134,
+    date: "2027.01.28",
+    weekday: "목",
+    title: "셸 히스토리를 자산으로",
+    dek: "어제 쳤던 명령을 못 찾는 이유는 기억력이 아니라 기본값이다. 저장량과 공유 방식, 검색 도구를 정하면 히스토리는 검색 인덱스가 된다.",
+    minutes: 8,
+    tags: ["셸", "zsh", "워크플로"],
+    takeaway: "셸 히스토리는 어제의 나를 위한 검색 인덱스다 — 저장량을 늘리고 세션 간 공유하고 검색을 붙이면 자산이 된다.",
+    next: "패키지 매니저의 진화 — npm→pnpm, pip→uv, 무엇이 좋아졌나.",
+    blocks: [
+      {
+        type: "p",
+        text: "셸 히스토리의 기본값은 잊게 만들어져 있다. bash는 기본 500줄을 넘기지 않고, 세션이 끝날 때 파일을 갱신하므로 터미널 여러 개를 쓰면 나중에 닫은 세션이 먼저 닫은 세션의 기록을 덮어쓴다. 공백으로 시작한 명령은 저장되지 않는다. 어제 분명 썼던 그 긴 명령을 못 찾는 원인 대부분은 기억력이 아니라 여기 있다."
+      },
+      {
+        type: "p",
+        text: "설정은 몇 줄이면 된다. 저장량을 크게 잡고, 덮어쓰지 않고 덧붙이고, 중복은 정리하고, 세션 사이에서 공유한다."
+      },
+      {
+        type: "code",
+        language: "bash",
+        caption: "zsh 기준 — bash는 shopt -s histappend와 HISTCONTROL로 같은 자리를 잡는다",
+        content: "# ~/.zshrc\nHISTSIZE=50000\nSAVEHIST=50000\nsetopt SHARE_HISTORY         # 세션 사이에서 실시간 공유\nsetopt HIST_IGNORE_ALL_DUPS  # 중복은 최신 하나만 남긴다\nalias h='fc -l -d -100'      # 최근 100개를 시간과 함께"
+      },
+      {
+        type: "p",
+        text: "기록이 쌓였으면 검색이 필요하다. Ctrl-R의 기본 인터페이스는 한 줄씩 돌아보는 방식이라 큰 히스토리에는 맞지 않는다. fzf를 붙이면 퍼지 검색과 미리 보기가 생긴다. 한 걸음 더 가면 atuin 같은 도구가 전체 히스토리를 SQLite에 넣고, 명령·디렉터·호스트별로 필터하며, 암호화해 기기 사이에서 동기화한다. 히스토리가 여러 머신에 흩어져 있었다면 이 계열이 흩어짐 자체를 지운다."
+      },
+      {
+        type: "p",
+        text: "히스토리가 쌓이면 패턴이 보인다. 같은 긴 명령이 주 단위로 반복되면 별칭으로 굳힌다. alias는 단축이자 기록이다 — 내가 자주 뭘 하게 되는지에 대한 통계다. 반대로 별칭이 늘어나면 설정 파일이 낯선 지식의 창고가 되므로, 자주 쓰는 별칭만 남기고 주기적으로 정리한다. 별칭 이름은 입력 비용 기준으로 두세 글자가 적당하다."
+      },
+      {
+        type: "quiz",
+        question: "histappend 없이 터미널 세션 여럿이 같은 히스토리 파일을 쓰면 무슨 일이 생기는가?",
+        options: [
+          "히스토리가 시간 순으로 합쳐진다",
+          "나중에 닫힌 세션이 파일을 덮어써 다른 세션의 기록이 사라질 수 있다",
+          "히스토리 파일이 커져 성능이 떨어진다",
+          "각 세션이 별도 파일로 분리된다"
+        ],
+        answer: 1,
+        explain: "기본 동작은 세션이 끝날 때 파일을 갱신하는 방식이라 마지막으로 닫힌 세션의 목록이 남는다. histappend가 덮어쓰기를 덧붙이기로 바꾼다."
+      },
+      {
+        type: "link",
+        href: "https://github.com/atuinsh/atuin",
+        label: "atuin",
+        title: "atuin",
+        detail: "SQLite 기반 히스토리, 암호화 동기화, 문맥별 검색."
+      },
+      {
+        type: "link",
+        href: "https://github.com/junegunn/fzf",
+        label: "fzf",
+        title: "fzf",
+        detail: "Ctrl-R을 퍼지 검색 프리뷰로 바꾸는 조합."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "지금 셸에서 히스토리 총 개수와 HISTSIZE 값을 확인한다 — echo $HISTSIZE. 설정 블록을 셸 설정 파일에 붙이고 새 터미널을 열어 반영을 확인한 뒤, Ctrl-R로 일주일 전 명령을 하나 찾아 본다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 133,
+    date: "2027.01.27",
+    weekday: "수",
+    title: "vim 모드 입문 — 편집을 문장으로 말하기",
+    dek: "vim의 효율은 hjkl이 아니라 문법이다. 동사와 명사를 조합하는 방식을 익히면 편집이 반복 가능한 명령이 된다.",
+    minutes: 8,
+    tags: ["vim", "에디터", "키보드"],
+    takeaway: "vim 모드의 효율은 방향키가 아니라 문법이다 — 동사와 명사의 조합이 편집을 반복 가능한 문장으로 만든다.",
+    next: "셸 히스토리를 자산으로 — 저장, 공유, 검색의 세 단계.",
+    blocks: [
+      {
+        type: "p",
+        text: "일반 에디터에는 모드가 하나뿐이다. 언제나 입력 상태이고, 고치려면 마우스나 방향키로 범위를 잡는다. vim은 명령(normal)과 입력(insert)을 분리한다. normal 모드에서 키 하나하나가 글자가 아니라 명령으로 읽힌다. 처음 접하면 가장 불편한 지점이 바로 이것이다 — 화살표도, 바로 타이핑도 안 된다. 그 불편의 정체는 두 모드를 강제로 갈라 놓는 문법이다."
+      },
+      {
+        type: "p",
+        text: "문법은 짧다. 동사 뒤에 명사가 온다. d는 지우고, c는 고치고, y는 복사한다. w는 단어, 0은 행의 처음, G는 문서 끝, i(는 괄호 안쪽이다. dw는 커서에서 단어 끝까지, ci(는 괄호 안 전체를 고치기, y2w는 단어 두 개를 복사다. 숫자를 앞에 붙여 반복하고, 마지막 변경은 마침표 하나로 다시 실행한다."
+      },
+      {
+        type: "table",
+        caption: "동사 + 명사 조합의 예",
+        head: ["입력", "읽는 법", "하는 일"],
+        rows: [
+          ["dw", "delete word", "커서에서 단어 끝까지 지운다"],
+          ["ci(", "change inside parens", "괄호 안 전체를 지우고 입력 모드로"],
+          ["y2w", "yank 2 words", "단어 두 개를 복사한다"],
+          ["dt,", "delete till comma", "다음 쉼표 앞까지 지운다"],
+          ["3dd", "3 × delete line", "세 행을 지운다"],
+          [".", "repeat", "직전 변경을 그대로 다시 실행한다"]
+        ]
+      },
+      {
+        type: "p",
+        text: "여기서 가장 큰 효율이 온다. 속도가 아니라 반복성이다. 편집 의도가 명령으로 남으므로 같은 변경이 여러 곳에 필요할 때 마침표를 찍으면 되고, 행 단위 반복은 q 매크로로 기록한다. \"어디를 고칠지\"만 고르면 \"어떻게 고칠지\"는 조합이 대신한다. 손이 기본 자리를 떠나지 않는 것은 이 문법의 부수 효과지 본체가 아니다."
+      },
+      {
+        type: "p",
+        text: "입문 경로는 짧다. 터미널에서 vimtutor 30분 — i와 Esc, hjkl, dw와 dd, 그리고 마침표까지만 익히면 일을 할 수 있다. 전용 에디터로 옮길 필요도 없다. VS Code, JetBrains, 심지어 브라우저 입력창까지 vim 모드 확장이 있으므로 기존 환경에 붙여 시작한다. 일주일은 normal 모드 위주로 지내고, insert에 들어가는 횟수를 줄여 가면 된다."
+      },
+      {
+        type: "quiz",
+        question: "ciw는 무엇을 하는가?",
+        options: [
+          "커서 아래 단어 전체를 지우고 입력 모드로 들어간다",
+          "단어를 잘라 클립보드에 넣고 모드를 나온다",
+          "커서를 다음 단어의 처음으로 옮긴다",
+          "현재 행 전체를 고치기 시작한다"
+        ],
+        answer: 0,
+        explain: "change + inner + word — 커서 아래 단어를 통째로 바꾼다. w가 커서 위치부터인 데 반해 inner는 앞부분까지 포함해 단어 전체를 잡는 차이가 자주 헷갈린다."
+      },
+      {
+        type: "link",
+        href: "https://vimhelp.org/",
+        label: "Vim",
+        title: "Vim 공식 문서",
+        detail: "vimtutor와 사용자 매뉴얼의 원전."
+      },
+      {
+        type: "link",
+        href: "https://openvim.com/",
+        label: "OpenVim",
+        title: "OpenVim",
+        detail: "모드와 이동을 브라우저에서 연습하는 대화형 자습서."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "오늘 쓰는 에디터에 vim 모드 확장을 켜고 vimtutor를 30분만 한다. 그리고 하루 동안 마우스를 잡은 횟수를 센다 — 금지가 아니라 기록이다. 줄어드는지가 배움의 속도를 알려 준다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 132,
+    date: "2027.01.26",
+    weekday: "화",
+    title: "macOS 예약 작업은 cron이 아니라 launchd",
+    dek: "crontab에 넣어 둔 작업이 노트북에서는 조용히 사라진다. launchd가 책임지는 것과 cron이 책임지지 않는 것의 차이.",
+    minutes: 8,
+    tags: ["macOS", "launchd", "스케줄링"],
+    takeaway: "예약 작업의 차이는 문법이 아니라 책임이다 — cron은 시각에만 책임지고 launchd는 놓친 실행과 프로세스 상태까지 책임진다.",
+    next: "vim 모드 입문 — 동사와 명사로 편집을 문장으로 말하기.",
+    blocks: [
+      {
+        type: "p",
+        text: "cron의 모델은 단순하다. 분 시 일 월 요 다섯 필드에 명령을 적으면 데몬이 그 시각에 실행한다. 문제는 그 시각에 기계가 잠들어 있거나 꺼져 있을 때다. cron은 실행을 건너뛰고, 건너뛴 사실도 따로 알려 주지 않는다. 항상 켜져 있는 리눅스 서버에서는 합리적 설계다. 서버는 자지 않는다. 노트북에서는 이 합리성이 그대로 구멍이 된다."
+      },
+      {
+        type: "p",
+        text: "macOS의 기본 도구는 launchd다. 작업을 plist 매니페스트로 선언하고 launchctl로 등록한다. 달력 예약은 StartCalendarInterval로 cron과 같은 다섯 필드를 쓰는데, 책임 범위가 다르다. 예약 시각에 잠들어 있었다면 절전이 풀릴 때 놓친 실행을 보상한다. 시각에 예약된 일이 결과로 이어질 것이라는 보장이 있는 셈이다."
+      },
+      {
+        type: "p",
+        text: "launchd의 차이는 예약 밖에서도 크다. KeepAlive를 붙이면 프로세스가 죽었을 때 다시 띄우고, WatchPaths로 파일 변화를, StartInterval로 간격 반복을 걸 수 있다. 프로세스 수명을 누가 책임지는지가 cron과 launchd의 더 깊은 차이다."
+      },
+      {
+        type: "flow",
+        caption: "launchd 작업의 실제 흐름",
+        steps: [
+          { label: "plist 작성", detail: "~/Library/LaunchAgents/com.example.backup.plist" },
+          { label: "등록", detail: "launchctl load" },
+          { label: "확인", detail: "launchctl list에서 상태와 마지막 종료 코드" },
+          { label: "수동 실행", detail: "launchctl kickstart로 즉시 시험" },
+          { label: "로그", detail: "plist의 StandardOutPath·StandardErrorPath로 확인" }
+        ]
+      },
+      {
+        type: "p",
+        text: "주의점도 있다. launchd는 cron처럼 출력을 메일로 보내지 않으므로 plist에 표준 출력과 오류의 경로를 직접 지정해야 한다. 처음 만든 작업이 돌았는지 확인하려면 kickstart로 즉시 실행해 로그 파일을 보는 편이 가장 빠르다. cron이어도 되는 경우도 있다 — 잠들지 않는 서버와 컨테이너 안에서는 여전히 간단하다. 맥에서 돌릴 작업이라면 launchd가 기본이다."
+      },
+      {
+        type: "quiz",
+        question: "자정에 노트북이 잠들어 있었다. StartCalendarInterval로 예약된 launchd 작업은 어떻게 되는가?",
+        options: [
+          "그날은 실행되지 않는다",
+          "절전에서 깨어나거나 다음에 깨어났을 때 실행된다",
+          "다음 달 같은 날짜에 실행된다",
+          "등록된 사용자에게 알림만 간다"
+        ],
+        answer: 1,
+        explain: "launchd는 cron과 달리 잠자는 동안 건너뛴 달력 예약을 깨어난 뒤 보상 실행한다. 노트북에서 예약 작업이 필요한 이유의 대부분이 이 한 줄에 있다."
+      },
+      {
+        type: "link",
+        href: "https://www.launchd.info/",
+        label: "launchd.info",
+        title: "launchd 정리 문서",
+        detail: "plist 키와 디렉터 구조를 잘 정리한 레퍼런스."
+      },
+      {
+        type: "link",
+        href: "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/Introduction.html",
+        label: "Apple",
+        title: "Daemons and Services Programming Guide",
+        detail: "데몬과 에이전트의 공식 가이드."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "터미널에서 crontab -l을 실행해 맥에서 돌아가는 예약 작업이 있는지 본다. 있다면 하나를 LaunchAgents plist로 옮겨 보고, launchctl kickstart로 즉시 실행한 뒤 지정한 로그 파일에 흔적이 남는지 확인한다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 131,
+    date: "2027.01.25",
+    weekday: "월",
+    title: "Git worktree의 실전 사용",
+    dek: "브랜치를 갈아탈 때 stash와 다시 빌드가 반복된다. worktree는 브랜치마다 디렉터를 주는 방법으로 이 왕복을 없앤다.",
+    minutes: 8,
+    tags: ["Git", "워크플로", "브랜치"],
+    takeaway: "git worktree는 브랜치마다 디렉터를 주는 기능이다 — 열어 둔 파일과 빌드 상태를 죽이지 않고 브랜치를 갈아탄다.",
+    next: "macOS 예약 작업의 진짜 도구 — launchd와 cron의 차이.",
+    blocks: [
+      {
+        type: "p",
+        text: "기능 브랜치로 작업 중에 긴급 수정이 들어오면 정해진 왕복이 시작된다. stash, checkout, 수정, 커밋, checkout, stash pop. 비용은 왕복 자체보다 파괴 범위가 크다. 개발 서버는 다시 뜨고, 빌드 캐시는 무효가 되고, 열어 둔 파일과 터미널의 경로는 전부 무너진다. stash pop에서 충돌이 나면 긴급 수정 전에 다른 일이 하나 더 생긴다."
+      },
+      {
+        type: "p",
+        text: "git worktree는 이 왕복을 없앤다. 저장소의 데이터는 .git 하나에 두고, 작업 디렉터만 브랜치마다 따로 둔다. 두 디렉터는 같은 저장소다 — 커밋, 브랜치, 태그를 공유하므로 어느 쪽에서 커밋해도 다른 쪽에서 바로 보인다."
+      },
+      {
+        type: "code",
+        language: "bash",
+        caption: "worktree 기본 명령",
+        content: "git worktree add ../project-hotfix hotfix   # 브랜치마다 디렉터\n(cd ../project-hotfix && npm install && npm test)   # 그 안에서 따로 검증\ngit worktree list                           # 떠 있는 작업 디렉터 목록\ngit worktree remove ../project-hotfix       # 끝나면 정리"
+      },
+      {
+        type: "p",
+        text: "실전에서 가장 큰 수익은 병렬 검증이다. 기능 브랜치의 개발 서버를 켜 둔 채 옆 디렉터에서 긴급 수정의 테스트를 돌릴 수 있다. 두 버전의 출력을 나란히 diff할 수도 있다. 머지 전에 두 브랜치가 같은 화면에서 어떻게 갈라졌는지 비교하는 비용이 파일 하나 차이로 줄어든다."
+      },
+      {
+        type: "p",
+        text: "주의점은 세 가지다. 같은 브랜치를 두 worktree에서 동시에 체크아웃할 수 없다 — git이 막는다. 의존성 설치는 디렉터마다 다시 한다 — node_modules는 공유되지 않는다. 그리고 끝난 worktree는 remove로 정리하지 않으면 목록에 남는다. worktree list가 점검 도구다."
+      },
+      {
+        type: "p",
+        text: "worktree는 머지 전략을 바꾸는 도구가 아니다. 머지 방식은 그대로다. 바뀌는 것은 전환 비용이다. 갈아타기가 공짜가 되면 브랜치를 작은 단위로 자주 나누게 되고, 오래 묵은 브랜치의 머지 지옥이 애초에 생기지 않는다. 도구가 워크플로를 바꾸는 드문 경우다."
+      },
+      {
+        type: "quiz",
+        question: "어떤 브랜치가 이미 다른 worktree에서 체크아웃돼 있을 때 같은 브랜치를 또 체크아웃하면?",
+        options: [
+          "두 번째 worktree가 첫 번째를 대체한다",
+          "git이 거부한다 — 브랜치는 한 worktree만 점유한다",
+          "같은 브랜치의 두 복사본이 만들어진다",
+          "detached HEAD로 강제 전환된다"
+        ],
+        answer: 1,
+        explain: "한 브랜치는 한 worktree만 점유할 수 있다. 병렬 작업이 목적이라면 브랜치를 따로 두거나 detached HEAD로 읽기 전용으로 띄워야 한다."
+      },
+      {
+        type: "link",
+        href: "https://git-scm.com/docs/git-worktree",
+        label: "Git",
+        title: "git-worktree 공식 문서",
+        detail: "명령 전체와 브랜치 점유 규칙의 원전."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "지금 저장소에서 git worktree list를 실행해 본다. 진행 중인 브랜치 하나를 옆 디렉터에 띄운 뒤 원래 디렉터로 돌아와 아무것도 바뀌지 않았음을 확인한다 — 이게 기본 동작이다. 끝나면 worktree remove로 정리한다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
+    no: 130,
+    date: "2027.01.22",
+    weekday: "금",
+    title: "멀티 프로젝트와 터미널 멀티플렉서",
+    dek: "프로젝트가 셋이면 터미널 탭은 아홉 개가 된다. 멀티플렉서가 푸는 문제는 화면 분할이 아니라 세션의 수명이다.",
+    minutes: 8,
+    tags: ["터미널", "워크플로", "tmux", "zellij"],
+    takeaway: "멀티플렉서의 본질은 화면 분할이 아니라 세션이다 — 작업 상태가 터미널 수명보다 오래 살아 있는 것이 핵심이다.",
+    next: "Git worktree의 실전 사용 — 브랜치마다 디렉터를 주는 격리와 병렬 작업.",
+    blocks: [
+      {
+        type: "p",
+        text: "프로젝트를 두어 개 이상 진행하면 터미널 탭이 주인을 잃는다. 프로젝트마다 개발 서버, 로그 감시, git, 빌드가 필요하니 탭이 한 자릿수를 넘는다. 어느 탭이 어느 프로젝트였는지 잊고, 정리했다가 다시 펼치고, 목요일의 창 배치가 금요일에는 사라져 있다. 이 문제의 해결책으로 화면 분할이 유명하지만, 분할은 표면이다."
+      },
+      {
+        type: "p",
+        text: "tmux의 구조는 서버와 클라이언트다. tmux를 시작하면 백그라운드 서버가 세션을 소유하고, 눈앞의 터미널은 그 세션을 보는 클라이언트다. SSH가 끊기거나 창을 닫아도 서버가 살아 있으므로 다시 접속해 attach하면 작업이 그 자리에 있다. detach는 창을 닫는 것이 아니라 시선을 거두는 것이다."
+      },
+      {
+        type: "code",
+        language: "bash",
+        caption: "tmux의 기본 동사 — 프로젝트당 세션 하나",
+        content: "tmux new -s api            # api 프로젝트 세션 생성\nCtrl-b d                   # detach — 세션은 살아 있고 창만 떠난다\ntmux ls                    # 살아 있는 세션 목록\ntmux attach -t api         # 다시 붙는다\ntmux kill-session -t api   # 끝난 프로젝트 정리"
+      },
+      {
+        type: "p",
+        text: "zellij는 같은 문제를 다른 문법으로 푼다. 러스트로 작성됐고, 화면 아래에 키 힌트가 항상 붙어 있어 tmux의 치트 시트 의존을 줄인다. 레이아웃을 파일로 선언할 수 있어 프로젝트별 패널 배치 — 왼쪽 에디터, 오른쪽 로그, 아래 서버 — 를 명령 한 줄로 재현한다. 도구 선택보다 중요한 것은 어느 쪽이든 프로젝트당 세션 하나의 습관이다."
+      },
+      {
+        type: "p",
+        text: "세션 습관이 생기면 생각의 단위가 바뀐다. \"지금 뭘 하고 있었지\"가 아니라 \"어느 세션으로 돌아갈지\"가 된다. 프로젝트 전환은 창 정리가 아니라 attach다. 세션 안의 창과 패널 배치는 그대로 남으므로 문맥 복원 비용이 사실상 0이 된다."
+      },
+      {
+        type: "p",
+        text: "이 모델이 요즘 더 중요해진 이유는 사람 대신 에이전트가 터미널에서 일하기 때문이다. 빌드, 테스트, 마이그레이션처럼 오래 도는 작업을 붙잡아 두는 자리의 가치가 커졌고, herdr처럼 에이전트 세션 자체를 작업 단위로 붙들어 두는 멀티플렉서가 나온 것도 같은 논리다. 도구 이름이 아니라 원칙이 남는다 — 작업은 터미널 수명보다 오래 살아야 한다."
+      },
+      {
+        type: "quiz",
+        question: "SSH 연결이 끊겨도 원격에서 돌던 작업이 살아 있는 이유는?",
+        options: [
+          "작업이 자동으로 백그라운드 데몬이 됐기 때문",
+          "세션을 서버 프로세스가 소유하고 클라이언트는 연결했을 뿐이기 때문",
+          "tmux가 작업을 디스크에 저장했다가 복구하기 때문",
+          "셸이 nohup으로 실행을 대체하기 때문"
+        ],
+        answer: 1,
+        explain: "멀티플렉서는 서버가 세션을 소유하는 구조다. 클라이언트가 끊겨도 서버의 자식 프로세스는 계속 돌고, 다시 attach하면 화면이 그대로 돌아온다."
+      },
+      {
+        type: "link",
+        href: "https://github.com/tmux/tmux/wiki",
+        label: "tmux",
+        title: "tmux 위키",
+        detail: "세션·창·패널 모델의 공식 문서."
+      },
+      {
+        type: "link",
+        href: "https://zellij.dev/documentation/",
+        label: "Zellij",
+        title: "Zellij 문서",
+        detail: "레이아웃 파일과 키 힌트 UI의 공식 가이드."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "지금 열려 있는 터미널 탭들을 세션으로 옮겨 본다. 프로젝트당 tmux new -s 이름 하나씩 만들고 나서 전부 detach한다. 이후 하루를 tmux ls와 attach로만 보내면 탭 정리라는 일이 사라졌는지 확인할 수 있다."
+      }
+    ],
+    series: "도구와 워크플로"
+  },
+
+  {
     no: 39,
     date: "2026.09.13",
     weekday: "일",
