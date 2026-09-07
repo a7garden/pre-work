@@ -260,7 +260,7 @@ async function route(input: string): Promise<Route> {
     blocks: [
       {
         type: "p",
-        text: "토크나이저는 문자가 아니라 학습 코퍼스에서 뽑힌 빈도 패턴 단위로 텍스트를 쪼갠다. 그래서 코퍼스에 많은 언어는 토큰이 효율적이고, 적은 언어는 같은 내용에 토큰이 더 든다. 한국어·일본어·중국어는 대부분의 모델에서 영어보다 같은 의미를 표현하는 데 더 많은 토큰을 쓴다. 체감 배율은 모델마다 다르지만 1.5~3배 범위의 이야기가 흔하다. 정확한 배율은 자기 문장을 실제 토큰 카운터에 넣어 재야 한다 — 모델 버전이 바르면 배율도 바뀐다."
+        text: "토크나이저는 문자가 아니라 학습 코퍼스에서 뽑힌 빈도 패턴 단위로 텍스트를 쪼갠다. 그래서 코퍼스에 많은 언어는 토큰이 효율적이고, 적은 언어는 같은 내용에 토큰이 더 든다. 한국어·일본어·중국어는 대부분의 모델에서 영어보다 같은 의미를 표현하는 데 더 많은 토큰을 쓴다. 체감 배율은 모델마다 다르지만 1.5~3배 범위의 이야기가 흔하다. 정확한 배율은 자기 문장을 실제 토큰 카운터에 넣어 재야 한다 — 모델 버전이 바뀌면 배율도 바뀐다."
       },
       {
         type: "p",
@@ -436,7 +436,7 @@ for lang, text in sentences.items():
     tags: ["AI", "LLM", "보안", "개인정보"],
     series: "AI와 LLM 운영",
     takeaway: "LLM 로그는 개인정보 처리 대상이다 — 콘솔 로그처럼 다루는 순간 사고가 시작된다.",
-    next: "AI 코드 리뷰는 정적 분석과 무엇이 다른가 — 신호의 차이와 오타마 관리.",
+    next: "AI 코드 리뷰는 정적 분석과 무엇이 다른가 — 신호의 차이와 오탐 관리.",
     blocks: [
       {
         type: "p",
@@ -478,7 +478,7 @@ for lang, text in sentences.items():
       },
       {
         type: "link",
-        href: "https://openai.com/policies/api-data-usage-policies/",
+        href: "https://platform.openai.com/docs/models/default-usage-policies-by-endpoint",
         label: "OpenAI",
         title: "API data usage policies",
         detail: "API 데이터 보관 기간과 학습 사용 여부를 규정한 정책 문서."
@@ -515,7 +515,7 @@ for lang, text in sentences.items():
       },
       {
         type: "p",
-        text: "그 강점의 그림자가 오탐이다. LLM은 확신에 찬 문장으로 사실이 아닌 지적을 한다 — 존재하지 않는 경쟁 조건을 경고하거나, 실제로는 이미 처리된 예외를 지적하거나. 정적 분석기의 오탐은 규칙을 끄면 되지만, LLM의 오타마는 매번 다른 모양으로 나온다. 이 차이를 모르고 도입하면 \"LLM 리뷰 말도 안 되네\"라는 반응이 팀을 채우고, 유용한 지적까지 함께 묻힌다. 오탐은 기능이 아니라 관리 대상 비용으로 취급해야 한다."
+        text: "그 강점의 그림자가 오탐이다. LLM은 확신에 찬 문장으로 사실이 아닌 지적을 한다 — 존재하지 않는 경쟁 조건을 경고하거나, 실제로는 이미 처리된 예외를 지적하거나. 정적 분석기의 오탐은 규칙을 끄면 되지만, LLM의 오탐은 매번 다른 모양으로 나온다. 이 차이를 모르고 도입하면 \"LLM 리뷰 말도 안 되네\"라는 반응이 팀을 채우고, 유용한 지적까지 함께 묻힌다. 오탐은 기능이 아니라 관리 대상 비용으로 취급해야 한다."
       },
       {
         type: "table",
@@ -642,7 +642,7 @@ gate:
       },
       {
         type: "link",
-        href: "https://openai.com/docs/models/",
+        href: "https://platform.openai.com/docs/models",
         label: "OpenAI Docs",
         title: "Models documentation",
         detail: "모델별 특성과 퇴역 정책 확인용."
@@ -714,7 +714,7 @@ gate:
       },
       {
         type: "link",
-        href: "https://platform.openai.com/docs/guide/embeddings",
+        href: "https://platform.openai.com/docs/guides/embeddings",
         label: "OpenAI Docs",
         title: "Embeddings guide",
         detail: "차원 축소 옵션과 사용법이 정리된 공식 가이드."
@@ -730,13 +730,12 @@ gate:
     no: 49,
     date: "2026.09.25",
     weekday: "금",
-    title: "LLM 출력의 비결정성 — temperature=0은 결적인가",
+    title: "LLM 출력의 비결정성 — temperature=0은 결정적인가",
     dek: "temperature=0으로도 같은 출력이 보장되지 않는 이유. GPU 커널과 배치 처리가 만드는 비결정성, 테스트와 캐시 설계에서의 대응.",
     minutes: 8,
     tags: ["AI", "LLM", "재현성", "테스트"],
     series: "AI와 LLM 운영",
     takeaway: "temperature=0은 \"보통 같다\"지 \"항상 같다\"가 아니다 — 출력에 의존하는 테스트와 캐시는 이 전제로 설계한다.",
-    next: "시리즈 마무리 — AI와 LLM 운영의 전체 그림을 돌아본다.",
     blocks: [
       {
         type: "p",
@@ -778,7 +777,7 @@ gate:
       },
       {
         type: "link",
-        href: "https://thinkingmachines.dev/blog/defeating-nondeterminism-in-llm-inference/",
+        href: "https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/",
         label: "Thinking Machines",
         title: "Defeating Nondeterminism in LLM Inference",
         detail: "추론 서버의 배치 처리가 비결정성을 만드는 메커니즘을 해부한 글."
