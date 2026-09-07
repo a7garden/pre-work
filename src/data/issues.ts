@@ -25,6 +25,662 @@ export type Issue = {
 };
 export const issues: Issue[] = [
   {
+    no: 80,
+    date: "2026.11.10",
+    weekday: "화",
+    title: "Astro의 islands — 정적 HTML과 부분 hydrate의 경계",
+    dek: "기본값은 HTML이다. 인터랙티브가 필요한 컴포넌트만 따로 hydrate해 페이지의 JS 비용을 통제한다.",
+    minutes: 9,
+    tags: ["Astro", "프론트엔드", "웹", "성능"],
+    takeaway: "islands는 ‘JS를 적게 보내는 패턴'이 아니라 ‘JS가 어디에, 언제 살아나야 하는지를 명시적으로 선언하는 패턴'이다.",
+    next: "React 19의 use() 훅 — Promise를 컴포넌트 안에서 어떻게 다루는가.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "Astro는 기본적으로 HTML을 보낸다. 컴포넌트는 서버에서 한 번 렌더되고, 클라이언트는 마크업과 함께 페이지에 등장한다. 인터랙션이 필요한 조각 — 카운터, 토글, 폼, 검색 입력 — 에만 client directive를 붙여 그때서야 JS를 실어 보낸다. 이 영역을 island라고 부른다. 본문은 정적 HTML이고, 섬만 물 위에 떠 있는 모양이라는 비유다."
+      },
+      {
+        type: "p",
+        text: "directive는 네 가지다. client:load는 페이지가 로드되자마자 hydrate하고, client:idle은 requestIdleCallback 시점에, client:visible은 IntersectionObserver로 컴포넌트가 뷰포트에 들어올 때, client:media는 미디어 쿼리가 참일 때만 hydrate한다. 같은 컴포넌트라도 어디에, 언제 살릴지를 작성자가 결정한다. 모든 섬에 client:load를 붙이는 순간 islands 아키텍처의 이점은 사라진다."
+      },
+      {
+        type: "p",
+        text: "섬 사이에 props로 데이터를 전달할 수 있다. Astro 컴포넌트가 서버에서 직렬화한 값을 클라이언트 섬으로 prop으로 내려 보낸다. 직렬화 가능한 값(문자열·숫자·배열·평범한 객체)만 가능하다는 점이 제약이다 — 함수는 보낼 수 없다. 이 경계가 명확해 서버/클라이언트 책임을 분리하는 데 도움이 된다."
+      },
+      {
+        type: "code",
+        language: "astro",
+        caption: "본문은 정적, 섬은 lazy",
+        content: "---\n// pages/index.astro\nimport Counter from '../components/Counter.svelte';\nimport SearchBox from '../components/Search.tsx';\n---\n<html>\n  <body>\n    <h1>블로그</h1>\n    {posts.map(post => <article>{post.title}</article>)}\n    <SearchBox client:visible />\n    <Counter client:idle initial={0} />\n  </body>\n</html>"
+      },
+      {
+        type: "p",
+        text: "framework 옵션도 넓다. React, Preact, Svelte, Vue, Solid를 한 프로젝트 안에서 섞어 쓸 수 있다. 팀에 따라 React가 익숙하고 시각 효과가 필요해 Svelte를 쓰는 식의 구성이 가능하다. 다만 트리 셰이킹과 청크 분할이 framework별로 분리돼 나오므로, 한 페이지에 너무 많은 framework를 두면 초기 청크가 부풀어 오를 수 있다."
+      },
+      {
+        type: "quiz",
+        question: "다음 중 클라이언트로 보내지는 JS의 양을 가장 결정하는 요소는?",
+        options: [
+          "Astro 컴포넌트의 총 개수",
+          "client directive의 종류와 사용 위치",
+          "사용한 framework의 종류",
+          "페이지의 CSS 크기"
+        ],
+        answer: 1,
+        explain: "client:load·client:idle·client:visible·client:media 중 무엇을 쓰느냐, 그리고 얼마나 많은 컴포넌트에 directive를 붙이느냐가 실제 전송되는 JS의 양을 가른다."
+      },
+      {
+        type: "link",
+        href: "https://docs.astro.build/en/concepts/islands/",
+        label: "Astro Docs",
+        title: "Islands architecture",
+        detail: "정식 문서의 islands 정의와 directive 목록."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "현재 사이트의 메인 페이지 한 곳을 골라 ‘JS가 정말로 필요한가?'를 자문한다. 토글, 모달, 검색 입력처럼 인터랙션이 있는 조각만 client directive를 남기고, 본문·목록·카드처럼 정적인 영역은 그대로 둔다. 한 번이라도 실측해 보기 전엔 islands의 효과를 가늠할 수 없다."
+      }
+    ]
+  },
+  {
+    no: 81,
+    date: "2026.11.11",
+    weekday: "수",
+    title: "React 19의 use() 훅 — Promise를 컴포넌트 안에서 다루는 새 방식",
+    dek: "use()는 Promise를 컴포넌트가 읽을 수 있는 값으로 바꾼다. Suspense와의 결합, 조건부 호출이 막히는 이유, useEffect와의 차이까지 정리한다.",
+    minutes: 9,
+    tags: ["React", "프론트엔드", "비동기"],
+    takeaway: "use()는 Promise를 ‘읽는' 동작으로 끌어내린다 — 데이터 페칭이 컴포넌트 본문에서 일어난다는 사실이 렌더링 모델의 경계를 다시 정의한다.",
+    next: "CSS 변수와 디자인 토큰 — OKLCH와 시스템 색상으로 가는 길.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "React 19에서 use()는 두 종류의 값을 다룬다. Promise와 React가 별도로 정의한 Resource(Context에서 비동기적으로 값을 꺼내기 위한 약속)다. 둘 다 ‘읽는' 동작을 본문에서 일어나게 한다. Promise를 use()로 감싸면 그 자리에서 throw가 일어나고, Suspense 경계가 이를 받아 로딩 상태로 전환한다. resolved된 값은 다시 본문으로 흘러온다."
+      },
+      {
+        type: "p",
+        text: "코드 모양은 단순하다. 데이터 페칭을 컴포넌트 본문에서 시작하고, 로딩은 상위 Suspense가 책임진다. 흔한 useEffect + useState 조합을 보면 fetch를 effect에서 시작하고 상태로 채워야 하지만, use()는 본문이 평가되는 시점에 await 같은 일을 한다. 렌더링이 곧 데이터 요청이라는 점이 처음엔 어색하다 — 그래서 Suspense가 필요하다."
+      },
+      {
+        type: "code",
+        language: "tsx",
+        caption: "use()로 비동기 자원을 읽는다",
+        content: "function Profile({ id }: { id: string }) {\n  const data = use(fetchProfile(id));\n  return <div>{data.name}</div>;\n}\n\n<Suspense fallback={<Skeleton />}>\n  <Profile id=\"u-1\" />\n</Suspense>"
+      },
+      {
+        type: "p",
+        text: "조건부 호출이 막히는 점에 주의한다. use()는 컴포넌트 본문의 최상단에서만 쓸 수 있다는 제약이 사실상 있다. if/for 안에서 호출하면 훅 호출 순서가 렌더 사이에 흔들린다. 따라서 조건이 있는 자원은 분기된 컴포넌트로 분리하거나, 키를 바꿔 새 컴포넌트를 마운트하는 방식이 일반적이다."
+      },
+      {
+        type: "p",
+        text: "서버 컴포넌트와의 조합도 의미가 크다. 서버 컴포넌트에서 만든 Promise를 직렬화해 클라이언트로 보내고, 클라이언트에서 use()로 해제하는 흐름이 자연스럽다. 같은 API로 서버/클라이언트 양쪽에서 비동기 자원을 다룰 수 있어, 데이터 흐름의 모델이 하나로 정리된다."
+      },
+      {
+        type: "quiz",
+        question: "use()를 조건부로 호출하면 흔히 생기는 문제는?",
+        options: [
+          "메모리 누수",
+          "훅 호출 순서가 흔들려 렌더링이 깨짐",
+          "번들 크기가 커짐",
+          "자동으로 memoization이 풀림"
+        ],
+        answer: 1,
+        explain: "조건 분기 안에서 use()를 부르면 호출 횟수가 렌더 사이에 달라질 수 있어 React가 훅 순서를 보장하지 못한다."
+      },
+      {
+        type: "link",
+        href: "https://react.dev/reference/react/use",
+        label: "React Docs",
+        title: "use – Promise와 Context 읽기",
+        detail: "정식 문서. Server Components와의 결합 설명 포함."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "데이터를 받는 컴포넌트 하나를 골라 useEffect + useState 조합을 use() + Suspense로 옮겨 본다. ‘데이터 요청이 본문에서 시작된다'는 점이 어색하면 그 자리가 바로 학습 지점이다."
+      }
+    ]
+  },
+  {
+    no: 82,
+    date: "2026.11.12",
+    weekday: "목",
+    title: "CSS 변수와 디자인 토큰 — OKLCH와 시스템 색상으로 가는 길",
+    dek: "디자인 토큰은 CSS 변수로 배포된다. OKLCH는 색을 더 균일하게 다루게 하고, prefers-color-scheme는 OS의 다크모드 신호를 그대로 이어받는다.",
+    minutes: 9,
+    tags: ["CSS", "디자인", "프론트엔드"],
+    takeaway: "토큰은 ‘이름 붙인 값'이다 — 색·간격·모서리를 변수로 빼면 시스템의 다른 부분이 그 이름으로 일관되게 작동한다.",
+    next: "폼 UX의 작은 결정들 — 검증, 에러 위치, 성공 피드백.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "디자인 토큰은 의미가 붙은 값이다. --color-bg, --space-3, --radius-md처럼 이름이 있고, 의미가 있고, 한 곳에서 정의된다. CSS 변수로 배포하면 컴포넌트는 var(--color-bg)만 알면 된다. 색이 바뀐다고 컴포넌트가 바뀌지 않는다. 테마와 다크모드는 변수의 값만 갈아끼우면 끝이다."
+      },
+      {
+        type: "p",
+        text: "OKLCH는 2026년 시점의 권장 색 공간이다. L(명도)·C(채도)·H(색상각)의 세 축으로 색을 표현한다. 같은 명도 두 색이 실제 화면에서도 비슷한 밝기로 보인다는 점이 HSL 대비 강점이다. 가벼운 회색과 짙은 회색을 정의할 때 HSL은 L 값이 같아도 사람 눈에는 다르게 보이지만, OKLCH는 L이 곧 인지 명도에 가깝다."
+      },
+      {
+        type: "code",
+        language: "css",
+        caption: "다크모드 토큰은 미디어 쿼리로 갈아끼운다",
+        content: ":root {\n  --color-bg: oklch(98% 0 0);\n  --color-fg: oklch(20% 0 0);\n  --color-accent: oklch(60% 0.18 250);\n}\n@media (prefers-color-scheme: dark) {\n  :root {\n    --color-bg: oklch(15% 0 0);\n    --color-fg: oklch(95% 0 0);\n  }\n}"
+      },
+      {
+        type: "p",
+        text: "시스템 색상 키워드도 토큰 자리에 쓸 수 있다. Canvas, CanvasText, AccentColor, LinkText 등이 표준이다. 이 값을 쓰면 OS의 강조색과 통일된 테마가 자동으로 적용된다. macOS Sonoma부터 브라우저는 OS의 다크/라이트 신호를 정확히 반영한다. 즉 OS 설정이 바뀌면 사이트도 따라간다."
+      },
+      {
+        type: "table",
+        caption: "토큰 정의 위치별 특징",
+        head: ["위치", "장점", "주의"],
+        rows: [
+          [":root", "전역에서 접근, 캐시 단순", "큰 토큰 세트에선 네이밍 충돌 위험"],
+          [":root[data-theme]", "테마를 명시적으로 토글", "JS로 data 속성을 바꿔야 함"],
+          [":root scope", "컴포넌트 단위 토큰", "재사용 시 매번 재정의 필요"],
+          ["CSS @layer", "우선순위 명시", "토큰 정의 순서가 결과에 영향"]
+        ]
+      },
+      {
+        type: "quiz",
+        question: "OKLCH의 L 값이 같은 두 색이 사람 눈에 비슷하게 보이는 이유는?",
+        options: [
+          "L이 채도를 의미해서",
+          "L이 인지 명도에 가까워서",
+          "L이 RGB와 1:1 매핑이라서",
+          "브라우저가 보정해서"
+        ],
+        answer: 1,
+        explain: "OKLCH의 L은 지각 균형 명도(perceptual lightness)에 가깝게 설계돼 동일 L이면 실제 밝기도 비슷하다."
+      },
+      {
+        type: "link",
+        href: "https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch",
+        label: "MDN",
+        title: "oklch() — CSS 색 값",
+        detail: "OKLCH 문법과 브라우저 지원 상황."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "현재 스타일에서 토큰화하지 않은 색·간격·모서리 값 다섯 개를 골라 --color-*, --space-*, --radius-* 이름으로 :root에 등록한다. 그 자리에선 모두 var(...)로만 참조하도록 바꾼다. 작은 범위라도 시작하면 효과가 즉시 보인다."
+      }
+    ]
+  },
+  {
+    no: 83,
+    date: "2026.11.13",
+    weekday: "금",
+    title: "폼 UX의 작은 결정들 — 인라인 검증, 에러 위치, 성공 피드백",
+    dek: "폼은 한 번에 완성되지 않는다. 에러는 입력 옆에, 검증은 입력 끝난 뒤, 성공은 행동이 끝났을 때 — 이 세 자리가 시작점이다.",
+    minutes: 9,
+    tags: ["프론트엔드", "UX", "웹"],
+    takeaway: "폼 UX는 ‘입력 → 검증 → 피드백'의 세 박자를 시각·시간적으로 정렬하는 일이다 — 그 정렬이 곧 신뢰다.",
+    next: "폰트 로딩과 FOUT/FOIT — display: swap과 size-adjust의 역할.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "폼 UX는 디테일의 합이다. 라벨의 위치, 인풋의 크기, 버튼의 문구 — 어느 하나만 어긋나도 사용자는 자신의 입력을 신뢰하지 못한다. 그중에서도 결정이 가장 큰 세 가지를 본다. 에러의 위치, 검증의 타이밍, 성공의 신호다."
+      },
+      {
+        type: "p",
+        text: "에러는 인풋 ‘옆'이 아니라 ‘바로 아래'에 둔다. 스크린 리더가 aria-describedby로 메시지를 읽어 내려면 DOM 순서상 인풋 다음에 와야 한다. 시각적으로도 인풋과 너무 멀면 같은 입력에 대한 피드백인지 모호해진다. 8~12px 간격이 안전하다."
+      },
+      {
+        type: "code",
+        language: "html",
+        caption: "에러 메시지는 aria-describedby로 묶는다",
+        content: "<label for=\"email\">이메일</label>\n<input id=\"email\" type=\"email\" aria-describedby=\"email-error\" aria-invalid=\"true\" />\n<p id=\"email-error\" role=\"alert\">이메일 형식을 다시 확인해 주세요.</p>"
+      },
+      {
+        type: "p",
+        text: "검증 타이밍은 ‘입력 중'과 '제출 후'의 중간을 잡는다. 포커스를 잃은 시점(blur)에 한 번 검증하고, 그 뒤로는 입력이 바뀔 때마다 검증한다. 사용자가 다 적기도 전에 빨갛게 칠하면 작성 자체를 포기하게 된다. ‘3글자 이상일 때만 메시지 표시' 같은 조건이 그 자리를 조절한다."
+      },
+      {
+        type: "p",
+        text: "성공 피드백도 빠뜨리지 않는다. ‘저장됐어요'라는 메시지는 행동이 끝났다는 신호다. 토스트든 인라인 메시지든 1.5~3초 사이로 잠깐 떴다가 사라지면 충분하다. 사용자가 페이지 이동을 하더라도 ‘내 입력이 받아들여졌다'는 확인을 한 번은 본다."
+      },
+      {
+        type: "table",
+        caption: "검증 타이밍 비교",
+        head: ["방식", "장점", "단점"],
+        rows: [
+          ["blur 시점", "타이밍 자연스러움", "탭으로 빠르게 옮기면 조기 트리거"],
+          ["debounce(300ms)", "입력 패턴 자연스러움", "반응이 약간 늦게 느껴짐"],
+          ["제출 시점", "단순함", "입력 중 불안감 누적"],
+          ["blur + 변경 시", "가장 균형 잡힘", "구현이 가장 복잡"]
+        ]
+      },
+      {
+        type: "quiz",
+        question: "스크린 리더에서 에러 메시지를 인풋과 연결하는 표준 속성은?",
+        options: [
+          "aria-label",
+          "aria-controls",
+          "aria-describedby",
+          "aria-flowto"
+        ],
+        answer: 2,
+        explain: "aria-describedby는 인풋과 보조 설명(에러 메시지 등)을 묶는다. aria-label은 라벨을 대체할 때 쓴다."
+      },
+      {
+        type: "link",
+        href: "https://www.w3.org/WAI/tutorials/forms/",
+        label: "W3C WAI",
+        title: "Forms — 접근성 튜토리얼",
+        detail: "라벨, 에러, 필수 표기의 표준 가이드."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자신이 만든 폼 한 곳을 골라 세 가지를 확인한다 — (1) 에러가 인풋 바로 아래에 있는가, (2) blur 시점에 검증되는가, (3) 제출 후 성공 메시지가 있는가. 셋 중 하나라도 어긋나면 그 자리를 먼저 고친다."
+      }
+    ]
+  },
+  {
+    no: 84,
+    date: "2026.11.16",
+    weekday: "월",
+    title: "폰트 로딩과 FOUT/FOIT — display: swap과 size-adjust의 역할",
+    dek: "웹폰트는 보이지 않는 동안 텍스트를 가로막든가, 자리에 다른 글꼴을 끼워 넣는다. FOUT와 FOIT의 비용은 size-adjust로 줄일 수 있다.",
+    minutes: 9,
+    tags: ["웹", "성능", "CSS", "타이포"],
+    takeaway: "size-adjust로 ‘대체 글꼴과 본 글꼴의 폭'을 거의 맞추면, 로딩이 끝난 뒤 글자가 튀는 일은 사라진다.",
+    next: "RSS 2.0 vs Atom — 무엇을 어디까지 다루는가.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "웹폰트는 즉시 도착하지 않는다. 로컬 캐시가 없거나 새 글꼴이면 네트워크를 거쳐야 한다. 그 사이 화면은 어떻게 보일까. 두 가지가 일어난다 — FOIT(글꼴이 올 때까지 글자를 안 보이게 함) 또는 FOUT(대체 글꼴로 먼저 보여주다 글꼴이 도착하면 교체). 어떤 쪽이든 ‘글자가 자리에서 한 번 바뀐다'는 사실은 같다."
+      },
+      {
+        type: "p",
+        text: "@font-face의 font-display가 그 선택을 한다. swap은 대체 글꼴로 먼저 보여주고 본 글꼴이 도착하면 교체. block은 짧은 동안 글자를 숨겼다가 안 오면 표시. optional은 글꼴을 안 가져올 수도 있다고 명시. 2026년 기준 권장은 swap이다 — 글자가 보이지 않는 시간보다 ‘교체로 인한 미세한 점프'가 덜 해롭다."
+      },
+      {
+        type: "code",
+        language: "css",
+        caption: "font-display: swap과 size-adjust로 폭을 맞춘다",
+        content: "@font-face {\n  font-family: 'MySans';\n  src: url('/fonts/mysans.woff2') format('woff2');\n  font-display: swap;\n  size-adjust: 100%;\n  ascent-override: 90%;\n  descent-override: 22%;\n  line-gap-override: 0%;\n}\n@font-face {\n  font-family: 'Fallback';\n  src: local('Arial');\n  size-adjust: 107%;\n  ascent-override: 96%;\n  descent-override: 24%;\n  line-gap-override: 0%;\n}"
+      },
+      {
+        type: "p",
+        text: "size-adjust의 핵심은 ‘두 글꼴의 한 글자 높이를 맞춘다'는 점이다. Arial로 먼저 표시되다가 MySans가 도착해 교체되면, 같은 16px이라도 폭이 다르면 단어가 다음 줄로 밀린다. size-adjust 100%로 본 글꼴을, 107%로 대체 글꼴을 정의해 폭 차이를 흡수한다. ascent-override와 descent-override는 세로 정렬을 보정한다."
+      },
+      {
+        type: "p",
+        text: "preload로 첫 페인트 시간을 앞당길 수도 있다. <link rel=\"preload\" as=\"font\" type=\"font/woff2\" crossorigin>로 본문을 렌더하기 전 글꼴부터 받아 두면 swap 시점의 점프가 거의 사라진다. 단, 본문 외 페이지에서도 항상 받는다는 뜻이니 신중히 결정한다."
+      },
+      {
+        type: "quiz",
+        question: "size-adjust를 쓰는 가장 큰 이유는?",
+        options: [
+          "폰트 파일 크기를 줄이기 위해",
+          "대체 글꼴과 본 글꼴의 메트릭 차이를 흡수해 글자 점프를 줄이기 위해",
+          "폰트를 미리 캐시하기 위해",
+          "한글 글자 폭을 보정하기 위해"
+        ],
+        answer: 1,
+        explain: "size-adjust는 글자 폭과 높이를 보정해 swap 시 점프를 줄인다. 캐시나 파일 크기와는 무관하다."
+      },
+      {
+        type: "link",
+        href: "https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display",
+        label: "MDN",
+        title: "font-display — @font-face 디렉티브",
+        detail: "swap·block·optional·fallback·auto의 차이."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "현재 사이트의 본문 글꼴을 살펴 size-adjust 값을 한 번 측정해 본다. DevTools의 Rendering → ‘Disable web fonts'로 대체 글꼴 상태를 본 다음 본 글꼴을 켜고, 단어와 줄이 얼마나 점프하는지 가늠한다. 그 폭 차이만큼 size-adjust를 조정한다."
+      }
+    ]
+  },
+  {
+    no: 85,
+    date: "2026.11.17",
+    weekday: "화",
+    title: "RSS 2.0 vs Atom — autodiscovery, 카테고리, 인덱싱 친화도",
+    dek: "둘 다 피드를 만들고 사이트에 노출한다. 차이는 확장성, 카테고리 표현, 권위 있는 표준 여부에서 갈라진다.",
+    minutes: 8,
+    tags: ["웹", "RSS", "표준"],
+    takeaway: "RSS 2.0과 Atom 둘 다 유효하다 — 한 가지만 고르라면 Atom이 더 정확하고, 더 많은 리더가 받아 주는 건 RSS다.",
+    next: "pagefind로 정적 HTML에 검색 인덱스 붙이기.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "피드는 두 표준이 양분한다. RSS 2.0은 2000년대 초 정착한 널리 쓰이는 형식이고, Atom은 IETF가 RFC 4287로 권위 있게 표준화한 형식이다. 둘 다 XML이고, 둘 다 <link>의 autodiscovery로 사이트에 연결할 수 있다. 자동 발견은 <link rel=\"alternate\" type=\"application/rss+xml\"> 형태로 헤더에 두면 된다."
+      },
+      {
+        type: "p",
+        text: "RSS 2.0의 카테고리는 <category>로 표현한다. 여러 개를 나열하면 된다. Atom은 <category term=\"...\" scheme=\"...\" label=\"...\" />로 더 구조적인 표현이 가능하다. 같은 정보를 두 형식 모두로 보낼 때는 ‘사람이 읽는 label'과 ‘기계가 식별하는 term'을 분리할 수 있다는 점이 Atom의 강점이다."
+      },
+      {
+        type: "table",
+        caption: "RSS 2.0 vs Atom 1.0",
+        head: ["항목", "RSS 2.0", "Atom 1.0"],
+        rows: [
+          ["표준화", "비공식(폭넓은 관행)", "IETF RFC 4287"],
+          ["카테고리", "<category> 문자열 나열", "<category term/scheme/label>"],
+          ["id", "<guid>", "<id>(IETF URI 권장)"],
+          ["self·feed link", "없음", "<link rel=\"self\"> 권장"],
+          ["확장", "<itunes:*> 등 다수", "<atom:*> 외 다양한 표준"]
+        ]
+      },
+      {
+        type: "p",
+        text: "인덱싱 친화도는 RSS가 더 높다. 오래된 블로그·뉴스 리더 대부분이 RSS를 기본으로 받아들인다. Atom은 정확하지만 상대적으로 덜 읽힌다. 운영자 입장에선 ‘둘 다 발행한다'가 흔한 답이다. 같은 콘텐츠를 RSS와 Atom 두 파일로 각각 내고, 헤더에서 둘 다 autodiscovery로 가리킨다."
+      },
+      {
+        type: "code",
+        language: "html",
+        caption: "두 피드를 모두 autodiscovery로 노출",
+        content: "<link rel=\"alternate\" type=\"application/rss+xml\"\n      href=\"/feed.xml\" title=\"RSS 2.0\">\n<link rel=\"alternate\" type=\"application/atom+xml\"\n      href=\"/atom.xml\" title=\"Atom 1.0\">"
+      },
+      {
+        type: "quiz",
+        question: "Atom 1.0이 IETF에서 받은 표준 문서는?",
+        options: [
+          "RFC 4287",
+          "RFC 7231",
+          "RFC 2119",
+          "RFC 8259"
+        ],
+        answer: 0,
+        explain: "Atom 1.0은 IETF의 RFC 4287로 표준화됐다. 나머지는 HTTP(HTTP semantics), RFC 키워드, JSON 표준이다."
+      },
+      {
+        type: "link",
+        href: "https://datatracker.ietf.org/doc/html/rfc4287",
+        label: "IETF",
+        title: "RFC 4287 — Atom 1.0",
+        detail: "Atom 1.0 정식 표준 문서."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "현재 사이트에 피드가 있는지 확인하고 없다면 RSS 2.0과 Atom 1.0 둘 다 발행한다. 헤더에 두 <link rel=\"alternate\">를 두고, 각 피드의 첫 <item>에 같은 id·date·category가 들어가도록 한다. 같은 콘텐츠를 두 형식으로 동시에 내는 게 무난한 출발이다."
+      }
+    ]
+  },
+  {
+    no: 86,
+    date: "2026.11.18",
+    weekday: "수",
+    title: "pagefind — 정적 HTML에 검색 인덱스 붙이기",
+    dek: "정적 사이트는 본질적으로 검색이 어렵다. pagefind는 빌드 후 HTML을 한 번 훑어 인덱스를 만들고, 클라이언트에서 lazy로 검색한다.",
+    minutes: 8,
+    tags: ["검색", "Astro", "정적 사이트"],
+    takeaway: "pagefind는 ‘빌드 후 색인, 클라이언트에서 검색' 모델이다 — 서버 없이도 충분히 빠른 사이트 내 검색을 얻는다.",
+    next: "접근성 체크리스트의 핵심 — 키보드·대비·시맨틱.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "정적 사이트의 검색은 트레이드오프다. Algolia 같은 SaaS는 빠르지만 비용과 외부 의존성이 따른다. 클라이언트에서 문자열을 포함 검색하면 데이터가 클 때 느리다. pagefind는 그 중간이다 — 빌드 시 한 번 색인을 만들고, 클라이언트는 그 색인을 lazy로 받아 검색한다."
+      },
+      {
+        type: "p",
+        text: "동작은 단순하다. 빌드 후 pagefind가 dist/ 폴더의 HTML을 순회하며 페이지별 색인 청크를 만든다. 사용자가 검색창에 글자를 입력하면, 클라이언트는 첫 토큰의 청크부터 가져와 매칭을 찾는다. 결과는 메타데이터(타이틀, 섹션, 발췌)와 함께 즉시 표시된다. 모든 색인이 한 번에 로드되지 않으므로 초기 페이지 무게가 거의 늘지 않는다."
+      },
+      {
+        type: "code",
+        language: "bash",
+        caption: "빌드 후 pagefind로 색인 만들기",
+        content: "# 정적 빌드 후\nnpx pagefind --site dist\n\n# 결과: dist/pagefind/ 에 색인 청크와 UI 자산이 생성됨"
+      },
+      {
+        type: "p",
+        text: "통합은 두 단계다. 페이지에 <div id=\"search\"></div> 같은 자리를 두고 빌드 후 pagefind가 만든 pagefind-ui.js를 그 자리에 마운트한다. Astro의 integration도 있어서 빌드 파이프라인에 한 줄 추가하는 것만으로 끝난다. 색인이 빌드 결과물에 들어가므로 외부 의존성은 없다."
+      },
+      {
+        type: "p",
+        text: "다국어와 메타데이터도 지원한다. 페이지의 data-pagefind-meta 속성으로 색인 대상을 제한하거나, 언어별 색인을 분리할 수 있다. 카테고리·태그를 색인에서 빼고 본문만 색인하는 식의 구성도 가능하다. 결과적으로 '본문 위주 + 태그 보조' 모델이 일반적이다."
+      },
+      {
+        type: "table",
+        caption: "pagefind 옵션",
+        head: ["옵션", "역할"],
+        rows: [
+          ["--site", "색인할 정적 결과 폴더"],
+          ["--output-subdir", "색인을 둘 하위 경로"],
+          ["--glob", "특정 파일만 포함/제외"],
+          ["--language", "토크나이저 언어"]
+        ]
+      },
+      {
+        type: "quiz",
+        question: "pagefind 색인이 ‘lazy'하게 로드된다는 것은?",
+        options: [
+          "사용자가 페이지를 떠날 때만 로드",
+          "검색창 입력이 시작될 때 토큰 청크 단위로 로드",
+          "빌드 시점에만 로드",
+          "매 페이지 새로고침마다 로드"
+        ],
+        answer: 1,
+        explain: "pagefind는 사용자가 글자를 입력하면 첫 토큰의 색인 청크부터 가져온다. 처음부터 전체 색인을 로드하지 않는다."
+      },
+      {
+        type: "link",
+        href: "https://pagefind.app/",
+        label: "pagefind",
+        title: "Static site search, built on the pages you've already published",
+        detail: "정식 사이트. 통합 가이드와 옵션 설명 포함."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "현재 사이트의 빌드 산출물에 pagefind를 한 번 돌려 본다. npx pagefind --site dist로 색인을 만들고, 검색창에 본문 키워드 두어 개를 넣어 본다. 결과가 의미 있게 잘 나오면 그때 통합을 결정한다 — ‘일단 한 번 굴려 본다'는 가장 빠른 검증이다."
+      }
+    ]
+  },
+  {
+    no: 87,
+    date: "2026.11.19",
+    weekday: "목",
+    title: "접근성 체크리스트의 핵심 — 키보드, 대비, 시맨틱, 이만큼이면 시작점이다",
+    dek: "전부 다 들이대기보다 세 가지부터 챙긴다. 키보드로 모든 인터랙션이 닿는지, 대비가 4.5:1 이상인지, 시맨틱 태그가 맞는 자리인지 — 이 세 가지가 가장 큰 효과를 낸다.",
+    minutes: 9,
+    tags: ["접근성", "프론트엔드", "웹"],
+    takeaway: "접근성은 ‘꼭 다 지키는 일'이 아니라 ‘반드시 챙기는 세 가지'가 있다 — 키보드, 대비, 시맨틱.",
+    next: "View Transitions API — MPA에 부드러운 전환을 입히다.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "접근성 체크리스트는 끝이 없다. 한 번에 다 들이대면 길을 잃는다. 그래서 ‘가장 효과 큰 세 가지'를 먼저 챙긴다. 키보드, 대비, 시맨틱이다. 이 세 가지가 지켜지면 대부분의 일반 사용자가 불편 없이 사이트를 쓸 수 있다."
+      },
+      {
+        type: "p",
+        text: "첫째, 키보드다. 마우스를 못 쓰는 사용자, 화면을 보기 힘든 사용자, 자동화 도구를 쓰는 사용자 — 모두 키보드로 사이트를 다룬다. Tab으로 모든 인터랙티브 요소에 닿을 수 있어야 하고, 포커스 표시가 명확해야 하고, 포커스 순서가 시각적 순서와 맞아야 한다. Shift+Tab으로 뒤로, Enter/Space로 활성화는 기본이다."
+      },
+      {
+        type: "p",
+        text: "둘째, 대비다. 본문 텍스트는 배경과 4.5:1 이상, 큰 텍스트는 3:1 이상이어야 한다(WCAG 2.2). 핵심은 ‘보통 사람 눈으로' 확인이 아니라 도구로 측정한다는 점이다. Chrome DevTools의 Lighthouse, axe DevTools, Stark 확장이 자동 측정해 준다. 회색 한 톤을 결정할 때 그 비율을 항상 본다."
+      },
+      {
+        type: "p",
+        text: "셋째, 시맨틱이다. <div onClick> 대신 <button>을, 목록은 <ul>/<ol>, 제목은 <h1>~<h6>, 본문은 <article>, 보조 탐색은 <nav>. 의미가 맞는 태그를 쓰면 스크린 리더가 자연스럽게 읽고, 키보드 포커스가 자연스럽게 흐른다. ‘div soup'는 시각적으로는 같아도 보조 기술에는 침묵이다."
+      },
+      {
+        type: "table",
+        caption: "세 가지의 합격선",
+        head: ["항목", "합격선", "도구"],
+        rows: [
+          ["키보드", "Tab이 모든 인터랙티브에 닿음", "키보드만으로 직접 탐색"],
+          ["대비", "본문 4.5:1, 큰 글자 3:1", "axe, Lighthouse, Stark"],
+          ["시맨틱", "div soup 자리에 의미 있는 태그", "HTML outliner, 스크린 리더"]
+        ]
+      },
+      {
+        type: "p",
+        text: "이 세 가지 외에 ‘고마운 추가'는 이미지 alt, 라벨-인풋 연결, 폼 에러의 aria-describedby, prefers-reduced-motion 존중이다. 모두 의미가 있지만 ‘없으면 큰일 나는' 영역은 위 세 가지다."
+      },
+      {
+        type: "quiz",
+        question: "WCAG 2.2에서 본문 텍스트의 최소 대비 비율은?",
+        options: [
+          "3:1",
+          "4.5:1",
+          "7:1",
+          "10:1"
+        ],
+        answer: 1,
+        explain: "본문 텍스트는 4.5:1, 24px 이상 또는 18.66px 이상 bold의 ‘큰 글자'는 3:1이다."
+      },
+      {
+        type: "link",
+        href: "https://www.w3.org/WAI/standards-guidelines/wcag/",
+        label: "W3C WAI",
+        title: "Web Content Accessibility Guidelines (WCAG) 2.2",
+        detail: "성공 기준과 기법의 정식 문서."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "자신이 만든 페이지 한 곳을 마우스 없이 키보드만으로 처음부터 끝까지 한 번 다 탐색한다. 닿지 않는 요소가 있으면 그것이 첫 번째 작업이다. 그리고 Lighthouse 접근성 점수를 한 번 돌려 90점 아래인 항목을 본다."
+      }
+    ]
+  },
+  {
+    no: 88,
+    date: "2026.11.20",
+    weekday: "금",
+    title: "View Transitions API — MPA에 부드러운 전환을 입히다",
+    dek: "MPA에서도 페이지 간 전환을 부드럽게 만들 수 있다. document.startViewTransition 한 줄로, 같은 이름의 요소가 한 쪽에서 다음 쪽으로 자리에 앉는다.",
+    minutes: 9,
+    tags: ["프론트엔드", "CSS", "웹"],
+    takeaway: "View Transitions는 ‘두 화면 사이의 형태가 같으면 그대로 흐른다'는 단순한 약속이다 — SPA 전부를 프레임워크로 만들지 않아도 된다.",
+    next: "CSS contain으로 layout/paint 격리하기.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "MPA(Multi-Page App)는 페이지가 통째로 바뀐다. 그 점이 단점으로 보일 때가 있다 — 페이지 간 전환이 갑작스러워 끊긴 느낌이 든다. View Transitions API는 그 단점을 풀어 준다. 브라우저가 두 페이지의 같은 자리에 있는 요소의 형태를 자동으로 보간해 부드럽게 이어준다."
+      },
+      {
+        type: "p",
+        text: "사용은 한 줄이다. 페이지 이동을 트리거하는 자리에 document.startViewTransition(async () => { /* 새 URL로 이동 */ })를 호출한다. 같은 view-transition-name을 두 페이지에 같은 이름으로 부여하면, 브라우저가 그 요소를 ‘잘라내어 새 자리로 흘려 보낸다'. 헤더·썸네일·리스트 아이템에 이름 붙이는 게 일반적이다."
+      },
+      {
+        type: "code",
+        language: "css",
+        caption: "이름을 공유하는 두 요소가 부드럽게 이어진다",
+        content: "/* 페이지 A와 페이지 B의 공통 요소 */\n.thumb {\n  view-transition-name: hero-thumb;\n}\n\n/* 전환이 일어나는 동안의 추가 스타일 */\n::view-transition-old(hero-thumb),\n::view-transition-new(hero-thumb) {\n  animation-duration: 240ms;\n}"
+      },
+      {
+        type: "p",
+        text: "Astro의 view transitions 기능은 이 위에 더 얇은 추상을 얹는다. <ViewTransitions /> 컴포넌트를 레이아웃에 한 번 두면 모든 페이지 이동이 자동으로 wrap된다. 지속성(persist) 표시를 두면 헤더나 사이드바 같은 고정 요소를 매번 다시 마운트하지 않아 비디오/오디오 같은 상태가 끊기지 않는다."
+      },
+      {
+        type: "p",
+        text: "주의할 점도 있다. 페이지가 무거우면 두 스냅샷의 비용이 커진다. view-transition-name은 페이지 안에서 유일해야 한다. 두 요소가 같은 이름을 쓰면 둘 중 하나만 살아남는다. 또한 prefers-reduced-motion을 존중해 사용자 설정이 ‘줄임'이면 전환을 짧게 하거나 건너뛴다."
+      },
+      {
+        type: "quiz",
+        question: "View Transitions API의 핵심 아이디어는?",
+        options: [
+          "SPA로 만들어 라우팅을 처리",
+          "같은 view-transition-name을 가진 요소를 두 페이지에서 잇는다",
+          "페이지 전체를 통째로 페이드",
+          "iframe으로 부드럽게 교체"
+        ],
+        answer: 1,
+        explain: "API는 ‘같은 이름을 가진 요소를 두 페이지에서 잇는' 약속이다. SPA로 만들 필요는 없다."
+      },
+      {
+        type: "link",
+        href: "https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API",
+        label: "MDN",
+        title: "View Transitions API",
+        detail: "브라우저 지원과 예제."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "목록 페이지와 상세 페이지가 있는 사이트라면, 썸네일 이미지에 같은 view-transition-name을 부여해 본다. <ViewTransitions /> 한 줄을 레이아웃에 더하고 페이지 이동을 한 번 지켜 본다. 시각적 차이가 즉시 보인다."
+      }
+    ]
+  },
+  {
+    no: 89,
+    date: "2026.11.23",
+    weekday: "월",
+    title: "CSS contain으로 layout·paint·style 격리하기",
+    dek: "contain: layout / paint / size / style — 이 네 가지로 한 요소의 변화가 다른 요소로 번지지 않게 막는다. reflow 비용이 큰 컴포넌트에 특히 효과적이다.",
+    minutes: 9,
+    tags: ["CSS", "성능", "프론트엔드"],
+    takeaway: "contain은 ‘이 컴포넌트는 바깥에 영향 주지 않는다'를 명시적으로 선언한다 — 브라우저가 그 약속을 믿고 최적화에 들어간다.",
+    next: "발행 사이클의 다음 시리즈로 이어진다.",
+    series: "웹과 Astro",
+    blocks: [
+      {
+        type: "p",
+        text: "reflow는 비싸다. 한 요소의 크기가 바뀌면 브라우저는 ‘이 요소의 자식, 형제, 부모까지' 영향을 본다. 큰 페이지에서 작은 카드의 height가 변해도 전체 레이아웃을 다시 계산한다. contain은 ‘이 요소는 바깥에 영향을 주지 않는다'는 약속을 명시해 그 범위를 좁힌다."
+      },
+      {
+        type: "p",
+        text: "contain에는 네 가지 값이 있다. layout은 자식의 box가 바깥 형제 박스에 영향을 주지 않게 한다. style은 counter·quotes 같은 상속 속성이 바깥으로 새지 않게 한다. paint는 자식 픽셀이 바깥으로 새지 않게 한다(보통 overflow: hidden과 함께 쓰인다). size는 자식 크기와 무관하게 자신의 크기를 외부에 명시적으로 알린다. content는 layout·paint·style을 묶은 단축이다."
+      },
+      {
+        type: "code",
+        language: "css",
+        caption: "카드를 격리해 reflow 범위를 줄인다",
+        content: ".card {\n  contain: layout paint style;\n}\n\n/* 더 강한 격리: 자신 크기도 명시 */\n.card.isolated {\n  contain: size layout paint style;\n  width: 320px;\n  height: 200px;\n}"
+      },
+      {
+        type: "p",
+        text: "size 격리는 강력하지만, 자신의 크기를 외부에서 결정해 줘야 한다. 명시하지 않으면 박스가 0×0이 된다. 즉 size 격리는 ‘크기가 고정된 섬'에 어울린다 — 광고 슬롯, 썸네일 박스, 사이드 위젯. 일반 카드엔 content(또는 layout paint style)가 무난하다."
+      },
+      {
+        type: "p",
+        text: "content-visibility: auto는 contain의 강력한 변형이다. ‘이 요소는 뷰포트에 들어올 때까지 레이아웃·페인트하지 않는다'는 의미다. 무한 스크롤의 리스트 아이템처럼 ‘지금 안 보이는' 요소에 적합하다. contain-intrinsic-size로 자리만 차지하게 할 수 있다."
+      },
+      {
+        type: "table",
+        caption: "contain 값과 격리 범위",
+        head: ["값", "격리 대상", "주의"],
+        rows: [
+          ["layout", "자식 box가 형제에 영향 X", "자식의 % 단위는 부모 기준으로만"],
+          ["paint", "자식 픽셀이 바깥으로 X", "overflow: hidden이 사실상 동반"],
+          ["style", "counter·quotes 격리", "단독 효과는 작음"],
+          ["size", "자식 크기와 무관", "자신 크기 명시 필요"]
+        ]
+      },
+      {
+        type: "quiz",
+        question: "contain: size를 쓰려면 반드시 필요한 것은?",
+        options: [
+          "overflow: hidden",
+          "자신의 명시적 크기",
+          "position: relative",
+          "변수 정의"
+        ],
+        answer: 1,
+        explain: "contain: size는 ‘자식 크기와 무관하게 내 크기를 안다'는 약속이므로, 자신의 width/height를 명시해야 박스가 사라지지 않는다."
+      },
+      {
+        type: "link",
+        href: "https://developer.mozilla.org/en-US/docs/Web/CSS/contain",
+        label: "MDN",
+        title: "contain — CSS",
+        detail: "layout·paint·size·style의 정확한 의미와 브라우저 지원."
+      },
+      {
+        type: "callout",
+        title: "오늘 해 볼 것",
+        text: "반복되는 카드가 많은 페이지 한 곳을 골라 .card { contain: layout paint style; }을 추가한다. DevTools Performance로 한 카드의 내용만 바뀌는 시나리오를 측정해 reflow 범위가 실제로 좁아지는지 본다. 시각적 변화 없이 측정값만 내려가면 contain이 일하고 있는 것이다."
+      }
+    ]
+  },
+  {
     no: 39,
     date: "2026.09.13",
     weekday: "일",
