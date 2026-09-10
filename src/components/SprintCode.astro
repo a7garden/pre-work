@@ -1,0 +1,183 @@
+---
+/**
+ * 코드 읽기 무대 — 주석 토큰이 심긴 코드와 툴팁 팝오버, 주석 목록.
+ * 토큰은 호버·터치·키보드 포커스로 열고 Esc·바깥 클릭으로 닫는다.
+ */
+import { annotate } from "../lib/sprint-tokens";
+import { annoKindLabels, type Anno } from "../data/sprints";
+
+interface Props {
+  code: string;
+  annotations: Anno[];
+  language: string;
+  framework?: string;
+}
+
+const { code, annotations, language, framework } = Astro.props;
+const lines = annotate(code, annotations);
+
+/* pre 안은 템플릿 줄바꿈까지 그대로 그려지므로, 코드 한 덩어리를 여기서 만들어 넣는다 */
+const escapeHtml = (value: string) =>
+  value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+
+const codeHtml = lines
+  .map((segs, li) => {
+    const parts = [`<span class="cl"><span class="cl__no" aria-hidden="true">${li + 1}</span>`];
+    for (const seg of segs) {
+      if (seg.anno) {
+        const attrs =
+          ` type="button" class="tok" data-tok data-tok-anno="${seg.idx}"` +
+          ` data-tok-title="${escapeHtml(seg.anno.title)}"` +
+          ` data-tok-kind="${annoKindLabels[seg.anno.kind ?? "concept"]}"` +
+          ` data-tok-body="${escapeHtml(seg.anno.body)}"`;
+        parts.push(
+          `<button${attrs} aria-expanded="false"><span class="cl__tx">${escapeHtml(seg.text)}</span><sup class="tok__n">${seg.idx + 1}</sup></button>`,
+        );
+      } else {
+        parts.push(`<span class="cl__tx">${escapeHtml(seg.text)}</span>`);
+      }
+    }
+    parts.push("</span>\n");
+    return parts.join("");
+  })
+  .join("");
+---
+
+<figure class="sprint-code">
+  <figcaption class="sprint-code__cap mono" data-pagefind-ignore>
+    <span>{language}{framework ? ` · ${framework}` : ""}</span>
+    <span>점선 토큰 — 호버하거나 눌러 설명 보기</span>
+  </figcaption>
+  <div class="sprint-code__scroll" data-code-box>
+    <pre><code set:html={codeHtml} /></pre>
+    <div class="tok-pop" data-tok-pop hidden>
+      <p class="tok-pop__head">
+        <span class="tok-pop__kind mono" data-pop-kind></span>
+        <strong class="tok-pop__title" data-pop-title></strong>
+      </p>
+      <p class="tok-pop__body" data-pop-body></p>
+    </div>
+  </div>
+  <details class="sprint-anno" data-pagefind-ignore>
+    <summary class="mono">주석 {annotations.length}개 펼쳐 보기</summary>
+    <ol class="sprint-anno__list">
+      {annotations.map((anno, i) => (
+        <li data-anno-row={i}>
+          <span class="sprint-anno__n mono">{i + 1}</span>
+          <div>
+            <p class="sprint-anno__title">{anno.title}<span class="sprint-anno__kind mono">{annoKindLabels[anno.kind ?? "concept"]}</span></p>
+            <p class="sprint-anno__body">{anno.body}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </details>
+</figure>
+
+<script>
+  /* ── 툴팁 팝오버 — 하나만 열린다. 호버는 겸손하게, 터치는 고정 ── */
+  let pinned: HTMLElement | null = null;
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const hide = () => {
+    document.querySelectorAll<HTMLElement>("[data-tok][aria-expanded='true']").forEach((t) => t.setAttribute("aria-expanded", "false"));
+    document.querySelectorAll<HTMLElement>("[data-tok-pop]:not([hidden])").forEach((p) => (p.hidden = true));
+  };
+
+  const showFor = (tok: HTMLElement) => {
+    window.clearTimeout(hideTimer);
+    const box = tok.closest<HTMLElement>("[data-code-box]");
+    const pop = box?.querySelector<HTMLElement>("[data-tok-pop]");
+    if (!box || !pop) return;
+    hide();
+    pop.querySelector<HTMLElement>("[data-pop-kind]")!.textContent = tok.dataset.tokKind ?? "";
+    pop.querySelector<HTMLElement>("[data-pop-title]")!.textContent = tok.dataset.tokTitle ?? "";
+    pop.querySelector<HTMLElement>("[data-pop-body]")!.textContent = tok.dataset.tokBody ?? "";
+    pop.hidden = false;
+    /* 팝오버는 스크롤 상자 안에 붙어 가로 스크롤을 따라간다. 보이는 창 안으로 밀어 넣는다 */
+    let left = tok.offsetLeft + tok.offsetWidth / 2 - pop.offsetWidth / 2;
+    left = Math.min(Math.max(left, box.scrollLeft + 8), box.scrollLeft + box.clientWidth - pop.offsetWidth - 8);
+    let top = tok.offsetTop - pop.offsetHeight - 10;
+    if (top < box.scrollTop + 4) top = tok.offsetTop + tok.offsetHeight + 10;
+    if (top + pop.offsetHeight > box.scrollTop + box.clientHeight - 4) top = Math.max(box.scrollTop + 4, box.scrollTop + box.clientHeight - pop.offsetHeight - 4);
+    pop.style.left = `${Math.max(8, left)}px`;
+    pop.style.top = `${top}px`;
+    tok.setAttribute("aria-expanded", "true");
+  };
+
+  const scheduleHide = () => {
+    window.clearTimeout(hideTimer);
+    hideTimer = window.setTimeout(() => {
+      if (!pinned) hide();
+    }, 160);
+  };
+
+  const tokFrom = (target: EventTarget | null) =>
+    target instanceof HTMLElement ? target.closest<HTMLElement>("[data-tok]") : null;
+
+  document.addEventListener("mouseover", (event) => {
+    const tok = tokFrom(event.target);
+    if (tok) {
+      pinned = null;
+      showFor(tok);
+    }
+  });
+
+  document.addEventListener("mouseout", (event) => {
+    const tok = tokFrom(event.target);
+    if (!tok || pinned) return;
+    const to = event.relatedTarget;
+    if (to instanceof HTMLElement && (to.closest("[data-tok-pop]") || to.closest("[data-tok]"))) return;
+    scheduleHide();
+  });
+
+  document.addEventListener("click", (event) => {
+    const tok = tokFrom(event.target);
+    if (tok) {
+      if (pinned === tok) {
+        pinned = null;
+        hide();
+      } else {
+        pinned = tok;
+        showFor(tok);
+      }
+      return;
+    }
+    if (!(event.target instanceof HTMLElement) || !event.target.closest("[data-tok-pop]")) {
+      pinned = null;
+      hide();
+    }
+  });
+
+  document.addEventListener("focusin", (event) => {
+    const tok = tokFrom(event.target);
+    if (tok) {
+      pinned = null;
+      showFor(tok);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      pinned = null;
+      hide();
+    }
+  });
+
+  window.addEventListener("resize", hide);
+
+  /* ── 주석 목록 ↔ 코드 토큰 — 목록 행을 가리키면 코드의 같은 주석이 밝아진다 ── */
+  const lit = (index: string, on: boolean) => {
+    document.querySelectorAll<HTMLElement>(`[data-tok-anno="${index}"]`).forEach((t) => t.classList.toggle("tok--lit", on));
+  };
+
+  document.addEventListener("mouseover", (event) => {
+    const row = event.target instanceof HTMLElement ? event.target.closest<HTMLElement>("[data-anno-row]") : null;
+    if (row && row.dataset.annoRow != null) lit(String(Number(row.dataset.annoRow) + 1), true);
+  });
+
+  document.addEventListener("mouseout", (event) => {
+    const row = event.target instanceof HTMLElement ? event.target.closest<HTMLElement>("[data-anno-row]") : null;
+    if (row && row.dataset.annoRow != null) lit(String(Number(row.dataset.annoRow) + 1), false);
+  });
+</script>

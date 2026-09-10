@@ -1,0 +1,131 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+import Quiz from "../../components/Quiz.astro";
+import SprintCode from "../../components/SprintCode.astro";
+import { sprints } from "../../data/sprints";
+
+export function getStaticPaths() {
+  return sprints.map((sprint, index) => ({
+    params: { no: String(sprint.no) },
+    props: {
+      sprint,
+      newer: sprints[index - 1] ?? null,
+      older: sprints[index + 1] ?? null,
+    },
+  }));
+}
+
+const { sprint, newer, older } = Astro.props;
+
+if (
+  sprint.check &&
+  !(Number.isInteger(sprint.check.answer) && sprint.check.answer >= 0 && sprint.check.answer < sprint.check.options.length)
+) {
+  throw new Error(`스프린트 ${sprint.no}의 check.answer(${sprint.check.answer})가 보기 범위를 벗어났다.`);
+}
+---
+<Layout title={`스프린트 ${sprint.no} · ${sprint.title}`} description={sprint.dek} progress>
+  <article class="sprint" data-pagefind-body>
+    <a data-pagefind-ignore class="back-link mono" href="/sprint/"><Icon name="arrow-left" size={16} />스프린트 목록</a>
+
+    <header class="issue__head">
+      <p class="issue__stamp mono" data-pagefind-ignore>
+        <span>스프린트 {sprint.no}</span>
+        <span><Icon name="calendar" size={16} />{sprint.date}</span>
+        <span><Icon name="clock" size={16} />{sprint.minutes}분</span>
+        <button class="copy-link" type="button" data-copy-link aria-label="이 스프린트의 주소 복사" aria-live="polite">
+          <span class="copy-link__idle"><Icon name="copy" size={16} />주소 복사</span>
+          <span class="copy-link__done"><Icon name="check" size={16} />복사됨</span>
+          <span class="copy-link__error">복사 실패 · 재시도</span>
+        </button>
+      </p>
+      <h1 data-pagefind-meta="title">{sprint.title}</h1>
+      <p class="issue__dek">{sprint.dek}</p>
+      <div class="tag-list">
+        <span class="lang-chip mono">{sprint.language}</span>
+        {sprint.framework && <span class="lang-chip mono">{sprint.framework}</span>}
+      </div>
+    </header>
+
+    <p class="issue__takeaway">
+      <span class="mono">읽기 과제</span>
+      <strong><span>{sprint.prompt}</span></strong>
+    </p>
+
+    <SprintCode
+      code={sprint.code}
+      annotations={sprint.annotations}
+      language={sprint.language}
+      framework={sprint.framework}
+    />
+
+    {sprint.check && (
+      <section class="sprint-check" aria-label="읽기 체크">
+        <p class="sprint-check__kicker mono">체크</p>
+        <Quiz
+          question={sprint.check.question}
+          options={sprint.check.options}
+          answer={sprint.check.answer}
+          explain={sprint.check.explain}
+        />
+      </section>
+    )}
+
+    <aside class="issue__takeaway">
+      <span class="mono">오늘 남길 한 문장</span>
+      <strong><span>{sprint.takeaway}</span></strong>
+    </aside>
+
+    <nav data-pagefind-ignore class="issue__nav" aria-label="다른 스프린트로 이동">
+      {older ? (
+        <a href={`/sprint/${older.no}/`} class="issue__nav-link">
+          <span class="mono"><Icon name="arrow-left" size={16} />스프린트 {older.no}</span>
+          <span>{older.title}</span>
+        </a>
+      ) : <span></span>}
+      {newer ? (
+        <a href={`/sprint/${newer.no}/`} class="issue__nav-link issue__nav-link--next">
+          <span class="mono">스프린트 {newer.no}<Icon name="arrow-right" size={16} /></span>
+          <span>{newer.title}</span>
+        </a>
+      ) : <span></span>}
+    </nav>
+  </article>
+</Layout>
+
+<script define:vars={{ no: sprint.no }}>
+  /* 끝까지 읽거나 체크에 답하면 이 스프린트를 읽음으로 표시한다 */
+  const KEY = "pw-sprint-read";
+  let marked = false;
+  const mark = () => {
+    if (marked) return;
+    marked = true;
+    let read = [];
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+      read = Array.isArray(saved) ? saved : [];
+    } catch (e) {
+      read = [];
+    }
+    const id = `sprint-${no}`;
+    if (!read.includes(id)) {
+      read.push(id);
+      try {
+        localStorage.setItem(KEY, JSON.stringify(read));
+      } catch (e) {}
+    }
+    window.removeEventListener("scroll", onScroll);
+  };
+  const onScroll = () => {
+    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 200) mark();
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  document.addEventListener("click", (event) => {
+    if (event.target instanceof HTMLElement && event.target.closest("[data-quiz-option]")) mark();
+  });
+</script>
+
+<script>
+  import "../../scripts/reading";
+</script>

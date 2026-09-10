@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { issues } from "../data/issues";
+import { sprints } from "../data/sprints";
 import Icon from "../components/Icon.astro";
 
 const latest = issues[0];
@@ -17,6 +18,8 @@ const activeSeriesName = [...seriesGroups.entries()]
 const activeSeries = activeSeriesName
   ? [...seriesGroups.get(activeSeriesName)!].sort((a, b) => a.no - b.no)
   : [];
+const latestSprintDate = sprints[0]?.date ?? "";
+const todaysSprints = sprints.filter((s) => s.date === latestSprintDate).sort((a, b) => a.no - b.no);
 ---
 <Layout title="전체 호" description="일 하기 전 10분. 개발자의 일에 남는 한 문장과 오늘 해 볼 것 하나.">
   <div class="edition-line"><span>개발자를 위한 짧은 읽기</span><span class="mono">{latest.date} · {latest.weekday}요일</span></div>
@@ -43,6 +46,28 @@ const activeSeries = activeSeriesName
       </section>
     )}
   </div>
+  {todaysSprints.length > 0 && (
+    <section class="sprint-desk" aria-labelledby="sprint-desk-heading">
+      <div class="archive__heading">
+        <h2 id="sprint-desk-heading">코드 읽기 스프린트</h2>
+        <span class="mono">{sprints.length}편 누적 · {latestSprintDate} 세트 {todaysSprints.length}편</span>
+      </div>
+      <ol class="sprint-desk__list">
+        {todaysSprints.slice(0, 4).map((s) => (
+          <li>
+            <a href={`/sprint/${s.no}/`} data-sprint-mark={`sprint-${s.no}`}>
+              <span class="mono">{String(s.no).padStart(3, "0")}</span>
+              <span class="sprint-desk__lang mono">{s.language}</span>
+              <span class="sprint-desk__title">{s.title}</span>
+              <span class="issue-list__read mono" data-sprint-badge>읽음</span>
+              <Icon name="arrow-up-right" size={16} />
+            </a>
+          </li>
+        ))}
+      </ol>
+      <a class="series-desk__all" href="/sprint/">스프린트 전체 보기</a>
+    </section>
+  )}
 
   <section class="archive" aria-labelledby="archive-heading">
     <div class="archive__heading"><h2 id="archive-heading">전체 호</h2><span class="mono">{issues.length}편 · {total}분의 읽기</span></div>
@@ -79,5 +104,10 @@ const activeSeries = activeSeriesName
     let count = 0;
     for (const item of items) { item.hidden = !!filter.value && item.dataset.series !== filter.value; if (!item.hidden) count++; }
     if (result) result.textContent = `${filter.selectedOptions[0].textContent} · ${count}편 · 최신 호 순`;
+  });
+  let sprintRead: unknown = [];
+  try { sprintRead = JSON.parse(localStorage.getItem("pw-sprint-read") ?? "[]"); } catch {}
+  document.querySelectorAll<HTMLElement>("[data-sprint-mark]").forEach((el) => {
+    if (Array.isArray(sprintRead) && sprintRead.includes(el.dataset.sprintMark)) el.dataset.read = "true";
   });
 </script>

@@ -42,3 +42,25 @@ const uid = Math.random().toString(36).slice(2, 8);
     <p>{explain}</p>
   </div>
 </div>
+<script>
+  /* ── 보기를 고르면 정오답과 해설이 열린다 — 이슈·스프린트 어디서든 같다 ── */
+  document.addEventListener("click", (event) => {
+    const option = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-quiz-option]");
+    if (!option) return;
+    const quiz = option.closest<HTMLElement>("[data-quiz]");
+    if (!quiz) return;
+    const answer = Number(quiz.dataset.answer);
+    const picked = Number(option.dataset.quizOption);
+    quiz.querySelectorAll<HTMLElement>("[data-quiz-option]").forEach((el) => {
+      const i = Number(el.dataset.quizOption);
+      el.dataset.state = i === answer ? "correct" : i === picked ? "wrong" : "idle";
+    });
+    const explain = quiz.querySelector<HTMLElement>("[data-quiz-explain]");
+    const verdict = quiz.querySelector<HTMLElement>("[data-quiz-verdict]");
+    if (verdict) verdict.querySelector<HTMLElement>("[data-quiz-verdict-text]")!.textContent =
+      picked === answer ? "정답" : "다시 보기";
+    if (verdict) verdict.dataset.state = picked === answer ? "correct" : "wrong";
+    if (explain) explain.hidden = false;
+    quiz.dataset.done = picked === answer ? "correct" : "wrong";
+  });
+</script>

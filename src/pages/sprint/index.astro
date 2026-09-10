@@ -1,0 +1,95 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+import { sprints } from "../../data/sprints";
+
+const totalMinutes = sprints.reduce((n, s) => n + s.minutes, 0);
+const languages = [...new Set(sprints.map((s) => s.language))].sort((a, b) => a.localeCompare(b));
+/* 배열 맨 앞이 최신이다 — 최신 날짜의 세트를 오늘의 훈련으로 내보낸다 */
+const latestDate = sprints[0]?.date ?? "";
+const todays = sprints.filter((s) => s.date === latestDate).sort((a, b) => a.no - b.no);
+const todayMinutes = todays.reduce((n, s) => n + s.minutes, 0);
+---
+<Layout
+  title="코드 읽기 스프린트"
+  description="짧은 코드 한 판을 읽는 훈련. 점선 토큰에 호버·터치하면 문법과 관용구 설명이 뜨고, 체크 한 문제로 읽음을 확인한다."
+>
+  <div class="page-head">
+    <span class="page-head__kicker mono">CODE READING SPRINT</span>
+    <h1>코드 읽기 스프린트</h1>
+    <p class="lede">
+      체스 퍼즐처럼 코드 한 판을 짧게 읽는 훈련이다. 코드의 점선 토큰에 호버하거나
+      손가락으로 누르면 문법·관용구·개념의 설명이 그 자리에서 뜬다. 다 읽었으면
+      체크 한 문제로 확인한다. 매일 여러 판이 발간된다.
+    </p>
+  </div>
+
+  <section class="sprint-today" aria-labelledby="sprint-today-heading">
+    <div class="archive__heading">
+      <h2 id="sprint-today-heading">{latestDate}의 세트</h2>
+      <span class="mono">{todays.length}편 · {todayMinutes}분</span>
+    </div>
+    <ol class="sprint-today__grid">
+      {todays.slice(0, 6).map((s) => (
+        <li>
+          <a href={`/sprint/${s.no}/`} class="sprint-card" data-sprint-mark={`sprint-${s.no}`}>
+            <span class="sprint-card__no mono">{String(s.no).padStart(3, "0")}</span>
+            <span class="sprint-card__lang mono">{s.language}{s.framework ? ` · ${s.framework}` : ""}</span>
+            <span class="sprint-card__title">{s.title}</span>
+            <span class="sprint-card__prompt">{s.prompt}</span>
+            <span class="sprint-card__meta mono"><span>{s.minutes}분</span><span class="issue-list__read" data-sprint-badge>읽음</span></span>
+            <Icon name="arrow-up-right" size={20} class="sprint-card__arrow" />
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="archive" aria-labelledby="sprint-archive-heading">
+    <div class="archive__heading">
+      <h2 id="sprint-archive-heading">전체 스프린트</h2>
+      <span class="mono">{sprints.length}편 · {totalMinutes}분의 훈련</span>
+    </div>
+    <div class="archive__tools">
+      <label class="series-filter">언어<select id="sprint-lang-filter" aria-label="언어 선택"><option value="">전체 언어</option>{languages.map((l) => <option value={l}>{l}</option>)}</select></label>
+      <a href="/search/" class="archive__search"><Icon name="search" size={16} />본문 검색<kbd class="kbd">/</kbd></a>
+    </div>
+    <p class="archive__result" id="sprint-result" aria-live="polite">전체 {sprints.length}편 · 최신 순</p>
+    <ol class="issue-list archive-list sprint-list">
+      {sprints.map((s) => (
+        <li data-lang={s.language}>
+          <a href={`/sprint/${s.no}/`} data-sprint-mark={`sprint-${s.no}`}>
+            <span class="issue-list__no mono">{String(s.no).padStart(3, "0")}</span>
+            <div class="issue-list__main">
+              <p class="issue-list__title">{s.title}</p>
+              <p class="issue-list__dek">{s.dek}</p>
+              {s.framework && <div class="tag-list"><span>{s.framework}</span></div>}
+            </div>
+            <div class="issue-list__meta mono"><span>{s.language}</span><span>{s.date}</span><span>{s.minutes}분</span><span class="issue-list__read" data-sprint-badge>읽음</span></div>
+            <Icon name="arrow-up-right" size={20} class="issue-list__arrow" />
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+</Layout>
+
+<script>
+  /* 읽음 표시와 언어 필터 — 홈의 읽음 표시와 같은 규칙이다 */
+  let read: unknown = [];
+  try { read = JSON.parse(localStorage.getItem("pw-sprint-read") ?? "[]"); } catch {}
+  document.querySelectorAll<HTMLElement>("[data-sprint-mark]").forEach((el) => {
+    if (Array.isArray(read) && read.includes(el.dataset.sprintMark)) el.dataset.read = "true";
+  });
+  const filter = document.querySelector<HTMLSelectElement>("#sprint-lang-filter");
+  const items = [...document.querySelectorAll<HTMLElement>(".sprint-list > li")];
+  const result = document.querySelector<HTMLElement>("#sprint-result");
+  filter?.addEventListener("change", () => {
+    let count = 0;
+    for (const item of items) {
+      item.hidden = !!filter.value && item.dataset.lang !== filter.value;
+      if (!item.hidden) count++;
+    }
+    if (result) result.textContent = `${filter.selectedOptions[0].textContent} · ${count}편 · 최신 순`;
+  });
+</script>

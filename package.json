@@ -10,7 +10,8 @@
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
-    "new:issue": "node scripts/new-issue.mjs"
+    "new:issue": "node scripts/new-issue.mjs",
+    "new:sprint": "node scripts/new-sprint.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

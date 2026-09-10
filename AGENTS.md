@@ -33,6 +33,26 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 
 이 프로젝트는 1인 개인 학습 플랫폼이라 PR 없이 `main`에 바로 push한다.
 
+## 코드 읽기 스프린트 — 사용자가 코드를 중얼거릴 때
+
+사용자가 코드 조각, 문법, 버그, 관용구, 프레임워크 동작을 지나가듯 언급하면 —
+명시적인 요청이 없어도 — 그 재료로 `/sprint/` 코드 읽기 스프린트를 만들어
+발간할 수 있다. 칼럼(10분 읽기)과 스프린트(2~3분 읽기 훈련)는 별개의 호로
+발간되며, 하루에 여러 편이 원칙이다.
+
+절차:
+
+1. `npm run new:sprint` 로 스프린트 뼈대를 `src/data/sprints.ts` 맨 앞에
+   생성한다 (기본 3편. `--count N`, `YYYY-MM-DD` 지정 가능).
+2. `CONTENT.md`의 "코드 읽기 스프린트" 규칙에 맞춰 채운다 — 코드 12~22줄,
+   주석 5~8개, `prompt`·`check` 각 하나. 공개 배포이므로 각색은 필수다.
+3. 주석이 코드의 정확한 조각과 겹치지 않는지 검증한다. 배치 파일로 저작할 때는
+   `node --experimental-strip-types scripts/check-sprint-batch.mjs <file.ts>`,
+   `sprints.ts`에 직접 쓸 때는 `npx astro build`가 대신 잡아 준다.
+4. `npx astro build` 로 빌드를 확인하고 커밋·push한다. 발간 절차는 새 호와 같다.
+
+이 프로젝트는 1인 개인 학습 플랫폼이라 PR 없이 `main`에 바로 push한다.
+
 ## Documentation
 
 Full documentation: https://docs.astro.build
