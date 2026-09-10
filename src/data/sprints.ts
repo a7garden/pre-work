@@ -63,6 +63,263 @@ export type Sprint = {
 
 export const sprints: Sprint[] = [
   {
+    no: 66,
+    date: "2026.09.10",
+    title: "Mojo, 파이썬 모양의 정적 세계",
+    dek: "def와 fn이 나뉘는 지점. 파이썬 문법에서 시작해 타입이 정해지면 최적화가 열리는 언어다.",
+    minutes: 3,
+    language: "Mojo",
+    domain: "시스템",
+    prompt: "같은 더하기인데 두 함수의 차이는 어디서 오는가",
+    code: `def add_loose(a, b):
+    return a + b
+
+fn add_strict(a: Int, b: Int) -> Int:
+    return a + b
+
+fn main():
+    var n: Int = add_strict(2, 3)
+    alias LIMIT = 8
+
+    print(n, LIMIT)`,
+    annotations: [
+      {
+        find: "def add_loose(a, b):",
+        title: "느슨한 def",
+        body: "파이썬과 같은 동작을 하는 느슨 모드다. 타입 선언이 없어도 되고 결정이 실행 중으로 미뤄진다 — 파이썬 코드를 옮겨 올 때의 출발점이다.",
+        kind: "concept",
+      },
+      {
+        find: "fn add_strict(a: Int, b: Int) -> Int:",
+        title: "엄격한 fn",
+        body: "타입이 필수이고 인자는 기본으로 불변이다. 타입이 정적으로 결정되므로 컴파일러가 검사하고 최적화할 수 있다. -> Int는 반환 타입 선언이다.",
+        kind: "concept",
+      },
+      {
+        find: "var n: Int =",
+        title: "변수 선언",
+        body: "var로 새 변수를 선언한다. 타입을 명시할 수도 있고 초깃값에서 추론하게 할 수도 있다.",
+        kind: "syntax",
+      },
+      {
+        find: "alias LIMIT = 8",
+        title: "컴파일 시간 상수",
+        body: "alias는 컴파일 때 값이 정해지는 상수다. 실행 중에 바뀌지 않고, 정적 계산과 제네릭의 재료가 된다.",
+        kind: "syntax",
+      },
+      {
+        find: "fn main():",
+        title: "프로그램 진입점",
+        body: "mojo run이 호출하는 진입점이다. 스크립트로 짠 def 함수들과 달리 프로그램은 fn main에서 시작한다.",
+        kind: "std",
+      },
+    ],
+    takeaway: "Mojo는 파이썬 모양으로 시작해 fn으로 정적 세계에 들어선다 — 타입이 정해지는 순간 최적화가 열린다.",
+    check: {
+      question: "성능이 중요한 함수를 fn으로 고쳤을 때 이득의 근거는 무엇인가?",
+      options: [
+        "함수 이름이 짧아져서",
+        "타입이 컴파일때 결정돼 검사와 최적화가 가능해서",
+        "파이썬 라이브러리를 더 쓸 수 있어서",
+      ],
+      answer: 1,
+      explain: "타입과 불변성이 정해지면 컴파일러가 오버로드 해소·메모리 배치·인라인을 정적으로 결정한다. def는 파이썬 의미론을 유지하는 대신 이 정보가 실행까지 미뤄진다.",
+    },
+  },
+  {
+    no: 65,
+    date: "2026.09.10",
+    title: "터미널에서 찾아 지우기 — find·xargs",
+    dek: "조건으로 파일을 찾고 곧바로 실행까지. 공백 섞인 파일명 앞에서 이 조합이 왜 안전한지 본다.",
+    minutes: 3,
+    language: "Shell",
+    domain: "시스템",
+    prompt: "파일명에 공백이 섞여 있어도 이 조합이 안전한 이유는 무엇인가",
+    code: `# 30일 넘은 임시 파일 찾기
+$ find . -type f -name "*.tmp" -mtime +30
+./build/cache/old.tmp
+./dist/legacy.tmp
+
+# 공백 섞인 이름까지 안전하게 한 번에 지우기
+$ find . -type f -name "*.tmp" -mtime +30 -print0 | xargs -0 rm
+
+# 10MB 넘는 파일 크기와 함께 보기
+$ find . -type f -size +10M -exec du -h {} +
+1.5G	./data/dump.bin`,
+    annotations: [
+      {
+        find: "find . -type f",
+        title: "탐색 시작점과 대상",
+        body: "첫 인자는 출발할 디렉터리다. -type f는 파일만, -type d는 디렉터리만 걸러 낸다.",
+        kind: "syntax",
+      },
+      {
+        find: "-name \"*.tmp\"",
+        title: "이름 패턴",
+        body: "glob 패턴으로 이름을 고른다. 따옴표는 셸이 패턴을 먼저 풀어 버리는 일을 막는다 — 붙이는 습관이 필수다.",
+        kind: "syntax",
+      },
+      {
+        find: "-mtime +30",
+        title: "수정 시간 필터",
+        body: "마지막 수정이 30일보다 오래된 파일이다. +는 초과, -는 미만, 숫자만 쓰면 그 기간이다.",
+        kind: "syntax",
+      },
+      {
+        find: "-print0 | xargs -0 rm",
+        title: "널 문자로 잇기",
+        body: "print0이 파일명을 널 문자로 구분해 내보내고 xargs -0이 같은 기준으로 받는다. 공백·줄바꿈이 섞인 이름도 하나의 인자로 지켜진다.",
+        kind: "idiom",
+      },
+      {
+        find: "-exec du -h {} +",
+        title: "찾은 대상 바로 실행",
+        body: "{} 자리에 경로가 들어가고 +는 여러 파일을 한 명령에 몰아 넣는다. 파일마다 프로세스를 나누는 \\;보다 경제적이다.",
+        kind: "syntax",
+      },
+    ],
+    takeaway: "찾기와 실행을 잇을 때는 널 문자로 — 공백은 언제나 방심하는 자리다.",
+    check: {
+      question: "-print0과 -0을 빼고 find … | xargs rm으로 넘기면 어떤 일이 벌어질 수 있는가?",
+      options: [
+        "공백 포함 파일명이 여러 인자로 쪼개져 엉뚱한 파일이 지워질 수 있다",
+        "find가 오류를 내고 멈춘다",
+        "숨은 파일만 빠뜨리고 지워진다",
+      ],
+      answer: 0,
+      explain: "구분자가 공백인 채로 넘어가면 ./my report.tmp는 두 인자로 쪼개진다. -print0과 -0의 널 구분이 이 조합의 안전판이다.",
+    },
+  },
+  {
+    no: 64,
+    date: "2026.09.10",
+    title: "tar 플래그는 세트로 외운다",
+    dek: "묶고·훑고·풀기. c·x·t 하나만 갈리고 z·f는 같다는 사실이 tar의 전부다.",
+    minutes: 2,
+    language: "Shell",
+    domain: "시스템",
+    prompt: "받은 묶음을 서버에 풀기 전에 무엇부터 해야 하는가",
+    code: `# 디렉터리를 gzip으로 묶기
+$ tar -czf release.tar.gz dist/
+
+# 내용 확인 — 풀기 전에 반드시 훑는다
+$ tar -tzf release.tar.gz
+dist/
+dist/index.html
+dist/assets/app.js
+
+# 지정한 디렉터리에 풀기
+$ tar -xzf release.tar.gz -C /srv/app`,
+    annotations: [
+      {
+        find: "-czf",
+        title: "묶기 플래그",
+        body: "c는 만들기, z는 gzip, f는 파일명이다. 붙여 쓰되 f 바로 다음에 파일명이 와야 한다.",
+        kind: "syntax",
+      },
+      {
+        find: "-tzf",
+        title: "목록 보기",
+        body: "t는 묶음 안을 나열한다. 풀기 전에 한 번 훑는 습관이 경로 덮어쓰기 사고를 막는다.",
+        kind: "idiom",
+      },
+      {
+        find: "-xzf",
+        title: "풀기 플래그",
+        body: "x가 추출이다. c와 x만 갈리고 z·f는 같다 — 세트로 외우면 된다.",
+        kind: "syntax",
+      },
+      {
+        find: "-C /srv/app",
+        title: "대상 디렉터리",
+        body: "지정한 디렉터리로 이동한 뒤 푼다. 경로가 없다면 mkdir이 먼저다.",
+        kind: "syntax",
+      },
+      {
+        find: "release.tar.gz",
+        title: "묶음 파일명",
+        body: "tar로 묶고 gzip으로 눌렀다는 뜻이 이름에 겹쳐 있다. tar만이면 .tar, gzip만이면 .gz다.",
+        kind: "std",
+        all: true,
+      },
+    ],
+    takeaway: "압축 풀기의 첫 단계는 t다 — 목록을 훑어야 덮어쓰기 사고를 막는다.",
+    check: {
+      question: "tar -xzf를 홈 디렉터리에서 무심코 돌리면 어떤 일이 벌어질 수 있는가?",
+      options: [
+        "묶음 안 경로 그대로 현재 위치에 풀려 기존 파일을 덮어쓸 수 있다",
+        "항상 지정한 /srv로만 풀린다",
+        "형식 검사에 실패해 멈춘다",
+      ],
+      answer: 0,
+      explain: "tar는 묶음 안의 상대 경로를 그대로 따른다. 같은 이름의 파일이 있으면 물어보지 않고 덮는다 — tzf로 목록부터 보는 것이 원칙이다.",
+    },
+  },
+  {
+    no: 63,
+    date: "2026.09.10",
+    title: "권한 숫자는 4·2·1의 합",
+    dek: "chmod 755를 숫자로 읽는 연습. 재귀할 때의 X 대문자와 소유권 이동까지.",
+    minutes: 3,
+    language: "Shell",
+    domain: "시스템",
+    prompt: "755의 가운데 자리 5는 무엇을 더한 값인가",
+    code: `# 스크립트에 실행 권한 더하기
+$ chmod +x deploy.sh
+
+# 소유자 읽기·쓰기·실행, 그룹과 나머지는 읽기만
+$ chmod 755 deploy.sh
+
+# 문서 전체를 소유자만 쓰고, 디렉터리는 들어갈 수 있게
+$ chmod -R u=rwX,g=r,o= docs/
+
+# 소유자와 그룹 옮기기
+$ chown deploy:deploy /srv/app`,
+    annotations: [
+      {
+        find: "chmod +x",
+        title: "실행 권한 추가",
+        body: "+x는 실행 비트를 더한다. 스크립트는 읽기만으로는 돌아가지 않는다.",
+        kind: "syntax",
+      },
+      {
+        find: "chmod 755",
+        title: "숫자 권한",
+        body: "r=4, w=2, x=1을 자리마다 더한다. 7=rwx, 5=r-x — 세 자리는 소유자·그룹·나머지 순서다.",
+        kind: "concept",
+      },
+      {
+        find: "chmod -R",
+        title: "재귀 적용",
+        body: "디렉터리 아래 전체에 적용한다. 시스템 경로에서 무심코 쓰면 권한 체계가 통째로 흔들린다 — 실행 전 경로를 다시 본다.",
+        kind: "syntax",
+      },
+      {
+        find: "u=rwX,g=r,o=",
+        title: "대상별 지정",
+        body: "u·g·o가 자리고 X(대문자)는 디렉터리에만 실행 권한을 준다 — 재귀 때 파일까지 실행 가능해지는 사고를 막는다. o=는 나머지 권한을 뺀다는 뜻이다.",
+        kind: "idiom",
+      },
+      {
+        find: "chown deploy:deploy",
+        title: "소유권 이동",
+        body: "소유자:그룹을 바꾼다. 권한(chmod)과 소유권(chown)은 별개의 일이다.",
+        kind: "syntax",
+      },
+    ],
+    takeaway: "숫자 권한은 4·2·1의 합이다 — 자리마다 더하면 읽기·쓰기·실행이 된다.",
+    check: {
+      question: "644는 어떤 권한인가?",
+      options: [
+        "소유자는 읽기·쓰기, 그룹과 나머지는 읽기만",
+        "모두가 읽기·쓰기·실행",
+        "소유자만 실행 가능",
+      ],
+      answer: 0,
+      explain: "6=4+2는 읽기·쓰기, 4는 읽기만이다. 웹 서버의 정적 파일 권한으로 흔히 쓰는 조합이다.",
+    },
+  },
+  {
     no: 62,
     date: "2026.09.10",
     title: "멀티스테이지 Dockerfile",
@@ -1729,6 +1986,72 @@ query {
   {
     no: 42,
     date: "2026.09.10",
+    title: "해제는 할당 바로 아래에",
+    dek: "defer와 에러 유니온으로 실패 경로를 정리한다.",
+    minutes: 3,
+    language: "Zig",
+    domain: "시스템",
+    prompt: "함수가 여러 지점에서 실패할 때 메모리는 누수되지 않을까, defer 위치에 주목하라.",
+    code: "const std = @import(\"std\");\n\nfn loadLimit(alloc: std.mem.Allocator, text: []const u8) !u16 {\n    const copy = try alloc.dupe(u8, text);\n    defer alloc.free(copy);\n\n    const limit = try std.fmt.parseInt(u16, copy, 10);\n    if (limit < 1024) return error.PrivilegedPort;\n    return limit;\n}\n\npub fn main() !void {\n    const alloc = std.heap.page_allocator;\n    const limit = loadLimit(alloc, \"8080\") catch |err| switch (err) {\n        error.PrivilegedPort => 3000,\n        else => return err,\n    };\n    std.debug.print(\"limit={d}\\n\", .{limit});\n}",
+    annotations: [
+      {
+        find: "!u16",
+        title: "에러 유니온 반환",
+        body: "!는 u16이거나 에러 집합이라는 뜻이다. 예외 대신 실패가 반환 타입에 적혀 있어 호출부가 실패를 무시하기 어렵다.",
+        kind: "syntax",
+      },
+      {
+        find: "try alloc.dupe(u8, text)",
+        title: "try로 오류 전파",
+        body: "dupe는 실패할 수 있는 함수다. try는 에러면 그대로 되돌리고 성공이면 값을 꺼내는 catch의 축약이다.",
+        kind: "syntax",
+      },
+      {
+        find: "defer alloc.free(copy);",
+        title: "스코프 끝에서 해제",
+        body: "defer는 현재 스코프를 벗어나는 모든 경로에서 실행된다. 에러로 중간 반환해도 해제가 보장되어 뒷정리 코드가 흩어지지 않는다.",
+        kind: "concept",
+      },
+      {
+        find: "return error.PrivilegedPort;",
+        title: "에러 값 반환",
+        body: "error.이름은 컴파일 타임에 에러 집합에 추가되는 값이다. 함수는 실패를 예외가 아니라 값으로 돌려준다.",
+        kind: "concept",
+      },
+      {
+        find: "catch |err| switch (err)",
+        title: "에러별 분기",
+        body: "catch로 에러를 잡아 err 이름을 붙이고 switch로 취급을 나눈다. 어떤 에러는 기본값으로, 어떤 에러는 위로 넘긴다.",
+        kind: "idiom",
+      },
+      {
+        find: "error.PrivilegedPort => 3000,",
+        title: "기본값으로 대체",
+        body: "1024 미만 포트는 특권이 필요하다는 실패를 3000으로 대체해 계속 진행한다. 정책을 호출부에 두는 모양이다.",
+        kind: "idiom",
+      },
+      {
+        find: "std.debug.print",
+        title: "디버그 출력",
+        body: "stderr로 형식 출력을 내보낸다. {d}가 정수 자리를 대신한다.",
+        kind: "std",
+      },
+    ],
+    takeaway: "defer가 해제를 할당 옆에 붙여두고, 에러 유니온이 실패를 반환값으로 만든다.",
+    check: {
+      question: "parseInt가 실패해 함수를 중간에 빠져나가면 copy는?",
+      options: [
+        "성공 경로에서만 free되므로 누수된다",
+        "defer 덕에 실패 경로에서도 free된다",
+        "Zig에는 GC가 있어 자동 회수된다",
+      ],
+      answer: 1,
+      explain: "defer는 스코프를 벗어나는 모든 경로에서 실행된다. 에러 반환도 경로의 하나라 해제가 보장된다. 할당 바로 아래 해제를 두는 습관이 실패 경로를 단순하게 만든다.",
+    },
+  },
+  {
+    no: 41,
+    date: "2026.09.10",
     title: "updated_at을 채우는 트리거",
     dek: "BEFORE UPDATE 트리거 함수가 행을 고쳐 저장한다. WHEN 절로 값이 그대로인 행의 발동을 막는다.",
     minutes: 2,
@@ -1811,7 +2134,7 @@ EXECUTE FUNCTION touch_updated_at();`,
     },
   },
   {
-    no: 41,
+    no: 40,
     date: "2026.09.10",
     title: "윈도우 프레임으로 이동합계",
     dek: "PARTITION과 ROWS 프레임으로 상품별 최근 3행 합계를 만든다. 창이 나뉘는 두 층을 본다.",
@@ -1884,7 +2207,7 @@ ORDER BY product, sold_at;`,
     },
   },
   {
-    no: 40,
+    no: 39,
     date: "2026.09.10",
     title: "재귀 CTE로 계층 펼치기",
     dek: "직원-상사 테이블을 한 쿼리로 위에서 아래로 펼친다. 앵커와 재귀 멤버가 번갈아 도는 구조를 본다.",
@@ -1957,7 +2280,7 @@ ORDER BY depth, name;`,
     },
   },
   {
-    no: 39,
+    no: 38,
     date: "2026.09.10",
     title: "어떻게 끝나도 청소되게",
     dek: "trap과 프로세스 치환으로 임시 자원을 다룬다.",
@@ -2036,7 +2359,7 @@ echo "scanned $(wc -l < "$tmpdir/hits.txt") lines of hits"`,
     },
   },
   {
-    no: 38,
+    no: 37,
     date: "2026.09.10",
     title: "지우기 전에 모아 두기",
     dek: "erase-remove 관용구와 반복자 범위를 읽는다.",
@@ -2115,7 +2438,7 @@ int adjustedTotal(std::vector<int> loads, int capacity) {
     },
   },
   {
-    no: 37,
+    no: 36,
     date: "2026.09.10",
     title: "파일 핸들을 소유하는 클래스",
     dek: "복사는 지우고 이동으로 소유권을 넘긴다.",
@@ -2202,7 +2525,7 @@ private:
     },
   },
   {
-    no: 36,
+    no: 35,
     date: "2026.09.10",
     title: "파일 한 줄씩 읽어 세기",
     dek: "fgets와 strtol로 텍스트 파일을 처리한다.",
@@ -2268,7 +2591,7 @@ private:
     },
   },
   {
-    no: 35,
+    no: 34,
     date: "2026.09.10",
     title: "노드를 머리에 끼우기",
     dek: "malloc과 이중 포인터로 리스트 앞단을 고친다.",
@@ -2355,7 +2678,7 @@ void push_front(Node **head, const char *name) {
     },
   },
   {
-    no: 34,
+    no: 33,
     date: "2026.09.10",
     title: "작업 띄워 결과 받기",
     dek: "tokio spawn과 mpsc 채널로 비동기 흐름을 읽는다.",
@@ -2439,7 +2762,7 @@ async fn main() {
     },
   },
   {
-    no: 33,
+    no: 32,
     date: "2026.09.10",
     title: "두 슬라이스 중 긴 쪽",
     dek: "라이프타임 매개변수로 빌린 값의 관계를 표기한다.",
@@ -2522,7 +2845,7 @@ fn main() {
     },
   },
   {
-    no: 32,
+    no: 31,
     date: "2026.09.10",
     title: "기다림은 단언이 한다",
     dek: "sleep 없이 로그인 플로우를 검사한다. locator와 웹 우선 단언의 기다림을 본다.",
@@ -2605,7 +2928,7 @@ test("로그인하면 대시보드로 넘어간다", async ({ page }) => {
     },
   },
   {
-    no: 31,
+    no: 30,
     date: "2026.09.10",
     title: "queryKey가 캐시다",
     dek: "할 일 추가 뒤 목록을 다시 읽게 만든다. queryKey와 무효화의 관계를 본다.",
@@ -2684,7 +3007,7 @@ export function useAddTodo() {
     },
   },
   {
-    no: 30,
+    no: 29,
     date: "2026.09.10",
     title: "버퍼로 파일 머리 검사하기",
     dek: "파일 앞머리의 바이트를 검사한다. Buffer의 비교·자르기·잇기를 본다.",
@@ -2751,7 +3074,7 @@ export function useAddTodo() {
     },
   },
   {
-    no: 29,
+    no: 28,
     date: "2026.09.10",
     title: "파이프라인으로 파일 복사하기",
     dek: "파일을 조각으로 읽어 세면서 복사한다. Transform과 pipeline의 역할 분담을 본다.",
@@ -2839,7 +3162,7 @@ console.log("복사가 끝났다");`,
     },
   },
   {
-    no: 28,
+    no: 27,
     date: "2026.09.10",
     title: "검색창 하나로 보는 연산자 체인",
     dek: "입력창 하나에 debounceTime부터 switchMap까지. 체인의 순서가 만드는 동작을 본다.",
@@ -2927,7 +3250,7 @@ fromEvent(input, "input")
     },
   },
   {
-    no: 27,
+    no: 26,
     date: "2026.09.10",
     title: "서버 컴포넌트와 캐시 태그",
     dek: "서버에서 데이터를 읽어 그리는 페이지. fetch 캐시 옵션과 태그 무효화가 만나는 지점을 본다.",
@@ -3009,7 +3332,7 @@ export default async function Dashboard() {
     },
   },
   {
-    no: 26,
+    no: 25,
     date: "2026.09.10",
     title: "스토어와 달러 자동 구독",
     dek: "할 일 목록을 스토어로. writable·derived와 마크업의 $ 자동 구독을 본다.",
@@ -3097,7 +3420,7 @@ export default async function Dashboard() {
     },
   },
   {
-    no: 25,
+    no: 24,
     date: "2026.09.10",
     title: "ref·computed·watch의 역할 나누기",
     dek: "채팅 메시지를 불러와 거르는 컴포넌트. ref·computed·watch·onMounted가 각자 맡는 구간을 본다.",
@@ -3185,7 +3508,7 @@ onMounted(async () => {
     },
   },
   {
-    no: 24,
+    no: 23,
     date: "2026.09.10",
     title: "커스텀 훅의 메모이제이션 경계",
     dek: "검색 필터 훅. useMemo와 useCallback이 무엇을 사고 무엇을 사지 않는지 본다.",
@@ -3269,7 +3592,7 @@ onMounted(async () => {
     },
   },
   {
-    no: 23,
+    no: 22,
     date: "2026.09.10",
     title: "유틸리티 타입으로 입력 좁히기",
     dek: "일부 필드만 바꾸는 초안 타입과 키를 따라가는 제네릭 함수. 유틸리티 타입을 겹쳐 쓰고 매개변수를 제약하는 모양을 본다.",
@@ -3356,7 +3679,7 @@ const titles = pluck(Object.values(tasks), "title");`,
     },
   },
   {
-    no: 22,
+    no: 21,
     date: "2026.09.10",
     title: "픽스처 주입, 사례 복제",
     dek: "장바구니 합계 테스트에 준비물 주입과 사례 복제를 붙인다. 테스트 함수 하나가 여러 번 돌아가는 구조를 본다.",
@@ -3444,7 +3767,7 @@ def test_empty(cart):
     },
   },
   {
-    no: 21,
+    no: 20,
     date: "2026.09.10",
     title: "세션이 지켜보는 동안",
     dek: "유료 주문 다섯 건을 관계까지 한 번에 읽고 상태를 바꾼다. 질의가 나가는 시점과 커밋의 역할을 본다.",
@@ -3531,7 +3854,7 @@ with Session(engine) as session:
     },
   },
   {
-    no: 20,
+    no: 19,
     date: "2026.09.10",
     title: "loc로 고르고 체인으로 접기",
     dek: "판매 표에서 4월 행을 골라 도시별 집계표를 만든다. loc와 iloc가 고르는 기준, 체인이 원본을 안 건드리는 이유를 본다.",
@@ -3615,7 +3938,7 @@ print(report)`,
     },
   },
   {
-    no: 19,
+    no: 18,
     date: "2026.09.10",
     title: "무한 수열을 잘라 쓰는 사슬",
     dek: "lru_cache로 재귀를 살리고 count와 takewhile로 무한 수열을 잘라 쓴다. 값이 만들어지는 시점이 필요해지는 시점임을 본다.",
@@ -3696,7 +4019,7 @@ print(len(limited), fib(90))`,
     },
   },
   {
-    no: 18,
+    no: 17,
     date: "2026.09.10",
     title: "모델 선언이 곧 입력 규격",
     dek: "가입 폼 딕셔너리를 검증 모델에 통과시킨다. 타입 변환·범위·정규식·커스텀 검증기가 한 번에 돈다.",
@@ -3763,7 +4086,7 @@ print(len(limited), fib(90))`,
     },
   },
   {
-    no: 17,
+    no: 16,
     date: "2026.09.10",
     title: "코루틴을 겹쳐 돌리기",
     dek: "느린 작업 두 개를 태스크로 만들어 한 번에 기다린다. 만드는 순간 돌기 시작하는 시점과 실패가 섞일 때를 본다.",
@@ -3848,7 +4171,7 @@ asyncio.run(main())`,
     },
   },
   {
-    no: 16,
+    no: 15,
     date: "2026.09.10",
     title: "의존성 주입으로 검증 분리",
     dek: "페이지 인자와 API 키 검사를 함수로 떼어 내 주입한다. 뷰 시그니처가 곧 요청 규격이 되는 구조를 본다.",
@@ -3938,7 +4261,7 @@ async def list_articles(
     },
   },
   {
-    no: 15,
+    no: 14,
     date: "2026.09.10",
     title: "블루프린트와 요청 컨텍스트",
     dek: "주문 라우트를 블루프린트로 묶고 요청마다 장바구니를 준비한다. request와 g가 전역처럼 보이는 이유를 본다.",
@@ -4032,7 +4355,7 @@ def order_detail(order_id):
     },
   },
   {
-    no: 14,
+    no: 13,
     date: "2026.09.10",
     title: "게으른 QuerySet 체인",
     dek: "예약 목록을 조건 걸어 상위 10건을 뽑는다. 체인이 길어도 데이터베이스에 나가는 질의는 마지막 한 번이다.",
@@ -4115,7 +4438,7 @@ def busy_bookings(week):
     },
   },
   {
-    no: 13,
+    no: 12,
     date: "2026.09.10",
     title: "컴프리헨션으로 걸러 모으기",
     dek: "접근 로그에서 느린 요청만 걸러 낸다. 리스트·셋·제너레이터 세 형태의 축약 문법이 한 함수에 나란히 온다.",
@@ -4195,7 +4518,7 @@ def busy_bookings(week):
     },
   },
   {
-    no: 12,
+    no: 11,
     date: "2026.09.10",
     title: "널일 수도 있는 값에 이름 붙이기",
     dek: "널 가능 수신자의 확장 함수와 안전 호출 사슬. 컴파일러가 널을 좁혀 주는 지점을 본다.",
@@ -4277,97 +4600,6 @@ fun badgeWall(members: List<Member>): List<String> =
       ],
       answer: 1,
       explain: "nickname의 타입은 String?이라 널이 들어올 수 있고, String 수신자의 메서드는 널 가능 값에 호출할 수 없다. 지금처럼 수신자를 String?로 받으면 널까지 함수 안에서 처리한다. 널 안전성은 실행 시 검사가 아니라 타입과 컴파일의 일이다.",
-    },
-  },
-  {
-    no: 11,
-    date: "2026.09.10",
-    title: "라라벨 요청에서 질의까지",
-    dek: "메서드 주입과 validate로 요청을 걸러 Eloquent 질의로 이어준다. with가 막는 N+1을 본다.",
-    minutes: 3,
-    language: "PHP",
-    framework: "Laravel",
-    domain: "백엔드",
-    prompt: "질의를 조립하는 줄은 여러 개다 — DB에 나가는 실행은 어느 줄에서 일어나는가",
-    code: `class OrderController extends Controller
-{
-    public function index(Request $request, OrderRepository $orders)
-    {
-        $data = $request->validate([
-            'status' => 'nullable|in:paid,shipped',
-        ]);
-
-        $query = $orders->query()
-            ->with('items')
-            ->latest();
-
-        if (isset($data['status'])) {
-            $query->where('status', $data['status']);
-        }
-
-        return $query->limit(20)->get();
-    }
-}`,
-    annotations: [
-      {
-        find: "OrderRepository $orders",
-        title: "메서드 인자 주입",
-        body: "컨트롤러 메서드의 인자는 서비스 컨테이너가 채워 준다. 타입이 맞으면 생성자를 거치지 않고도 메서드에서 바로 주입받을 수 있다.",
-        kind: "concept",
-      },
-      {
-        find: "$request->validate([",
-        title: "요청 검증",
-        body: "들어온 입력을 규칙에 맞는지 검사한다. 규칙을 지나면 검증된 값만 남고, 어기면 이 줄에서 응답이 검증 실패로 끝난다.",
-        kind: "std",
-      },
-      {
-        find: "'nullable|in:paid,shipped'",
-        title: "규칙 문자열",
-        body: "파이프로 규칙을 이어 붙인 표기다. 없어도 되지만, 있으면 반드시 나열한 값 가운데 하나여야 한다는 뜻이다.",
-        kind: "syntax",
-      },
-      {
-        find: "->query()",
-        title: "질의 빌더 열기",
-        body: "조건을 하나씩 얹을 수 있는 질의 빌더를 돌려준다. 이 줄에서 DB에 아무것도 묻지 않는다 — 조립 단계다.",
-        kind: "std",
-      },
-      {
-        find: "->with('items')",
-        title: "즉시 로딩",
-        body: "주문과 항목을 미리 묶어 읽어 온다. 이 줄이 없으면 주문마다 항목 질의를 하나씩 더 보내는 N+1이 된다.",
-        kind: "std",
-      },
-      {
-        find: "->latest()",
-        title: "최신순 정렬",
-        body: "created_at 기준 내림차순으로 정렬 조건을 얹는다. 역시 아직 실행은 아니다.",
-        kind: "std",
-      },
-      {
-        find: "isset($data['status'])",
-        title: "선택적 필터",
-        body: "값이 실제로 들어왔을 때만 조건을 얹는다. 빈 값에 where를 붙이지 않는 것이 동적 질의의 기본형이다.",
-        kind: "idiom",
-      },
-      {
-        find: "->get()",
-        title: "실행 지점",
-        body: "여기서 조립된 SQL이 DB로 나가고 결과가 컬렉션으로 돌아온다. get 전까지는 어떤 줄도 질의를 보내지 않는다.",
-        kind: "concept",
-      },
-    ],
-    takeaway: "질의는 조립과 실행이 나뉜다 — get()이 불릴 때까지는 SQL이 나가지 않는다.",
-    check: {
-      question: "->with('items')를 빼고 결과를 화면에서 항목과 함께 뿌리면 무엇이 문제되는가?",
-      options: [
-        "정렬 순서가 어긋난다",
-        "주문마다 항목 질의를 하나씩 더 보내는 N+1 질의가 된다",
-        "검증 규칙이 다시 실행된다",
-      ],
-      answer: 1,
-      explain: "지연 로딩은 항목을 처음 쓰는 시점에 그 주문만큼 질의를 추가로 보낸다. 20개 주문이면 21번의 질의다. with는 목록을 읽을 때 한 번의 in 조건 질의로 묶어 해결한다.",
     },
   },
   {
