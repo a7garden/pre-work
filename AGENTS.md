@@ -45,7 +45,9 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 1. `npm run new:sprint` 로 스프린트 뼈대를 `src/data/sprints.ts` 맨 앞에
    생성한다 (기본 3편. `--count N`, `YYYY-MM-DD` 지정 가능).
 2. `CONTENT.md`의 "코드 읽기 스프린트" 규칙에 맞춰 채운다 — 코드 12~22줄,
-   주석 5~8개, `prompt`·`check` 각 하나. 공개 배포이므로 각색은 필수다.
+   주석 5~8개, `prompt`·`check` 각 하나. 주류 언어와 실무 스택만 다루고,
+   `domain`은 여섯 분야(백엔드·프론트엔드·데이터·시스템·모바일·인프라) 중 하나로
+   넣는다. 공개 배포이므로 각색은 필수다.
 3. 주석이 코드의 정확한 조각과 겹치지 않는지 검증한다. 배치 파일로 저작할 때는
    `node --experimental-strip-types scripts/check-sprint-batch.mjs <file.ts>`,
    `sprints.ts`에 직접 쓸 때는 `npx astro build`가 대신 잡아 준다.

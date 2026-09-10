@@ -49,6 +49,8 @@ export type Sprint = {
   language: string;
   /** (선택) 프레임워크·라이브러리 — "React", "Django" */
   framework?: string;
+  /** 분야 — 인덱스 필터 단위. 백엔드·프론트엔드·데이터·시스템·모바일·인프라 */
+  domain: string;
   /** 코드를 펼치기 전에 던지는 읽기 과제 한 문장 */
   prompt: string;
   /** 원본 코드. 백틱과 ${는 이스케이프해야 한다 */
@@ -61,853 +63,13 @@ export type Sprint = {
 
 export const sprints: Sprint[] = [
   {
-    no: 105,
-    date: "2026.09.10",
-    title: "글로브 한정자로 최신 파일 고르기",
-    dek: "재귀 글로브에 한정자를 얹어 수정 시각순 목록을 만든다. zsh 배열의 1부터 시작하는 인덱스도 본다.",
-    minutes: 2,
-    language: "Zsh",
-    prompt: "logs에서 세 번째로 최근에 수정된 파일을 꺼내려면 어떤 첨자를 써야 하는가",
-    code: `setopt null_glob
-
-logs=(**/*.log(.om))
-
-print "found $#logs logs, newest first"
-
-for f in $logs; do
-    size=$(wc -c < "$f")
-    (( size > 1048576 )) && print -r -- "big: $f"
-done
-
-newest=$logs[1]
-oldest=$logs[-1]
-print -r -- "newest: $newest"
-print -r -- "oldest: $oldest"`,
-    annotations: [
-      {
-        find: "setopt null_glob",
-        title: "매칭 없으면 빈 목록",
-        body: "매칭이 하나도 없을 때 패턴을 그대로 두지 않고 빈 목록으로 만든다. sh 스타일의 리터럴 남김과 다른 zsh 옵션이다.",
-        kind: "std",
-      },
-      {
-        find: "**/*.log",
-        title: "재귀 글로브",
-        body: "**/는 하위 디렉터리를 끝까지 내려가며 탐색한다. zsh에서는 별도 옵션 없이 기본으로 켜져 있다.",
-        kind: "syntax",
-      },
-      {
-        find: "(.om)",
-        title: "글로브 한정자",
-        body: "괄호 안 한정자가 후보를 가공한다. .은 일반 파일만 남기고, om은 수정 시각 내림차순 정렬이라 가장 최근 파일이 맨 앞에 온다.",
-        kind: "syntax",
-      },
-      {
-        find: "$#logs",
-        title: "배열 길이",
-        body: "$#이름은 값의 길이를 돌려준다. 배열이면 원소 개수다.",
-        kind: "syntax",
-      },
-      {
-        find: "$(wc -c < \"$f\")",
-        title: "명령 치환",
-        body: "명령의 표준 출력을 그 자리에 넣는다. wc -c는 바이트 수를 세고, 리다이렉트로 열어 파일 이름이 출력에 섞이지 않게 한다.",
-        kind: "syntax",
-      },
-      {
-        find: "(( size > 1048576 ))",
-        title: "산술 평가",
-        body: "이중 괄호는 안을 산술식으로 평가해 참·거짓을 돌려준다. &&는 참일 때만 뒤 명령을 실행한다.",
-        kind: "syntax",
-      },
-      {
-        find: "$logs[1]",
-        title: "1부터 세는 인덱스",
-        body: "zsh 배열 인덱스는 1부터 시작한다. bash와 다른 지점이고, 대괄호 첨자로 원소 하나를 꺼낸다.",
-        kind: "concept",
-      },
-      {
-        find: "$logs[-1]",
-        title: "끝에서 세는 인덱스",
-        body: "음수 첨자는 끝에서부터 센다. -1은 마지막 원소라 om 정렬과 만나면 목록에서 가장 오래된 파일이 된다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "zsh는 글로브 한정자로 탐색·필터·정렬을 한 패턴에 얹고, 배열은 1부터 세며 음수로 끝에서 접근한다.",
-    check: {
-      question: "logs 배열에서 세 번째로 최근에 수정된 파일을 꺼내려면?",
-      options: [
-        "$logs[2]",
-        "$logs[3]",
-        "$logs[-3]",
-      ],
-      answer: 1,
-      explain: "zsh 배열은 1부터 세므로 세 번째 원소는 $logs[3]이다. $logs[2]는 두 번째 원소고, $logs[-3]은 끝에서 세 번째라 목록 뒤쪽의 오래된 파일이다.",
-    },
-  },
-  {
-    no: 104,
-    date: "2026.09.10",
-    title: "글로브가 비었을 때의 정석 처리",
-    dek: "디렉터리의 txt 파일 줄 수를 더한다. 매칭이 없을 때 글로브가 남기는 리터럴을 걸러 내는 쌍을 본다.",
-    minutes: 3,
-    language: "POSIX sh",
-    prompt: "dir 안에 txt 파일이 하나도 없으면 이 루프는 몇 바퀴 도는가",
-    code: `#!/bin/sh
-set -eu
-
-usage() {
-    echo "usage: $0 dir" >&2
-    exit 2
-}
-
-[ $# -eq 1 ] || usage
-
-dir=$1
-count=0
-for f in "$dir"/*.txt; do
-    [ -f "$f" ] || continue
-    lines=$(wc -l < "$f")
-    count=$((count + lines))
-    echo "$f: $lines"
-done
-
-echo "total: $count lines"`,
-    annotations: [
-      {
-        find: "set -eu",
-        title: "엄격 모드",
-        body: "-e는 명령이 실패하면 즉시 끝내고, -u는 정의되지 않은 변수를 쓰면 오류를 낸다. 포터블 스크립트의 표준 첫 줄이다.",
-        kind: "idiom",
-      },
-      {
-        find: "$0",
-        title: "스크립트 자신의 이름",
-        body: "위치 인자 0은 실행한 명령 이름이다. 사용법 메시지에 넣어 두면 스크립트 이름이 바뀌어도 그대로 맞는다.",
-        kind: "syntax",
-      },
-      {
-        find: "[ $# -eq 1 ] || usage",
-        title: "인자 개수 검문",
-        body: "$#는 위치 인자 개수다. test가 거짓일 때만 오른쪽이 도는 || 단락으로 개수 틀림 처리를 usage 한 곳에 모은다.",
-        kind: "idiom",
-      },
-      {
-        find: "dir=$1",
-        title: "첫 인자 꺼내기",
-        body: "$1부터가 실제 인자다. 이름 붙은 변수에 옮겨 두면 뒤에서 의미를 읽기 쉬워진다.",
-        kind: "syntax",
-      },
-      {
-        find: "for f in \"$dir\"/*.txt; do",
-        title: "글로브 순회",
-        body: "셸이 패턴을 파일 이름 목록으로 펼쳐 for가 그 목록을 돈다. 따옴표는 dir 값에만 붙여 패턴 부분은 펼침을 유지한다.",
-        kind: "std",
-      },
-      {
-        find: "[ -f \"$f\" ] || continue",
-        title: "매칭 실패 걸러 내기",
-        body: "매칭이 하나도 없으면 패턴 문자열이 그대로 $f에 들어온다. -f 검사가 실패한 continue가 그 한 바퀴를 조용히 건너뛴다.",
-        kind: "idiom",
-      },
-      {
-        find: "$(wc -l < \"$f\")",
-        title: "명령 치환",
-        body: "$(...)는 명령의 표준 출력을 문자열로 바꿔 넣는다. 리다이렉트로 파일을 열면 wc 인자에 파일 이름이 없어 출력에 파일명이 섞이지 않는다.",
-        kind: "syntax",
-      },
-      {
-        find: "$((count + lines))",
-        title: "산술 확장",
-        body: "이중 괄호 안은 산술식으로 평가된다. 변수에 앞뒤 공백이 섞여도 수로 읽어 더한다.",
-        kind: "syntax",
-      },
-    ],
-    takeaway: "매칭 없는 글로브는 패턴을 그대로 남긴다 — [ -f ] 검사와 continue 짝이 포터블 sh에서 그 허점을 막는 관용구다.",
-    check: {
-      question: "txt 파일이 하나도 없을 때 이 스크립트가 출력하는 것은?",
-      options: [
-        "total: 0 lines 한 줄",
-        "dir/*.txt: 그런 파일이 없다는 오류",
-        "아무것도 출력하지 않고 오류로 끝난다",
-      ],
-      answer: 0,
-      explain: "매칭이 없으면 루프가 리터럴 패턴으로 한 바퀴 돌지만 [ -f ]가 실패해 continue로 건너뛴다. count는 0인 채라 최종 줄만 출력된다. continue는 정상 흐름이라 set -e도 발화하지 않는다.",
-    },
-  },
-  {
-    no: 103,
-    date: "2026.09.10",
-    title: "버퍼를 훑고 제자리로 돌아오기",
-    dek: "현재 버퍼에서 TODO 주석을 모아 목록으로 돌려준다. 포인트가 움직였다가 제자리로 돌아오는 보호를 본다.",
-    minutes: 2,
-    language: "Emacs Lisp",
-    prompt: "이 함수가 끝난 뒤 포인트는 어디에 있을 것인가",
-    code: `(defun list-todo-lines ()
-  "Return TODO lines in the current buffer."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (let ((todos '()))
-      (while (re-search-forward "^;; TODO" nil t)
-        (push (buffer-substring-no-properties
-               (match-beginning 0)
-               (match-end 0))
-              todos))
-      (setq todos (nreverse todos))
-      (message "%d TODO lines" (length todos))
-      todos)))`,
-    annotations: [
-      {
-        find: "defun",
-        title: "함수 정의",
-        body: "이름·인자·설명 문자열·몸통으로 함수를 정의한다. interactive가 붙으면 M-x로 부를 수 있는 명령이 된다.",
-        kind: "syntax",
-      },
-      {
-        find: "save-excursion",
-        title: "포인트 복원",
-        body: "몸통이 끝나면 포인트와 마크를 진입 때 값으로 되돌린다. 검색·이동을 하는 함수의 표준 보호 장치다.",
-        kind: "idiom",
-      },
-      {
-        find: "(point-min)",
-        title: "버퍼 맨 앞",
-        body: "버퍼에서 접근할 수 있는 가장 작은 위치로, 보통 1이다. point-max는 버퍼 끝 다음 위치다.",
-        kind: "std",
-      },
-      {
-        find: "re-search-forward",
-        title: "정규식 앞으로 탐색",
-        body: "포인트를 앞으로 옮기며 정규식을 찾는다. 못 찾으면 세 번째 인자가 t일 때 nil을 돌려주고 오류는 내지 않는다.",
-        kind: "std",
-      },
-      {
-        find: "\"^;; TODO\"",
-        title: "줄 앵커 정규식",
-        body: "^는 줄의 시작을 뜻한다. 세미콜론 두 개로 시작하는 TODO 주석만 걸러 낸다.",
-        kind: "syntax",
-      },
-      {
-        find: "buffer-substring-no-properties",
-        title: "텍스트 잘라 내기",
-        body: "두 위치 사이의 버퍼 텍스트를 문자열로 돌려준다. no-properties가 붙으면 텍스트 속성은 떼고 내용만 가져온다.",
-        kind: "std",
-      },
-      {
-        find: "match-beginning 0",
-        title: "마지막 매치의 범위",
-        body: "직전 검색이 맞춘 범위의 시작 위치를 돌려준다. 0은 매치 전체, 숫자는 해당 캡처 그룹이다. 끝 위치는 match-end가 맡는다.",
-        kind: "std",
-      },
-      {
-        find: "nreverse",
-        title: "쌓인 순서 뒤집기",
-        body: "push로 앞에 붙여 쌓은 목록은 뒤집어야 입력 순서가 된다. nreverse는 새 목록을 만들지 않고 셀 연결을 제자리에서 바꾼다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "버퍼를 훑는 함수는 save-excursion으로 감싸 포인트를 제자리에 돌려놓는다 — 이동하는 함수는 원래 자리를 책임진다.",
-    check: {
-      question: "save-excursion이 없었다면 이 함수가 끝난 뒤 포인트는 어디에 남는가?",
-      options: [
-        "마지막으로 매치한 위치에 남는다",
-        "point-min으로 강제로 돌아간다",
-        "버퍼 끝으로 이동한다",
-      ],
-      answer: 0,
-      explain: "re-search-forward는 매치를 찾으면 포인트를 매치 끝으로 옮긴다. save-excursion이 그 자리를 진입 때 값으로 되돌려 주므로 호출 쪽은 흔적을 못 느낀다.",
-    },
-  },
-  {
-    no: 102,
-    date: "2026.09.10",
-    title: "Tcl에서 치환은 언제 일어나는가",
-    dek: "점수 목록을 리스트로 훑어 최고 점수를 가린다. 중괄호·대괄호·따옴표가 치환 시점을 어떻게 다루는지 본다.",
-    minutes: 2,
-    language: "Tcl",
-    prompt: "set sorted [lsort -dictionary $names]에서 sorted에는 무엇이 대입되는가",
-    code: `set raw {ann 82 bob 95 cid 78}
-
-set names {}
-set best 0
-set top ""
-
-foreach {name score} $raw {
-    lappend names $name
-    if {$score > $best} {
-        set best $score
-        set top $name
-    }
-}
-
-set sorted [lsort -dictionary $names]
-puts "students: [llength $sorted]"
-puts "top: $top ($best)"`,
-    annotations: [
-      {
-        find: "{ann 82 bob 95 cid 78}",
-        title: "리스트 리터럴",
-        body: "중괄호는 안을 그대로 두는 인용이다. 공백으로 나뉜 여섯 조각이 리스트 하나로 set에 들어간다.",
-        kind: "syntax",
-      },
-      {
-        find: "set names {}",
-        title: "빈 리스트 준비",
-        body: "set은 변수를 읽고 쓰는 명령이다. 빈 중괄호는 빈 리스트다.",
-        kind: "syntax",
-      },
-      {
-        find: "foreach {name score} $raw",
-        title: "두 개씩 묶어 순회",
-        body: "변수 이름 리스트를 주면 원소를 그만큼씩 묶어 순회한다. 이름·점수 쌍이 한 번에 풀린다.",
-        kind: "idiom",
-      },
-      {
-        find: "lappend names $name",
-        title: "리스트에 붙이기",
-        body: "리스트 명령으로 뒤에 원소를 붙인다. 문자열을 다시 조립하는 append와 달리 리스트 구조를 유지한다.",
-        kind: "std",
-      },
-      {
-        find: "if {$score > $best}",
-        title: "중괄호로 치환 미루기",
-        body: "중괄호는 안을 먼저 치환하지 않고 if에 그대로 넘긴다. if가 식을 평가하는 순간 치환이 일어나 비교가 매 반복 새 값으로 된다.",
-        kind: "syntax",
-      },
-      {
-        find: "[lsort -dictionary $names]",
-        title: "명령 치환",
-        body: "대괄호는 안의 명령을 지금 실행하고 그 결과로 바꿔치기한다. set에 대입되는 것은 lsort의 결과다.",
-        kind: "syntax",
-      },
-      {
-        find: "[llength $sorted]",
-        title: "리스트 길이",
-        body: "리스트의 원소 개수를 돌려준다. 명령 치환으로 puts의 문자열 안에 직접 박힌다.",
-        kind: "std",
-      },
-      {
-        find: "puts \"top: $top ($best)\"",
-        title: "따옴표 안의 치환",
-        body: "따옴표는 중괄호와 달리 안의 $변수와 [명령]을 즉시 치환한다. 출력 문자열이 만들어지는 자리다.",
-        kind: "concept",
-      },
-    ],
-    takeaway: "Tcl은 중괄호로 치환을 미루고 따옴표·대괄호로 치환을 당긴다 — 인용 기호가 곧 평가 시점이다.",
-    check: {
-      question: "set sorted [lsort -dictionary $names]에서 sorted에 대입되는 것은?",
-      options: [
-        "lsort 명령 문자열 그대로",
-        "lsort를 실행한 결과 리스트",
-        "lsort를 나중에 실행하라는 예약",
-      ],
-      answer: 1,
-      explain: "대괄호는 명령 치환이다. 그 자리에서 lsort가 실행되고 그 결과가 set에 대입된다. 이 치환을 언제 할지 정하는 게 중괄호와 따옴표다.",
-    },
-  },
-  {
-    no: 101,
-    date: "2026.09.10",
-    title: "예외를 감싸서 다시 던지기",
-    dek: "파일 크기를 읽는 절차에서 저수준 예외를 도메인 예외로 감싼다. try·except·finally의 역할 나눔을 본다.",
-    minutes: 3,
-    language: "Nim",
-    prompt: "app.cfg가 없을 때 이 프로그램은 마지막에 어떻게 끝나는가",
-    code: `import std/os
-
-type
-  ConfigError = object of CatchableError
-
-proc loadSize(path: string): int =
-  if not fileExists(path):
-    raise newException(ConfigError, "missing: " & path)
-  try:
-    result = int(getFileSize(path))
-  except OSError as e:
-    raise newException(ConfigError, "stat failed: " & e.msg)
-  finally:
-    echo "checked: " & path
-
-when isMainModule:
-  try:
-    echo loadSize("app.cfg")
-  except ConfigError as e:
-    echo "error: ", e.msg
-    quit(1)`,
-    annotations: [
-      {
-        find: "import std/os",
-        title: "모듈 가져오기",
-        body: "표준 라이브러리 모듈을 이름 공간에 연다. fileExists·getFileSize는 여기서 온 절차다.",
-        kind: "std",
-      },
-      {
-        find: "object of CatchableError",
-        title: "예외 타입 정의",
-        body: "CatchableError를 부모로 삼아 도메인 예외 타입을 만든다. 호출 쪽에서 이 타입만 골라 잡을 수 있게 해 준다.",
-        kind: "syntax",
-      },
-      {
-        find: "raise newException",
-        title: "예외 만들어 던지기",
-        body: "newException으로 지정한 타입의 예외를 만들고 raise가 흐름을 거슬러 올려 보낸다. 메시지에 원인을 붙여 두면 추적이 쉬워진다.",
-        kind: "std",
-      },
-      {
-        find: "except OSError as e:",
-        title: "종류별로 잡기",
-        body: "이 절에서 OSError만 골라 잡는다. as e로 예외 객체를 받아 msg 같은 필드를 읽을 수 있다.",
-        kind: "syntax",
-      },
-      {
-        find: "\"stat failed: \" & e.msg",
-        title: "문자열 연결",
-        body: "&는 두 문자열을 잇는 새 문자열을 만든다. Nim의 문자열과 컬렉션은 ARC/ORC가 참조 수를 세어 마지막 참조가 사라지는 순간 정리한다.",
-        kind: "concept",
-      },
-      {
-        find: "finally:",
-        title: "어느 쪽이든 도는 정리",
-        body: "try 절이 예외로 끝나든 정상으로 끝나든 실행된다. 자원 정리를 성공·실패 양쪽에 두 번 쓰지 않게 해 준다.",
-        kind: "syntax",
-      },
-      {
-        find: "result",
-        title: "암시적 결과 변수",
-        body: "반환형이 있는 proc에는 result 변수가 저절로 준비된다. 대입만 하면 절차가 끝날 때 그 값이 돌아간다.",
-        kind: "idiom",
-      },
-      {
-        find: "except ConfigError as e:",
-        title: "도메인 예외로 마무리",
-        body: "loadSize가 감싸서 던진 ConfigError를 여기서 잡는다. 저수준 OSError가 그대로 밖으로 새어 나가지 않는다.",
-        kind: "syntax",
-      },
-    ],
-    takeaway: "저수준 예외는 절차 경계에서 도메인 예외로 감싸고, 메모리 정리는 ARC/ORC가 참조 수가 0이 되는 순간 맡아서 한다.",
-    check: {
-      question: "app.cfg가 없을 때 프로그램이 출력하고 끝나는 방식은?",
-      options: [
-        "OSError 메시지가 그대로 찍히고 비정상 종료한다",
-        "checked는 찍히지 않고 error: missing: app.cfg를 찍은 뒤 종료 코드 1로 끝난다",
-        "아무 출력 없이 정상 종료 코드 0으로 끝난다",
-      ],
-      answer: 1,
-      explain: "fileExists가 거짓이면 try에 들어가기 전에 ConfigError가 raise된다. finally는 try에 들어간 흐름에만 적용되므로 checked는 찍히지 않고, main의 except가 메시지를 찍은 뒤 quit(1)로 끝낸다.",
-    },
-  },
-  {
-    no: 100,
-    date: "2026.09.10",
-    title: "vapply로 벡터를 접기",
-    dek: "파일마다 정보를 모아 데이터 프레임으로 접는다. sapply 대신 vapply를 쓰는 이유를 본다.",
-    minutes: 3,
-    language: "R",
-    prompt: "vapply의 마지막 인자 numeric(1)은 무엇을 검사하는가",
-    code: `paths <- c("logs/a.csv", "logs/b.csv", "logs/c.csv")
-
-sizes <- vapply(paths, function(p) {
-  info <- file.info(p)
-  round(info$size / 1024)
-}, numeric(1))
-
-parts <- strsplit(paths, "/", fixed = TRUE)
-basenames <- vapply(parts, function(piece) piece[length(piece)], character(1))
-
-report <- data.frame(file = basenames, kb = unname(sizes))
-report <- report[order(report$kb, decreasing = TRUE), ]
-print(report)`,
-    annotations: [
-      {
-        find: "vapply",
-        title: "기대형을 밝히는 apply",
-        body: "목록의 원소마다 함수를 적용해 벡터로 접는다. 마지막 인자로 기대하는 결과형을 밝히고, 다른 형이 나오면 바로 오류를 낸다.",
-        kind: "std",
-      },
-      {
-        find: "function(p)",
-        title: "익명 함수",
-        body: "이름 없이 자리에서 정의해 넘기는 함수다. apply 계열은 원소 하나를 받는 함수를 인자로 받는다.",
-        kind: "syntax",
-      },
-      {
-        find: "file.info",
-        title: "파일 메타데이터",
-        body: "경로의 크기·수정 시각 같은 정보를 데이터 프레임으로 돌려준다. 한 경로를 주면 한 행짜리 결과가 나온다.",
-        kind: "std",
-      },
-      {
-        find: "info$size",
-        title: "이름으로 원소 꺼내기",
-        body: "달러는 이름을 붙인 원소를 꺼내는 연산자다. 여기서는 file.info 결과의 size 열을 꺼낸다.",
-        kind: "syntax",
-      },
-      {
-        find: "numeric(1)",
-        title: "FUN.VALUE 검증",
-        body: "함수가 돌려줘야 할 형과 길이를 나타내는 길이 1 숫자 벡터다. 형이 다르면 조용히 통과하지 않고 즉시 실패한다.",
-        kind: "idiom",
-      },
-      {
-        find: "strsplit",
-        title: "문자열 나누기",
-        body: "구분자로 문자열을 잘라 문자 벡터들의 목록을 돌려준다. 입력이 벡터라 결과도 원소별 목록이다.",
-        kind: "std",
-      },
-      {
-        find: "unname(sizes)",
-        title: "이름 떼기",
-        body: "vapply 결과에는 입력 이름이 붙는다. 데이터 프레임 열로 넣기 전에 이름을 떼어 중복을 없앤다.",
-        kind: "idiom",
-      },
-      {
-        find: "order(report$kb, decreasing = TRUE)",
-        title: "순서 인덱스",
-        body: "정렬된 순서의 인덱스를 돌려준다. 값을 직접 바꾸지 않아 이렇게 다른 열과 함께 행을 재배치할 수 있다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "R에서는 for 루프 대신 apply 계열로 원소별 작업을 접고, vapply는 결과형을 밝혀 실수를 일찍 터뜨린다.",
-    check: {
-      question: "vapply의 함수가 문자열 하나를 돌려주면 어떻게 되는가?",
-      options: [
-        "NA로 바뀌어 나머지와 섞인다",
-        "기대형 numeric(1)과 다르므로 즉시 오류가 난다",
-        "문자열이 자동으로 0으로 바뀐다",
-      ],
-      answer: 1,
-      explain: "vapply는 FUN.VALUE와 결과 형이 다르면 실행을 멈춘다. sapply였다면 결과 형이 조용히 문자로 흔들려 뒤쪽 계산이 오염될 자리다. 일찍 실패가 apply 계열의 안전 장치다.",
-    },
-  },
-  {
-    no: 99,
-    date: "2026.09.10",
-    title: "패턴에 걸린 줄만 액션이 돈다",
-    dek: "CSV를 읽어 유효한 행만 골라 합계와 평균을 낸다. 패턴·액션 쌍이 줄마다 평가되는 리듬을 본다.",
-    minutes: 2,
-    language: "AWK",
-    prompt: "BEGIN과 END 블록은 입력이 도는 동안 몇 번 실행되는가",
-    code: `BEGIN { FS = ","; total = 0; rows = 0 }
-
-NR == 1 { next }
-
-$3 != "" && $3 + 0 > 0 {
-    total += $3
-    rows++
-    if ($3 + 0 >= 100) big++
-}
-
-END {
-    if (rows == 0) { print "no data"; exit 1 }
-    print "rows", rows
-    print "avg", total / rows
-    print "big", big + 0
-}`,
-    annotations: [
-      {
-        find: "BEGIN",
-        title: "입력 전 한 번",
-        body: "입력을 읽기 전에 딱 한 번 실행되는 블록이다. 보통 FS 같은 변수를 초기화하거나 머리말을 출력한다.",
-        kind: "concept",
-      },
-      {
-        find: "FS = \",\"",
-        title: "필드 구분자",
-        body: "입력 줄을 나눌 구분자를 정한다. 기본은 연속 공백이고, 쉼표를 주면 각 줄이 쉼표 기준으로 필드에 나뉜다.",
-        kind: "std",
-      },
-      {
-        find: "NR == 1 { next }",
-        title: "머리 줄 건너뛰기",
-        body: "NR은 지금까지 읽은 줄 수다. 첫 줄에서 next를 만나면 남은 규칙을 건너뛰고 다음 줄로 간다 — 헤더가 통계에 섞이지 않게 하는 정석 처리다.",
-        kind: "idiom",
-      },
-      {
-        find: "$3",
-        title: "세 번째 필드",
-        body: "$0은 줄 전체, $1부터가 나뉜 필드다. 수 문맥에서 쓰이면 문자열이 자동으로 수로 바뀐다.",
-        kind: "syntax",
-      },
-      {
-        find: "total += $3",
-        title: "통과 행 누적",
-        body: "조건을 통과한 행마다 세 번째 필드를 total에 더한다. 값이 문자열이어도 수로 바꿔 더한다.",
-        kind: "syntax",
-      },
-      {
-        find: "rows++",
-        title: "행 세기",
-        body: "유효 행 하나마다 하나씩 올린다. 초기화하지 않은 변수는 0에서 시작하므로 BEGIN의 rows = 0은 읽기 쉽게 하려는 배레다.",
-        kind: "syntax",
-      },
-      {
-        find: "END",
-        title: "입력 끝에 한 번",
-        body: "모든 입력 줄을 처리한 뒤 한 번 실행된다. 누적해 둔 값을 요약해 내놓는 자리다.",
-        kind: "concept",
-      },
-      {
-        find: "exit 1",
-        title: "실패로 끝내기",
-        body: "종료 상태 1로 프로그램을 끝낸다. 파이프라인에서 이 awk 단계가 실패했음을 호출 쪽이 알 수 있게 한다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "awk 프로그램은 줄마다 골라내는 패턴·액션 쌍들과, 입력 앞뒤로 한 번씩 도는 BEGIN·END로 구성된다.",
-    check: {
-      question: "네 번째 블록($3 != \"\" && ...)의 조건은 몇 번 평가되는가?",
-      options: [
-        "입력 줄마다 한 번씩",
-        "전체 입력에 대해 한 번",
-        "조건이 참이 되는 줄에서만",
-      ],
-      answer: 0,
-      explain: "패턴이 있는 규칙은 입력 줄마다 평가된다. 조건이 참이면 그 줄에서 액션이 돌고 거짓이면 액션만 건너뛴다. BEGIN·END만 입력 전후로 한 번 도는 특별한 블록이다.",
-    },
-  },
-  {
-    no: 98,
-    date: "2026.09.10",
-    title: "정규식에 걸린 줄만 세기",
-    dek: "표준 입력을 줄마다 정규식으로 검사해 사용자별 횟수를 센다. 캡처 그룹에서 매치 변수로 넘어가는 흐름을 본다.",
-    minutes: 3,
-    language: "Perl",
-    prompt: "정규식과 맞지 않는 줄이 들어오면 이 루프는 그 줄을 어떻게 처리하는가",
-    code: "use strict;\nuse warnings;\n\nmy %count;\nwhile (my $line = <>) {\n    chomp $line;\n    next unless $line =~ /^(\\d{4}-\\d{2}-\\d{2})\\s+(\\w+)$/;\n    my ($date, $user) = ($1, $2);\n    $count{$user}++;\n}\n\nfor my $user (sort { $count{$b} <=> $count{$a} } keys %count) {\n    printf \"%-10s %d\\n\", $user, $count{$user};\n}",
-    annotations: [
-      {
-        find: "my %count;",
-        title: "개수를 모을 해시",
-        body: "%count는 키가 사용자 이름, 값이 횟수인 해시다. %는 해시, @는 배열, $는 스칼라 하나를 가리키는 시그릴이다.",
-        kind: "syntax",
-      },
-      {
-        find: "while (my $line = <>)",
-        title: "다이아몬드 연산자",
-        body: "<>는 인자로 받은 파일들과 표준 입력을 차례로 열어 한 줄씩 돌려준다. 다 읽으면 undef가 나와 루프가 끝난다.",
-        kind: "std",
-      },
-      {
-        find: "chomp $line;",
-        title: "개행 떼어 내기",
-        body: "읽어 온 줄 끝의 개행 문자를 제거한다. 개행이 남으면 정규식 끝의 $ 앵커에 걸리지 않는다.",
-        kind: "std",
-      },
-      {
-        find: "=~",
-        title: "바인딩 연산자",
-        body: "왼쪽 문자열을 오른쪽 정규식에 대입해 검사한다. 맞으면 참, 아니면 거짓이고 !~는 그 반대다.",
-        kind: "syntax",
-      },
-      {
-        find: "(\\d{4}-\\d{2}-\\d{2})",
-        title: "캡처 그룹",
-        body: "괄호로 묶은 부분은 나중에 꺼낼 수 있게 따로 저장된다. 숫자와 하이픈 개수를 반복자로 잠가 형식이 맞는 줄만 통과시킨다.",
-        kind: "syntax",
-      },
-      {
-        find: "($1, $2)",
-        title: "매치 변수",
-        body: "성공한 매치의 캡처 그룹이 $1·$2 순서로 들어 있다. 목록 대입으로 한 번에 이름 붙은 변수에 옮겨 읽기 좋게 만든다.",
-        kind: "idiom",
-      },
-      {
-        find: "$count{$user}++",
-        title: "해시 카운터",
-        body: "키가 처음 나오면 undef에서 시작해 1이 된다. ++는 초기화 없는 undef를 0으로 쳐서 조용히 올리므로 경고도 나지 않는다.",
-        kind: "idiom",
-      },
-      {
-        find: "sort { $count{$b} <=> $count{$a} }",
-        title: "내림차순 정렬 블록",
-        body: "정렬 기준을 두 변수 $a·$b로 받아 비교식을 직접 쓴다. b를 앞에 두면 수가 큰 쪽이 먼저 온다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "걸러 내기는 정규식과 next가 하고, 꺼내기는 캡처 그룹과 $1·$2가 한다 — 펄은 이 짝을 한 루프에 붙여 쓴다.",
-    check: {
-      question: "정규식과 맞지 않는 줄이 들어오면 %count는 어떻게 되는가?",
-      options: [
-        "빈 문자열 키가 하나 늘어난다",
-        "next가 다음 줄로 건너뛰므로 %count는 그대로다",
-        "경고를 내고 프로그램이 멈춘다",
-      ],
-      answer: 1,
-      explain: "unless $line =~ ...는 매치에 실패했을 때 참이 되어 next가 실행된다. next는 이번 반복을 즉시 끝내 다음 줄로 가므로 캡처 변수도 해시도 건드리지 않는다.",
-    },
-  },
-  {
-    no: 97,
-    date: "2026.09.10",
-    title: "객체가 흐르는 파이프라인",
-    dek: "로그 파일을 크기순으로 골라 요약한다. 파이프라인에서 문자열이 아니라 객체가 흘러가는 점을 본다.",
-    minutes: 3,
-    language: "PowerShell",
-    prompt: "Where-Object 블록 안의 $_는 각 시점에 무엇을 가리키고 있는가",
-    code: `$logs = Get-ChildItem -Path . -Filter *.log
-
-$big = $logs |
-    Where-Object { $_.Length -gt 1MB } |
-    Sort-Object Length -Descending |
-    Select-Object -First 5
-
-$big | ForEach-Object {
-    "{0} {1:N1} MB" -f $_.Name, ($_.Length / 1MB)
-}
-
-$summary = $big | Measure-Object -Property Length -Sum
-"total: {0:N1} MB" -f ($summary.Sum / 1MB)`,
-    annotations: [
-      {
-        find: "Get-ChildItem",
-        title: "파일 시스템 열거",
-        body: "지정한 경로의 항목을 FileInfo 객체로 돌려준다. 문자열 목록이 아니라 Name·Length 같은 속성을 가진 객체라는 점이 이 파이프라인의 출발점이다.",
-        kind: "std",
-      },
-      {
-        find: "Where-Object",
-        title: "조건 필터",
-        body: "조건을 통과한 객체만 다음 단계로 흘려 보낸다. 중괄호 블록은 흘러오는 객체마다 한 번씩 평가된다.",
-        kind: "std",
-      },
-      {
-        find: "$_.Length",
-        title: "현재 파이프라인 객체",
-        body: "$_는 이 단계로 방금 들어온 객체 하나를 가리키는 자동 변수다. 블록 안에서 객체의 속성을 꺼내 조건이나 출력에 쓴다.",
-        kind: "concept",
-      },
-      {
-        find: "1MB",
-        title: "수량 단위 접미사",
-        body: "숫자 뒤에 kb·mb·gb를 붙이면 곱셈 없이 그 크기의 수가 된다. 1MB는 1048576과 같은 값이다.",
-        kind: "syntax",
-      },
-      {
-        find: "Sort-Object Length -Descending",
-        title: "속성 기준 정렬",
-        body: "객체 목록을 지정한 속성 값 기준으로 정렬한다. 출력을 파싱해 정렬하는 텍스트 파이프라인과 다른 지점이다.",
-        kind: "std",
-      },
-      {
-        find: "Select-Object -First 5",
-        title: "상위 자르기",
-        body: "정렬된 결과에서 앞 n개만 남긴다. 정렬 뒤에 두면 상위 5개가 되고, 단계마다 객체 목록을 주고받는다.",
-        kind: "idiom",
-      },
-      {
-        find: "-f",
-        title: "서식 연산자",
-        body: "왼쪽 서식 문자열의 {0}·{1} 자리에 오른쪽 값을 채운다. N1은 소수 첫째 자리까지 반올림한다.",
-        kind: "syntax",
-      },
-      {
-        find: "Measure-Object -Property Length -Sum",
-        title: "집계 측정",
-        body: "흘러온 객체들의 속성을 합계 같은 통계로 접는다. 결과는 Sum 속성을 가진 객체로 나온다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "PowerShell 파이프라인은 텍스트 줄이 아니라 객체를 흘려 보낸다 — 속성으로 걸르고 정렬하고 집계하는 일이 한 흐름 안에서 끝난다.",
-    check: {
-      question: "이 파이프라인에서 Sort-Object가 정렬하는 대상은 무엇인가?",
-      options: [
-        "Where-Object가 걸러 낸 텍스트 줄들",
-        "Length 속성을 가진 FileInfo 객체들",
-        "이름 순으로 이미 정렬된 문자열들",
-      ],
-      answer: 1,
-      explain: "Get-ChildItem이 FileInfo 객체를 흘려 보내고 Where-Object도 그 객체들을 그대로 통과시킨다. Sort-Object는 Length 속성 값을 읽어 정렬하며, 대상이 타입 있는 객체라 속성 접근이 곧바로 된다.",
-    },
-  },
-  {
-    no: 96,
-    date: "2026.09.10",
-    title: "GitLab CI rules",
-    dek: "rules가 잡을 파이프라인에 넣을지 결정한다.",
-    minutes: 3,
-    language: "YAML",
-    framework: "GitLab CI",
-    prompt: "main이 아닌 브랜치 파이프라인에서 deploy-app 잡은 어떻게 되는지 보자.",
-    code: `stages: [build, test, deploy]
-
-build-app:
-  stage: build
-  image: golang:1.23
-  script:
-    - go build -o app ./cmd/app
-  artifacts:
-    paths: [app]
-
-test-app:
-  stage: test
-  script:
-    - go test ./...
-
-deploy-app:
-  stage: deploy
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-  script:
-    - ./deploy.sh`,
-    annotations: [
-      {
-        find: "stages: [build, test, deploy]",
-        title: "스테이지",
-        body: "파이프라인의 실행 순서다. 같은 스테이지의 잡은 병렬로 돌고, 다음 스테이지는 앞 스테이지가 모두 성공해야 시작한다.",
-        kind: "concept",
-      },
-      {
-        find: "image: golang:1.23",
-        title: "잡 이미지",
-        body: "script가 돌아갈 컨테이너 이미지다. 잡마다 다른 툴체인을 쓸 수 있다.",
-        kind: "syntax",
-      },
-      {
-        find: "artifacts:",
-        title: "산물 전달",
-        body: "paths에 지정한 파일을 잡 결과로 보관하고 다음 스테이지 잡에 자동으로 넘겨준다. 빌드 산물을 테스트·배포 잡이 그대로 받는다.",
-        kind: "std",
-      },
-      {
-        find: "rules:",
-        title: "잡 포함 규칙",
-        body: "이 잡을 파이프라인에 넣을지 위에서부터 차례로 평가한다. 어느 rule도 맞지 않으면 잡 자체가 만들어지지 않는다.",
-        kind: "concept",
-      },
-      {
-        find: "- if: $CI_COMMIT_BRANCH == \"main\"",
-        title: "사전 정의 변수",
-        body: "CI_COMMIT_BRANCH는 GitLab이 넣어주는 브랜치 이름 변수다. 별도 설정 없이 조건에서 바로 읽는다.",
-        kind: "std",
-      },
-      {
-        find: "when: manual",
-        title: "수동 실행",
-        body: "조건이 맞아도 사람이 실행 버튼을 눌러야 돈다. 배포 잡에 다는 표준 안전장치다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "rules에 안 걸리면 when과 무관하게 잡 자체가 파이프라인에 없다.",
-    check: {
-      question: "main이 아닌 브랜치의 파이프라인에서 deploy-app은?",
-      options: [
-        "수동 대기 상태로 만들어진다",
-        "rules에 걸리지 않아 잡 자체가 만들어지지 않는다",
-        "main 파이프라인과 똑같이 돈다",
-      ],
-      answer: 1,
-      explain: "rules는 잡을 파이프라인에 포함할지 결정한다. 어떤 rule도 만족하지 않으면 when: manual조차 적용되지 않고 잡이 아예 생기지 않는다.",
-    },
-  },
-  {
-    no: 95,
+    no: 62,
     date: "2026.09.10",
     title: "멀티스테이지 Dockerfile",
     dek: "빌드 도구는 버리고 산물만 옮긴다.",
     minutes: 2,
     language: "Dockerfile",
+    domain: "인프라",
     prompt: "소스만 고쳐 다시 빌드하면 어느 줄부터 다시 실행될지 따라가 보자.",
     code: `FROM golang:1.23 AS build
 WORKDIR /src
@@ -978,347 +140,14 @@ ENTRYPOINT ["/app"]`,
     },
   },
   {
-    no: 94,
-    date: "2026.09.10",
-    title: "systemd 의존성 선언",
-    dek: "Wants와 Requires, After는 각자 다른 것을 보장한다.",
-    minutes: 2,
-    language: "systemd",
-    prompt: "Wants와 Requires, After가 각각 무엇을 보장하는지 구분해 보자.",
-    code: `[Unit]
-Description=metrics exporter
-Documentation=https://example.com/docs/exporter
-Wants=network-online.target
-After=network-online.target
-Requires=exporter-credentials.service
-
-[Service]
-Type=notify
-ExecStart=/usr/local/bin/exporter --port 9102
-ExecReload=/bin/kill -HUP $MAINPID
-Restart=on-failure
-RestartSec=5
-Environment=LOG_LEVEL=info
-
-[Install]
-WantedBy=multi-user.target`,
-    annotations: [
-      {
-        find: "Wants=network-online.target",
-        title: "약한 의존",
-        body: "대상을 함께 띄우라는 뜻이지만, 대상이 실패해도 이 유닛은 계속 시작한다. 있으면 좋은 수준의 의존이다.",
-        kind: "concept",
-      },
-      {
-        find: "After=network-online.target",
-        title: "기동 순서",
-        body: "대상보다 나중에 시작하라고 순서만 정한다. 필요 여부와는 무관하므로 보통 Wants와 짝으로 쓴다.",
-        kind: "syntax",
-      },
-      {
-        find: "Requires=exporter-credentials.service",
-        title: "강한 의존",
-        body: "대상이 시작에 실패하면 이 유닛도 시작하지 않는다. 다만 Requires만으로는 순서가 정해지지 않는다.",
-        kind: "concept",
-      },
-      {
-        find: "Type=notify",
-        title: "준비 통지",
-        body: "프로세스가 sd_notify로 준비 완료를 직접 알리는 방식이다. 실제로 서비스 가능해진 시점을 정확히 보고한다.",
-        kind: "std",
-      },
-      {
-        find: "Restart=on-failure",
-        title: "재시작 정책",
-        body: "0이 아닌 종료 코드나 시그널로 죽었을 때만 재시작한다. 정상 종료는 그대로 둔다.",
-        kind: "syntax",
-      },
-      {
-        find: "$MAINPID",
-        title: "PID 지정자",
-        body: "systemd가 관리하는 메인 프로세스 PID로 치환된다. reload에 시그널을 보낼 대상을 가리킬 때 쓴다.",
-        kind: "std",
-      },
-      {
-        find: "WantedBy=multi-user.target",
-        title: "enable 대상",
-        body: "systemctl enable이 multi-user.target.wants 디렉터리에 심링크를 만든다. 부팅 중 multi-user.target이 뜰 때 이 유닛도 함께 시작된다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "Requires는 필요 여부, After는 순서다 — 역할이 달라서 보통 짝으로 쓴다.",
-    check: {
-      question: "Requires=가 보장하지 않는 것은?",
-      options: [
-        "의존 유닛이 시작 실패하면 이 유닛도 시작하지 않는다",
-        "의존 유닛을 함께 띄운다",
-        "의존 유닛보다 나중에 시작한다",
-      ],
-      answer: 2,
-      explain: "시작 순서는 After=의 역할이다. Requires는 함께 띄우고, 대상 실패 시 같이 못 뜨는 필요성만 정한다. 그래서 Requires와 After를 짝으로 쓰는 게 관용이다.",
-    },
-  },
-  {
-    no: 93,
-    date: "2026.09.10",
-    title: "Prometheus 알림 규칙",
-    dek: "레코딩 규칙을 저장해 두고 알림에서 재사용한다.",
-    minutes: 3,
-    language: "YAML",
-    framework: "Prometheus",
-    prompt: "에러 비율이 잠깐 임계를 넘고 곧 내려가면 알림이 울릴지 생각하며 읽자.",
-    code: `groups:
-  - name: api-alerts
-    rules:
-      - record: job:http_error_ratio:rate5m
-        expr: |
-          sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
-            /
-          sum(rate(http_requests_total[5m])) by (job)
-
-      - alert: HighErrorRate
-        expr: job:http_error_ratio:rate5m > 0.05
-        for: 10m
-        labels:
-          severity: page
-        annotations:
-          summary: "5xx 비율 5% 초과 (job={{ $labels.job }})"`,
-    annotations: [
-      {
-        find: "record: job:http_error_ratio:rate5m",
-        title: "레코딩 규칙",
-        body: "표현식 결과를 새 시계열로 미리 계산해 저장한다. 알림 식이 단순해지고 질의 비용도 아낀다. 이름은 레벨:메트릭:연산 관례를 따른다.",
-        kind: "idiom",
-      },
-      {
-        find: "status=~\"5..\"",
-        title: "정규식 매처",
-        body: "라벨 값을 정규식으로 거른다. 500, 502, 503 같은 5xx 응답을 한 번에 잡는다.",
-        kind: "syntax",
-      },
-      {
-        find: "[5m]",
-        title: "레인지 벡터",
-        body: "최근 5분 구간의 샘플을 가리킨다. rate 함수가 이 구간의 초당 평균 증가율을 계산한다.",
-        kind: "std",
-      },
-      {
-        find: "expr: job:http_error_ratio:rate5m > 0.05",
-        title: "규칙 재사용",
-        body: "위에서 저장한 레코딩 규칙에 임계값 비교를 얹는다. 계산과 판정을 분리해 두면 각각 고치기 쉽다.",
-        kind: "idiom",
-      },
-      {
-        find: "for: 10m",
-        title: "지속 조건",
-        body: "조건이 10분 내내 참이어야 발화로 넘어간다. 잠깐 찬 스파이크에 알림이 울리는 일을 줄인다.",
-        kind: "syntax",
-      },
-      {
-        find: "severity: page",
-        title: "라우팅 라벨",
-        body: "Alertmanager가 이 라벨로 수신처를 고른다. page는 즉시 확인, ticket은 나중에 처리라는 식으로 수준을 나눈다.",
-        kind: "idiom",
-      },
-      {
-        find: "{{ $labels.job }}",
-        title: "알림 템플릿",
-        body: "발화한 시계열의 라벨 값을 본문에 끼워 넣는다. 어떤 job이 터졌는지 알림 본문만으로 안다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "레코딩 규칙으로 계산을 저장해 두면 알림 식은 임계값 비교 한 줄이 된다.",
-    check: {
-      question: "에러 비율이 6%까지 올랐다가 30초 만에 내려가면 HighErrorRate는?",
-      options: [
-        "즉시 page로 발화한다",
-        "10분을 채우지 못해 발화하지 않는다",
-        "레코딩 규칙이 갱신되지 않는다",
-      ],
-      answer: 1,
-      explain: "expr 조건이 참이어도 for: 10m이 요구하는 10분 연속 유지가 안 되면 발화하지 않는다. 레코딩 규칙은 조건과 무관하게 계속 갱신된다.",
-    },
-  },
-  {
-    no: 92,
-    date: "2026.09.10",
-    title: "Nginx location과 upstream",
-    dek: "요청 분기와 백엔드 로드밸런싱.",
-    minutes: 3,
-    language: "Nginx",
-    prompt: "/api/users 요청이 어떤 블록으로 걸려 어디로 흘러가는지 따라가 보자.",
-    code: `upstream app_servers {
-    least_conn;
-    server 10.0.0.11:8080 max_fails=3 fail_timeout=10s;
-    server 10.0.0.12:8080 backup;
-}
-
-server {
-    listen 80;
-    server_name app.example.com;
-
-    location /static/ {
-        root /var/www/app;
-        expires 7d;
-    }
-
-    location /api/ {
-        proxy_pass http://app_servers;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}`,
-    annotations: [
-      {
-        find: "upstream app_servers",
-        title: "업스트림 그룹",
-        body: "프록시할 백엔드 서버 목록에 붙인 이름이다. 이 이름 하나로 여러 서버에 요청을 나눠 보낸다.",
-        kind: "concept",
-      },
-      {
-        find: "least_conn;",
-        title: "로드밸런싱 정책",
-        body: "현재 연결 수가 가장 적은 서버로 보내는 정책이다. 기본은 라운드 로빈이고 요청 처리 시간이 제각각일 때 유리하다.",
-        kind: "idiom",
-      },
-      {
-        find: "max_fails=3 fail_timeout=10s",
-        title: "실패 판정",
-        body: "10초 안에 3회 실패하면 그 서버를 10초 동안 후보에서 뺀다. 죽은 서버에 요청이 계속 몰리는 일을 막는다.",
-        kind: "syntax",
-      },
-      {
-        find: "backup",
-        title: "예비 서버",
-        body: "평시에는 트래픽을 받지 않는다. 나머지 서버가 모두 사용 불가일 때만 대신 받는다.",
-        kind: "syntax",
-      },
-      {
-        find: "location /static/",
-        title: "접두사 매칭",
-        body: "이 접두사로 시작하는 요청을 이 블록이 처리한다. root는 요청 경로를 그대로 뒤에 붙여 파일을 찾는다.",
-        kind: "concept",
-      },
-      {
-        find: "proxy_pass http://app_servers;",
-        title: "그룹 프록시",
-        body: "요청을 upstream 이름으로 넘긴다. 그룹 이름을 쓰기 때문에 앞에서 정한 로드밸런싱과 실패 판정이 그대로 적용된다.",
-        kind: "idiom",
-      },
-      {
-        find: "$remote_addr",
-        title: "내장 변수",
-        body: "접속한 클라이언트 주소로 치환된다. 프록시를 거치면 백엔드는 원래 요청자를 알 수 없으므로 헤더로 전달한다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "location이 요청을 갈라 놓고 upstream 이름으로 프록시하면 로드밸런싱이 따라온다.",
-    check: {
-      question: "/api/users 요청은 이 설정에서 어디로 가는가?",
-      options: [
-        "/var/www/app/api/users 파일을 읽어 돌려준다",
-        "app_servers 그룹에서 서버를 골라 프록시한다",
-        "server_name이 안 맞아 리스너가 거부한다",
-      ],
-      answer: 1,
-      explain: "/api/users는 접두사 /api/에 걸려 proxy_pass가 실행된다. upstream 그룹 이름을 쓰므로 least_conn 정책과 실패 판정이 적용된 서버로 나간다. /static/ 블록은 이 요청과 무관하다.",
-    },
-  },
-  {
-    no: 91,
-    date: "2026.09.10",
-    title: "Ansible 핸들러",
-    dek: "바뀐 작업에만 재시작을 예약한다.",
-    minutes: 3,
-    language: "YAML",
-    framework: "Ansible",
-    prompt: "nginx가 이미 최신 상태라면 notify의 핸들러는 어떻게 될까.",
-    code: `- hosts: webservers
-  become: true
-  vars:
-    app_user: deploy
-  tasks:
-    - name: install nginx
-      ansible.builtin.apt:
-        name: nginx
-        state: latest
-      notify: restart nginx
-
-    - name: push site config
-      ansible.builtin.template:
-        src: site.conf.j2
-        dest: /etc/nginx/sites-available/site.conf
-      notify: restart nginx
-
-  handlers:
-    - name: restart nginx
-      ansible.builtin.service:
-        name: nginx
-        state: restarted`,
-    annotations: [
-      {
-        find: "hosts: webservers",
-        title: "플레이 대상",
-        body: "이 플레이가 실행될 호스트를 인벤토리에서 고른다. webservers는 인벤토리에 정의된 그룹 이름이다.",
-        kind: "concept",
-      },
-      {
-        find: "become: true",
-        title: "권한 상승",
-        body: "작업을 sudo로 실행한다. 패키지 설치나 시스템 파일 수정에는 보통 필요하다.",
-        kind: "syntax",
-      },
-      {
-        find: "vars:",
-        title: "플레이 변수",
-        body: "이 플레이 안에서 쓸 변수를 정의한다. 작업 값에서 변수 치환으로 참조한다.",
-        kind: "concept",
-      },
-      {
-        find: "ansible.builtin.apt:",
-        title: "모듈 전체 이름",
-        body: "컬렉션.모듈 형태의 전체 이름으로 쓰는 관례다. 같은 이름을 가진 다른 컬렉션 모듈과 섞이는 일을 막는다.",
-        kind: "std",
-      },
-      {
-        find: "state: latest",
-        title: "원하는 상태",
-        body: "모듈은 최종 상태를 받아 그 차이만 메운다. 이미 최신이면 아무것도 하지 않고 ok를 보고한다.",
-        kind: "syntax",
-      },
-      {
-        find: "notify: restart nginx",
-        title: "핸들러 예약",
-        body: "이 작업이 실제 변경을 만들었을 때만 restart nginx 핸들러를 예약한다. 예약된 핸들러는 플레이 맨 끝에 한 번 실행된다.",
-        kind: "idiom",
-      },
-      {
-        find: "handlers:",
-        title: "핸들러 정의",
-        body: "notify로 예약할 작업의 본문이다. 같은 핸들러에 여러 작업이 알려도 실행은 딱 한 번이다.",
-        kind: "concept",
-      },
-    ],
-    takeaway: "Ansible은 변경을 만든 작업에만 핸들러를 예약하고 플레이 끝에 한 번 실행한다.",
-    check: {
-      question: "nginx가 이미 최신 버전으로 설치돼 있으면 restart nginx 핸들러는?",
-      options: [
-        "매 실행마다 무조건 호출된다",
-        "작업이 변경을 보고하지 않으면 호출되지 않는다",
-        "플레이 중간에 즉시 실행된다",
-      ],
-      answer: 1,
-      explain: "state: latest로 이미 최신이면 모듈은 changed가 아니라 ok를 보고한다. notify는 changed일 때만 핸들러를 예약하고, 예약돼도 플레이 맨 끝에 한 번 실행된다.",
-    },
-  },
-  {
-    no: 90,
+    no: 61,
     date: "2026.09.10",
     title: "GitHub Actions 잡 연결",
     dek: "needs와 if로 배포 잡의 실행 조건을 만든다.",
     minutes: 3,
     language: "YAML",
     framework: "GitHub Actions",
+    domain: "인프라",
     prompt: "deploy 잡이 시작되기까지 어떤 조건을 통과해야 할지 따라가 보자.",
     code: `on:
   push:
@@ -1398,94 +227,14 @@ jobs:
     },
   },
   {
-    no: 89,
-    date: "2026.09.10",
-    title: "Helm 템플릿 값 흐름",
-    dek: "values에 파이프 함수를 얹어 안전한 매니페스트를 만든다.",
-    minutes: 3,
-    language: "YAML",
-    framework: "Helm",
-    prompt: "values에 logLevel이 정의돼 있지 않다면 LOG_LEVEL은 무엇이 될까.",
-    code: `apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ .Release.Name }}-web
-spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app: web
-  template:
-    metadata:
-      labels:
-        app: web
-    spec:
-      containers:
-        - name: web
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          env:
-            - name: LOG_LEVEL
-              value: {{ .Values.logLevel | default "info" | quote }}
-            - name: FEATURE_FLAGS
-              value: {{ .Values.featureFlags | toJson }}`,
-    annotations: [
-      {
-        find: "{{ .Release.Name }}-web",
-        title: "릴리스 이름 조립",
-        body: "helm install 때 정한 릴리스 이름을 접두사로 붙인다. 같은 차트를 이름만 다르게 여러 번 설치해도 자원 이름이 겹치지 않는다.",
-        kind: "idiom",
-      },
-      {
-        find: "{{ .Values.replicaCount }}",
-        title: "values 참조",
-        body: "values.yaml과 -f, --set 오버라이드를 병합한 값이다. 템플릿은 병합 결과만 본다.",
-        kind: "concept",
-      },
-      {
-        find: "labels:",
-        title: "셀렉터 짝",
-        body: "파드 템플릿 라벨은 위 selector의 matchLabels와 같아야 한다. 실무 템플릿에서는 이 자리를 values나 헬퍼 템플릿으로 채우는 경우가 많다.",
-        kind: "concept",
-      },
-      {
-        find: "image: \"{{ .Values.image.repository }}:{{ .Values.image.tag }}\"",
-        title: "값 조립",
-        body: "repository와 tag를 이어 붙여 이미지 참조 문자열을 만든다. 통째로 따옴표로 감싸 YAML 문자열임을 확정하는 관용구다.",
-        kind: "idiom",
-      },
-      {
-        find: "| default \"info\" | quote",
-        title: "기본값 파이프",
-        body: "값이 비어 있으면 default가 info로 대체하고 quote가 따옴표를 붙인다. 파이프로 함수를 잇는 게 템플릿의 기본 흐름이다.",
-        kind: "idiom",
-      },
-      {
-        find: "| toJson",
-        title: "JSON 직렬화",
-        body: "맵이나 리스트 같은 구조 값을 JSON 문자열로 바꾼다. 환경변수는 문자열만 담으므로 구조 값을 넘길 때 쓴다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "Helm 템플릿은 values 참조에 파이프 함수를 얹어 문자열임을 확정한 YAML을 만든다.",
-    check: {
-      question: "values.yaml에 logLevel 키가 없으면 LOG_LEVEL 환경변수 값은?",
-      options: [
-        "빈 문자열",
-        "따옴표 붙은 info",
-        "템플릿 렌더링이 실패한다",
-      ],
-      answer: 1,
-      explain: "values에 없는 키는 빈 값으로 평가되고, default 함수가 info로 대체한다. quote가 따옴표를 붙여 YAML 문자열로 확정한다.",
-    },
-  },
-  {
-    no: 88,
+    no: 60,
     date: "2026.09.10",
     title: "Deployment 프로브",
     dek: "준비 프로브와 활성 프로브는 하는 일이 다르다.",
     minutes: 3,
     language: "YAML",
     framework: "Kubernetes",
+    domain: "인프라",
     prompt: "readinessProbe 실패와 livenessProbe 실패가 파드에 주는 결과가 어떻게 다를지 보자.",
     code: `apiVersion: apps/v1
 kind: Deployment
@@ -1572,12 +321,13 @@ spec:
     },
   },
   {
-    no: 87,
+    no: 59,
     date: "2026.09.10",
     title: "Terraform 리소스 참조",
     dek: "리소스 주소로 다른 리소스의 값을 끌어온다.",
     minutes: 3,
     language: "Terraform",
+    domain: "인프라",
     prompt: "aws_s3_bucket.uploads.id의 값이 언제 생기는지 상상하며 읽자.",
     code: `terraform {
   required_providers {
@@ -1649,967 +399,14 @@ resource "aws_s3_bucket_versioning" "uploads" {
     },
   },
   {
-    no: 86,
-    date: "2026.09.10",
-    title: "재귀로 개수 세기",
-    dek: "기저 사례와 머리·꼬리 단일화로 목록을 훑는 Prolog 절들.",
-    minutes: 2,
-    language: "Prolog",
-    prompt: "목록에서 단어를 세고 바꾸는 두 술어다. count(red, [red,blue,red], N)이 N=2에 닿는 절 순서를 따라 가 보라.",
-    code: `% count(Word, Words, N) — Words 안에 Word가 몇 번 나오는지 센다
-count(_, [], 0).
-count(W, [W|T], N) :-
-    count(W, T, N1),
-    N is N1 + 1.
-count(W, [_|T], N) :-
-    count(W, T, N).
-
-% replace(X, Y, In, Out) — In의 X를 모두 Y로 바꾼다
-replace(_, _, [], []).
-replace(X, Y, [X|T], [Y|R]) :-
-    replace(X, Y, T, R).
-replace(X, Y, [H|T], [H|R]) :-
-    replace(X, Y, T, R).
-
-% ?- count(red, [red,blue,red], N).
-% ?- replace(red, green, [red,blue,red], R).`,
-    annotations: [
-      {
-        find: "count(_, [], 0).",
-        title: "기저 사례",
-        body: "빈 목록에는 셀 것이 없으니 0이다. 첫 인자 밑줄은 어떤 단어든 상관없다는 자리다.",
-        kind: "syntax",
-      },
-      {
-        find: "[W|T]",
-        title: "머리·꼬리 패턴",
-        body: "[W|T]는 첫 항 W와 나머지 T로 가르는 패턴이다. 절 안에서 W가 두 번 쓰였으므로 머리가 W와 같을 때만 이 절이 성립한다.",
-        kind: "concept",
-      },
-      {
-        find: "N is N1 + 1.",
-        title: "산술 단일화",
-        body: "is는 오른쪽 식을 계산해 왼쪽 변수와 단일화한다. =와 달리 계산을 수행하므로 N1이 먼저 숫자로 정해져 있어야 한다.",
-        kind: "std",
-      },
-      {
-        find: "count(W, [_|T], N) :-",
-        title: "나머지 경우 절",
-        body: "머리가 W가 아닐 때 도달하는 절이다. 개수를 세지 않고 꼬리만으로 재귀를 이어간다.",
-        kind: "syntax",
-      },
-      {
-        find: "replace(_, _, [], []).",
-        title: "빈 목록 통과",
-        body: "빈 목록을 바꾸면 빈 목록이다. 두 밑줄은 이 절에서 쓰지 않는 자리다.",
-        kind: "syntax",
-      },
-      {
-        find: "[X|T], [Y|R]",
-        title: "머리 바꾸기",
-        body: "입력의 머리 X를 출력의 머리 Y로 대응시킨다. X를 발견했으니 Y로 바꿔 내보내고 꼬리는 재귀에 맡긴다.",
-        kind: "concept",
-      },
-      {
-        find: "replace(X, Y, [H|T], [H|R])",
-        title: "그대로 복사",
-        body: "머리가 X가 아니면 H를 출력에 그대로 옮긴다. 입력과 출력 목록이 한 항씩 나란히 줄어들고 늘어난다.",
-        kind: "syntax",
-      },
-      {
-        find: "% ?- count(red, [red,blue,red], N).",
-        title: "질의 표기",
-        body: "?-는 질의를 뜻하는 관용 표기다. N이 변수면 단일화가 성공한 값 2가 답으로 돌아온다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "단일화는 대입이 아니라 양쪽을 맞추는 것이다 — 같은 변수는 같은 값을 강제한다.",
-    check: {
-      question: "count(red, [red,blue,red], N) 질의의 답은 무엇인가?",
-      options: [
-        "N = 3",
-        "N = 2",
-        "N = 1",
-      ],
-      answer: 1,
-      explain: "머리가 red인 절이 두 번 성공해 그때마다 1이 더해지고, 빈 목록 기저에서 0이 나온다. blue는 [_|T] 절로 세지 않고 넘어간다. 그래서 0 + 1 + 1인 2가 단일화된다.",
-    },
-  },
-  {
-    no: 85,
-    date: "2026.09.10",
-    title: "가격 등급 나누기",
-    dek: "cond와 mapcar·remove-if-not으로 목록을 분류하고 걸러낸다.",
-    minutes: 2,
-    language: "Common Lisp",
-    prompt: "가격 목록을 등급으로 분류하고 프리미엄만 골라내는 코드다. 99가 어느 갈래로 흐르는지 따라 가 보라.",
-    code: `(defun price-tier (price)
-  (cond ((< price 10) :cheap)
-        ((< price 100) :mid)
-        (t :premium)))
-
-(defun tiers (prices)
-  (mapcar #'price-tier prices))
-
-(defun only-premium (tiers)
-  (remove-if-not (lambda (tier) (eq tier :premium))
-                 tiers))
-
-(tiers '(5 45 120 99 7))
-(only-premium (tiers '(5 45 120 99 7)))`,
-    annotations: [
-      {
-        find: "(defun price-tier (price)",
-        title: "함수 정의",
-        body: "defun으로 price-tier 함수를 정의한다. 이름 뒤 괄호가 인자 목록이다.",
-        kind: "syntax",
-      },
-      {
-        find: "(cond",
-        title: "조건 문",
-        body: "cond는 (검사 결과) 쌍을 위에서부터 평가해 처음 참이 된 결과를 돌려준다. 어느 검사도 참이 아니면 nil이 된다.",
-        kind: "std",
-      },
-      {
-        find: ":cheap",
-        title: "키워드 심벌",
-        body: "콜론으로 시작하는 심벌은 자기 자신으로 평가된다. 이름표 값으로 쓰기 좋고 eq 비교가 빠르다.",
-        kind: "syntax",
-      },
-      {
-        find: "(t :premium)",
-        title: "기본 갈래",
-        body: "t는 항상 참으로 평가되는 CL의 상수다. 앞의 검사가 다 빠졌을 때 도달하는 기본값 역할을 한다.",
-        kind: "syntax",
-      },
-      {
-        find: "(mapcar ",
-        title: "목록 변환",
-        body: "목록의 각 요소에 함수를 적용해 같은 길이의 새 목록을 만든다. 원본 prices는 그대로 남는다.",
-        kind: "std",
-      },
-      {
-        find: "#'price-tier",
-        title: "함수 참조",
-        body: "#'는 함수 이름을 함수 객체 값으로 꺼내는 표기다. mapcar에는 값으로 넘길 함수가 필요하다.",
-        kind: "syntax",
-      },
-      {
-        find: "remove-if-not",
-        title: "조건으로 남기기",
-        body: "술어가 참인 요소만 남긴다. remove-if는 조건에 맞는 것을 버리는 정반대 동작이다.",
-        kind: "std",
-      },
-      {
-        find: "(lambda (tier) (eq tier :premium))",
-        title: "익명 술어",
-        body: "lambda는 이름 없는 함수를 그 자리에서 만든다. 한 번만 쓸 조건을 인자로 바로 넘길 때 쓴다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "mapcar로 바꾸고 remove-if-not으로 거른다 — 목록 변환은 만들고 고르는 두 단계다.",
-    check: {
-      question: "(only-premium (tiers '(5 45 120 99 7)))의 결과는 무엇인가?",
-      options: [
-        "(:mid :premium)",
-        "(:premium)",
-        "(:cheap :mid :premium)",
-      ],
-      answer: 1,
-      explain: "tiers는 다섯 가격을 cheap·mid·premium·mid·cheap 순의 키워드 목록으로 바꾼다. 프리미엄은 120 하나뿐이다. remove-if-not이 :premium이 아닌 요소를 전부 버린다.",
-    },
-  },
-  {
-    no: 84,
-    date: "2026.09.10",
-    title: "스레딩으로 합계 내기",
-    dek: "->>로 필터·변환·합산을 위에서 아래로 읽는다.",
-    minutes: 2,
-    language: "Clojure",
-    prompt: "주문 목록의 지불 금액 합계를 내는 코드다. qty가 0인 주문이 어느 단계에서 떨어지는지 따라 가 보라.",
-    code: `(def orders
-  [{:item "keyboard" :price 45 :qty 2}
-   {:item "mouse" :price 25 :qty 3}
-   {:item "cable" :price 8 :qty 0}])
-
-(defn line-total [{:keys [price qty]}]
-  (* price qty))
-
-(defn paid-totals [orders]
-  (->> orders
-       (filter #(pos? (:qty %)))
-       (map line-total)
-       (reduce + 0)))
-
-(paid-totals orders)`,
-    annotations: [
-      {
-        find: "(def orders",
-        title: "이름 붙이기",
-        body: "def는 값에 전역 이름을 붙인다. 벡터의 각 맵이 한 주문이다.",
-        kind: "syntax",
-      },
-      {
-        find: "{:item \"keyboard\" :price 45 :qty 2}",
-        title: "맵 리터럴",
-        body: "키워드가 키인 해시 맵을 문법 그대로 만든다. :qty가 0이면 지불되지 않은 주문으로 본다.",
-        kind: "syntax",
-      },
-      {
-        find: "{:keys [price qty]}",
-        title: "맵 디스럭처링",
-        body: "인자 자리에서 맵의 키를 풀어 지역 이름으로 받는다. (:price order)를 매번 쓰는 대신 price와 qty를 바로 쓴다.",
-        kind: "idiom",
-      },
-      {
-        find: "->>",
-        title: "스레딩 매크로",
-        body: "첫 인자를 다음 식의 마지막 인자로 밀어 넣어 준다. filter 다음 map 다음 reduce가 위에서 아래로 읽힌다.",
-        kind: "idiom",
-      },
-      {
-        find: "#(pos? (:qty %))",
-        title: "익명 함수",
-        body: "#(...)은 짧은 익명 함수고 %가 첫 인자다. qty가 0보다 큰 주문만 남긴다.",
-        kind: "syntax",
-      },
-      {
-        find: "(map line-total)",
-        title: "변환 단계",
-        body: "남은 주문마다 line-total을 적용해 금액 목록을 만든다. 함수를 값으로 넘기는 자리가 자연스럽게 읽힌다.",
-        kind: "std",
-      },
-      {
-        find: "(reduce + 0)",
-        title: "접기",
-        body: "목록을 하나의 값으로 접는다. 시작값 0이 있어 빈 목록이어도 0을 돌려준다.",
-        kind: "std",
-      },
-      {
-        find: "(paid-totals orders)",
-        title: "계산 시점",
-        body: "defn은 식을 정의할 뿐이고 이 줄에서야 실제로 돈다. map·filter가 게으르므로 순회는 reduce가 끝까지 당길 때 일어난다.",
-        kind: "concept",
-      },
-    ],
-    takeaway: "->>는 데이터가 흘러가는 방향으로 코드를 배치한다 — 마지막 인자 자리가 관건이다.",
-    check: {
-      question: "(paid-totals orders)의 반환값은 무엇인가?",
-      options: [
-        "78",
-        "165",
-        "0",
-      ],
-      answer: 1,
-      explain: "filter가 qty가 0인 cable 주문을 버리고, 남은 두 주문의 금액 90과 75가 만들어진다. reduce + 0이 둘을 더해 165를 돌려준다. 빈 결과여도 시작값이 있어 안전하다.",
-    },
-  },
-  {
-    no: 83,
-    date: "2026.09.10",
-    title: "겹친 목록 펼치기",
-    dek: "cond와 재귀로 겹친 목록을 한 겹으로 푼다.",
-    minutes: 2,
-    language: "Racket",
-    prompt: "겹친 목록을 한 겹으로 펼치는 Racket 코드다. 3과 4가 어떻게 풀려 나오는지 재귀를 따라 가 보라.",
-    code: `#lang racket
-
-(define (flatten tree)
-  (cond
-    [(null? tree) '()]
-    [(pair? tree)
-     (append (flatten (car tree))
-             (flatten (cdr tree)))]
-    [else (list tree)]))
-
-(define (count-leaves tree)
-  (length (flatten tree)))
-
-(define sample
-  '(1 (2 (3 4)) (5)))
-
-(displayln (count-leaves sample))`,
-    annotations: [
-      {
-        find: "(define (flatten tree)",
-        title: "함수 정의",
-        body: "define로 flatten 함수를 만든다. 인자 tree는 겹친 목록 구조 전체를 받는다.",
-        kind: "syntax",
-      },
-      {
-        find: "(cond",
-        title: "조건 분기",
-        body: "cond는 [질문 답] 쌍을 위에서부터 차례로 검사해 처음 참인 답을 돌려준다. else는 다른 질문이 다 거짓일 때의 갈래다.",
-        kind: "std",
-      },
-      {
-        find: "(null? tree) '()",
-        title: "기저 사례",
-        body: "빈 목록은 더 펼 대상이 없으니 빈 목록을 돌려준다. 재귀가 이 갈래에 닿아야 멈춘다.",
-        kind: "syntax",
-      },
-      {
-        find: "(pair? tree)",
-        title: "쌍 검사",
-        body: "pair?는 머리와 꼬리를 가진 목록 셀인지 묻는다. 쌍이 아니면 숫자나 기호 같은 낱 값이다.",
-        kind: "concept",
-      },
-      {
-        find: "(append (flatten (car tree))",
-        title: "머리 재귀",
-        body: "car는 쌍의 머리를 꺼낸다. 머리가 또 목록일 수 있으니 먼저 편다.",
-        kind: "std",
-      },
-      {
-        find: "(flatten (cdr tree))",
-        title: "꼬리 재귀",
-        body: "cdr는 머리를 뺀 나머지다. 두 재귀 결과를 append로 이어 붙여 한 목록으로 합친다.",
-        kind: "std",
-      },
-      {
-        find: "[else (list tree)]",
-        title: "낱 값 갈래",
-        body: "쌍도 빈 목록도 아니면 낱 값이다. list로 한 칸짜리 목록에 싸서 append가 이어 붙일 수 있게 한다.",
-        kind: "syntax",
-      },
-      {
-        find: "'(1 (2 (3 4)) (5))",
-        title: "인용 리터럴",
-        body: "작은따옴표는 뒤의 식을 평가하지 말고 데이터로 취급하라는 뜻이다. 괄호가 호출이 아니라 겹친 목록이 된다.",
-        kind: "syntax",
-      },
-    ],
-    takeaway: "재귀는 기저 사례와 나머지로 나누는 것에서 끝난다 — 빈 목록을 먼저 맞춰라.",
-    check: {
-      question: "(displayln (count-leaves sample))은 무엇을 찍는가? sample은 '(1 (2 (3 4)) (5))다.",
-      options: [
-        "3",
-        "5",
-        "7",
-      ],
-      answer: 1,
-      explain: "flatten은 겹친 구조를 (1 2 3 4 5)로 펼치고 length는 칸 수를 센다. 괄호는 구조일 뿐 칸으로 세지 않는다. 최상위 괄호 세 개는 칸 수와 무관하다.",
-    },
-  },
-  {
-    no: 82,
-    date: "2026.09.10",
-    title: "gen_server 카운터",
-    dek: "콜백 규격으로 상태를 프로세스 안에 감춘 OTP 서버.",
-    minutes: 3,
-    language: "Erlang",
-    framework: "OTP",
-    prompt: "gen_server로 카운터를 감춘 모듈이다. bump 두 번 뒤 count를 부르면 어떤 흐름으로 2가 나오는지 따라 가 보라.",
-    code: `-module(counter).
--behaviour(gen_server).
-
--export([start_link/0, bump/0, count/0, init/1, handle_call/3, handle_cast/2]).
-
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, 0, []).
-
-bump() ->
-    gen_server:cast(?MODULE, bump).
-
-count() ->
-    gen_server:call(?MODULE, count).
-
-init(Initial) ->
-    {ok, Initial}.
-
-handle_call(count, _From, N) ->
-    {reply, N, N};
-
-handle_cast(bump, N) ->
-    {noreply, N + 1}.`,
-    annotations: [
-      {
-        find: "-behaviour(gen_server).",
-        title: "행동 인터페이스",
-        body: "이 모듈이 gen_server 규격을 따른다고 선언한다. 콜백 시그니처가 맞지 않으면 컴파일러가 경고한다.",
-        kind: "std",
-      },
-      {
-        find: "gen_server:start_link({local, ?MODULE}, ?MODULE, 0, [])",
-        title: "서버 띄우기",
-        body: "등록 이름 local ?MODULE로 서버 프로세스를 띄우고 감독 트리에 연결한다. 세 번째 인자 0이 init에 전달되는 초기 상태다.",
-        kind: "std",
-      },
-      {
-        find: "gen_server:cast(?MODULE, bump)",
-        title: "비동기 요청",
-        body: "cast는 응답을 기다리지 않고 메시지만 던지고 바로 돌아온다. handle_cast가 순서대로 처리한다.",
-        kind: "std",
-      },
-      {
-        find: "gen_server:call(?MODULE, count)",
-        title: "동기 요청",
-        body: "call은 서버가 응답을 돌려줄 때까지 기다린다. handle_call의 {reply, 값, 새상태}가 그 응답이 된다.",
-        kind: "std",
-      },
-      {
-        find: "init(Initial) ->",
-        title: "초기화 콜백",
-        body: "start_link가 넘긴 초기값 0이 Initial로 들어온다. {ok, 상태}를 돌려주면 그 상태로 서버 루프가 시작된다.",
-        kind: "std",
-      },
-      {
-        find: "{reply, N, N};",
-        title: "응답과 다음 상태",
-        body: "첫 N은 count를 부른 프로세스에게 돌려줄 답이고, 둘째 N은 다음 루프에 쓰일 상태다. 상태를 바꾸지 않는 읽기 요청에서는 둘이 같다.",
-        kind: "syntax",
-      },
-      {
-        find: "{noreply, N + 1}.",
-        title: "상태 갱신",
-        body: "cast에는 답이 없으니 새 상태만 돌려준다. 카운터 값은 이 튜플 안에서만 바뀌고 외부에서 직접 접근할 수 없다.",
-        kind: "syntax",
-      },
-    ],
-    takeaway: "상태는 콜백의 인자와 반환뿐이다 — call은 답을, cast는 상태 갱신만 남긴다.",
-    check: {
-      question: "서버를 띄운 뒤 bump()를 두 번 부르고 count()를 부르면 반환값은 무엇인가?",
-      options: [
-        "0",
-        "2",
-        "unknown",
-      ],
-      answer: 1,
-      explain: "init이 상태 0으로 시작하고 bump의 handle_cast가 N + 1을 다음 상태로 돌려준다. 두 번 더해 상태가 2가 된다. count의 handle_call은 상태를 그대로 응답에 싣는다.",
-    },
-  },
-  {
-    no: 81,
-    date: "2026.09.10",
-    title: "사용자 속성 검증하기",
-    dek: "cast와 검증 연쇄로 외부 입력을 안전한 변경으로 바꾼다.",
-    minutes: 3,
-    language: "Elixir",
-    framework: "Ecto",
-    prompt: "외부에서 들어온 사용자 속성을 검증하는 Ecto 체인지셋이다. age가 음수로 들어오면 어느 단계에서 걸리는지 찾아 보라.",
-    code: `defmodule Accounts.User do
-  use Ecto.Schema
-  import Ecto.Changeset
-
-  schema "users" do
-    field :email, :string
-    field :age, :integer
-    timestamps()
-  end
-
-  def changeset(user, attrs) do
-    user
-    |> cast(attrs, [:email, :age])
-    |> validate_required([:email])
-    |> update_change(:email, &String.downcase/1)
-    |> validate_format(:email, ~r/@/)
-    |> validate_number(:age, greater_than: 0)
-    |> unique_constraint(:email)
-  end
-end`,
-    annotations: [
-      {
-        find: "use Ecto.Schema",
-        title: "스키마 매크로",
-        body: "use는 Ecto.Schema 모듈의 코드를 이 모듈로 끌어온다. schema 매크로와 기본 함수들이 여기서 생긴다.",
-        kind: "std",
-      },
-      {
-        find: "schema \"users\" do",
-        title: "테이블 대응",
-        body: "users 테이블과 대응하는 구조를 선언한다. field 선언이 컬럼 하나씩이고 timestamps()는 inserted_at·updated_at을 붙인다.",
-        kind: "std",
-      },
-      {
-        find: "def changeset(user, attrs)",
-        title: "체인지셋 함수",
-        body: "변경 전 구조체와 외부 속성을 받아 검증이 담긴 changeset을 돌려주는 관용적인 이름이다. 저장은 이 결과를 Repo에 넘겨서 한다.",
-        kind: "idiom",
-      },
-      {
-        find: "|> cast(attrs, [:email, :age])",
-        title: "외부 값 허용",
-        body: "attrs 중에서 목록에 있는 키만 골라 변경으로 받아들인다. 목록에 없는 키는 조용히 버려져 예상 밖 필드가 못 들어온다.",
-        kind: "std",
-      },
-      {
-        find: "validate_required([:email])",
-        title: "필수 검증",
-        body: "email이 비었거나 없으면 changeset을 유효하지 않은 상태로 표시한다. 이후 단계에서 valid?를 보고 저장 여부를 정한다.",
-        kind: "std",
-      },
-      {
-        find: "&String.downcase/1",
-        title: "함수 캡처",
-        body: "모듈 함수를 익명 함수 값으로 잡는 표기다. update_change는 해당 필드의 변경이 있을 때만 이 함수를 적용한다.",
-        kind: "syntax",
-      },
-      {
-        find: "~r/@/",
-        title: "정규식 시길",
-        body: "~r//는 Regex 구조체를 만드는 문법이다. validate_format은 이 정규식과 맞지 않으면 오류를 남긴다.",
-        kind: "syntax",
-      },
-      {
-        find: "unique_constraint(:email)",
-        title: "DB 제약 연결",
-        body: "검증 단계가 아니라 DB의 유니크 인덱스 위반을 오류로 바꾼다. 경쟁 상태 때문에 애플리케이션 검증만으로는 못 막는 중복을 여기서 잡는다.",
-        kind: "concept",
-      },
-    ],
-    takeaway: "검증 연쇄의 순서가 곧 규칙이다 — cast가 고른 것만 검증을 통과한다.",
-    check: {
-      question: "attrs가 %{email: \"a@b.io\", age: -3}이라면 이 changeset의 상태는 어떠한가?",
-      options: [
-        "유효하다 — 검증을 모두 통과한다",
-        "유효하지 않다 — validate_number에서 걸린다",
-        "유효하지 않다 — cast가 age를 버렸다",
-      ],
-      answer: 1,
-      explain: "age는 cast 목록에 있으므로 정상적으로 변경에 들어온다. validate_number의 greater_than: 0 검사에서 -3이 걸린다. unique_constraint는 이 단계에서 아무 검사도 하지 않는다.",
-    },
-  },
-  {
-    no: 80,
-    date: "2026.09.10",
-    title: "메시지로 상태 갱신하기",
-    dek: "Msg 갈래마다 다음 모델을 계산하는 update 흐름.",
-    minutes: 3,
-    language: "Elm",
-    prompt: "검색창 상태를 메시지로 갱신하는 Elm 코드다. SearchRequested가 오면 hits가 무엇으로 바뀌는지 따라 가 보라.",
-    code: `type alias Model =
-    { query : String, hits : Int }
-
-type Msg
-    = QueryChanged String
-    | SearchRequested
-
-update : Msg -> Model -> Model
-update msg model =
-    case msg of
-        QueryChanged q ->
-            { model | query = q }
-
-        SearchRequested ->
-            { model | hits = String.length model.query }
-
-view : Model -> Html Msg
-view model =
-    div []
-        [ input [ onInput QueryChanged ] []
-        , button [ onClick SearchRequested ] [ text "search" ]
-        ]`,
-    annotations: [
-      {
-        find: "type alias Model =",
-        title: "상태 별칭",
-        body: "query와 hits 두 필드를 가진 레코드에 Model이라는 이름을 붙인다. 앱의 전체 상태가 이 한 값에 있다.",
-        kind: "syntax",
-      },
-      {
-        find: "type Msg",
-        title: "메시지 타입",
-        body: "입력 변화·버튼 누름 같은 일어난 일을 갈래로 정의한다. 상태를 바꿀 수 있는 유일한 통로다.",
-        kind: "concept",
-      },
-      {
-        find: "QueryChanged String",
-        title: "값을 실은 메시지",
-        body: "입력창의 새 문자열을 메시지 안에 싣는다. 어떤 값이 바뀌었는지 메시지가 직접 다녀간다.",
-        kind: "syntax",
-      },
-      {
-        find: "case msg of",
-        title: "메시지 분기",
-        body: "update의 본문은 메시지 갈래마다 다음 상태를 계산하는 매칭이다. Msg의 모든 갈래를 다뤄야 컴파일이 통과한다.",
-        kind: "syntax",
-      },
-      {
-        find: "{ model | query = q }",
-        title: "레코드 갱신",
-        body: "기존 model을 복사해 query 필드만 바꾼 새 레코드를 만든다. model 자체는 변하지 않는다.",
-        kind: "syntax",
-      },
-      {
-        find: "String.length model.query",
-        title: "상태에서 계산",
-        body: "갱신 함수는 기존 상태를 읽어 다음 상태를 만드는 순수 함수다. 부수 효과가 없어 결과를 예측할 수 있다.",
-        kind: "std",
-      },
-      {
-        find: "onInput QueryChanged",
-        title: "이벤트 연결",
-        body: "입력창에서 값이 바뀔 때마다 QueryChanged 메시지를 만들어 update로 보낸다. 뷰는 상태를 그릴 뿐 직접 바꾸지 않는다.",
-        kind: "std",
-      },
-      {
-        find: "Html Msg",
-        title: "뷰가 낼 수 있는 메시지",
-        body: "이 뷰가 만들어 낼 메시지의 종류가 타입에 드러난다. 버튼이 어떤 Msg를 낼 수 있는지 시그니처만 봐도 읽힌다.",
-        kind: "concept",
-      },
-    ],
-    takeaway: "상태는 update라는 순수 함수 안에서만 바뀐다 — 메시지가 유일한 입구다.",
-    check: {
-      question: "입력창에 abc가 들어 있을 때 SearchRequested가 오면 hits는 얼마가 되는가?",
-      options: [
-        "0",
-        "1",
-        "3",
-      ],
-      answer: 2,
-      explain: "SearchRequested 갈래는 String.length model.query로 현재 query의 길이를 잰다. abc는 세 글자라 hits가 3인 새 레코드가 만들어진다. QueryChanged 갈래는 hits를 건드리지 않는다.",
-    },
-  },
-  {
-    no: 79,
-    date: "2026.09.10",
-    title: "결제 수수료 매기기",
-    dek: "판별 유니온으로 결제 방식을 나누고 파이프로 목록을 접는다.",
-    minutes: 3,
-    language: "F#",
-    prompt: "결제 목록에 수수료를 매겨 합산하는 코드다. 파이프 단계마다 무엇이 남는지 따라 가 보라.",
-    code: `type Payment =
-    | Cash of decimal
-    | Card of number: string * amount: decimal
-
-let fee payment =
-    match payment with
-    | Cash _ -> 0m
-    | Card (_, amount) -> amount * 0.02m
-
-let payments = [ Cash 45.0m; Card ("1111", 100.0m); Cash 12.5m ]
-
-payments
-|> List.sumBy fee
-|> printfn "total fee: %m"
-
-payments
-|> List.filter (fun p -> fee p > 0m)
-|> List.iter (fun p -> printfn "charged: %A" p)`,
-    annotations: [
-      {
-        find: "type Payment =",
-        title: "판별 유니온",
-        body: "결제 방식처럼 경우가 정해진 값들을 하나의 타입으로 모은다. 갈래마다 다른 데이터를 붙일 수 있다.",
-        kind: "concept",
-      },
-      {
-        find: "| Card of number: string * amount: decimal",
-        title: "이름 붙은 필드",
-        body: "여러 값을 묶는 갈래에 필드 이름을 붙였다. 순서만으로는 헷갈리는 튜플보다 정의와 패턴을 대조해 읽기 쉽다.",
-        kind: "syntax",
-      },
-      {
-        find: "match payment with",
-        title: "모든 경우 다루기",
-        body: "유니온 값을 쓰려면 갈래를 모두 맞춰야 한다. 갈래를 하나 빠뜨리면 컴파일러가 빠진 경우를 지적한다.",
-        kind: "syntax",
-      },
-      {
-        find: "Cash _ -> 0m",
-        title: "값 무시 패턴",
-        body: "밑줄은 감싼 값을 꺼내지 않겠다는 뜻이다. 현금은 수수료가 없으니 0m을 그대로 돌려준다.",
-        kind: "syntax",
-      },
-      {
-        find: "amount * 0.02m",
-        title: "decimal 리터럴",
-        body: "m 접미사는 System.Decimal 값을 만든다. 돈 계산에서 float의 이진 소수 오차를 피할 때 쓰는 타입이다.",
-        kind: "std",
-      },
-      {
-        find: "|>",
-        title: "파이프 연산자",
-        body: "왼쪽 값을 오른쪽 함수의 마지막 인자로 넘긴다. 단계가 쌓여도 위에서 아래로 읽는 흐름이 유지된다.",
-        kind: "idiom",
-        line: 13,
-      },
-      {
-        find: "List.sumBy fee",
-        title: "변환 후 합계",
-        body: "각 요소에 fee를 적용한 결과를 전부 더한다. List 모듈의 sumBy·filter·iter가 목록 처리의 기본 어휘다.",
-        kind: "std",
-      },
-      {
-        find: "(fun p -> fee p > 0m)",
-        title: "람다 조건",
-        body: "fun이 인자 p 하나짜리 익명 함수를 만든다. 수수료가 붙는 결제만 다음 단계로 남는다.",
-        kind: "syntax",
-      },
-    ],
-    takeaway: "파이프는 데이터 흐름을 위에서 아래로 읽게 하고, 유니온은 경우를 컴파일러가 셈하게 한다.",
-    check: {
-      question: "payments 전체의 합계 수수료는 얼마인가?",
-      options: [
-        "2.0m",
-        "1.575m",
-        "3.15m",
-      ],
-      answer: 0,
-      explain: "수수료는 Card 갈래에만 붙고 100.0m의 2%인 2.0m이다. Cash 두 건은 fee가 0m이라 합계에 영향이 없다. List.sumBy가 fee 결과를 모두 더한다.",
-    },
-  },
-  {
-    no: 78,
-    date: "2026.09.10",
-    title: "첫 단어 토큰 찾기",
-    dek: "판별 유니온과 재귀 매칭으로 토큰 목록을 앞에서부터 훑는다.",
-    minutes: 3,
-    language: "OCaml",
-    prompt: "토큰 목록에서 처음 나오는 단어를 찾는 코드다. Word가 하나도 없을 때 어느 갈래에서 끝나는지 따라 가 보라.",
-    code: `type token =
-  | Word of string
-  | Num of int
-  | End
-
-let first_word tokens =
-  let rec go = function
-    | [] -> None
-    | Word w :: _ -> Some w
-    | _ :: rest -> go rest
-  in
-  go tokens
-
-let () =
-  let tokens = [Num 3; Word "alpha"; Word "beta"] in
-  match first_word tokens with
-  | Some w -> print_endline ("first: " ^ w)
-  | None -> print_endline "no words"`,
-    annotations: [
-      {
-        find: "type token =",
-        title: "판별 유니온",
-        body: "정해진 몇 가지 형태 중 정확히 하나인 값을 정의한다. Word는 문자열을 감싸고 End는 아무것도 감싸지 않는다.",
-        kind: "concept",
-      },
-      {
-        find: "| Word of string",
-        title: "갈래와 감싼 값",
-        body: "of 뒤의 타입이 이 갈래가 담는 값이다. 매칭에서는 갈래 이름과 함께 값을 꺼낸다.",
-        kind: "syntax",
-      },
-      {
-        find: "let rec go = function",
-        title: "매칭 전용 함수",
-        body: "function은 인자 하나를 받아 곧바로 패턴 매칭으로 넘기는 축약 키워드다. rec는 go가 자기 자신을 부를 수 있게 한다.",
-        kind: "idiom",
-      },
-      {
-        find: "[] -> None",
-        title: "빈 목록 기저",
-        body: "더 훑을 항이 없을 때의 갈래다. 결과 없음을 None이라는 값으로 돌려준다.",
-        kind: "std",
-      },
-      {
-        find: "Word w :: _ -> Some w",
-        title: "찾으면 즉시 반환",
-        body: "머리가 Word면 감싼 값을 Some으로 돌리고 재귀를 끝낸다. ::는 목록을 머리와 꼬리로 가르는 패턴이다.",
-        kind: "syntax",
-      },
-      {
-        find: "_ :: rest -> go rest",
-        title: "관심 없는 갈래",
-        body: "밑줄은 무슨 값이든 상관없다는 뜻이다. Word가 아닌 토큰은 버리고 꼬리만으로 재귀를 이어간다.",
-        kind: "syntax",
-      },
-      {
-        find: "match first_word tokens with",
-        title: "옵션 펼치기",
-        body: "Some과 None 갈래를 모두 다뤄야 컴파일이 통과한다. None을 빠뜨리면 컴파일러가 다루지 않은 경우 경고를 낸다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "판별 유니온의 갈래를 빠짐없이 매칭하면 못 찾는 경우가 None이라는 값으로 명시된다.",
-    check: {
-      question: "tokens가 [Num 1; Num 2]뿐이라면 first_word는 무엇을 돌려주는가?",
-      options: [
-        "Some 1",
-        "None",
-        "Word \"alpha\"",
-      ],
-      answer: 1,
-      explain: "Num은 어느 갈래에서도 값으로 쓰이지 않고 _ :: rest 절로 버려진다. 재귀가 빈 목록 []에 닿으면 None을 돌려준다. Some 1로 바뀌는 갈래는 이 매칭에 없다.",
-    },
-  },
-  {
-    no: 77,
-    date: "2026.09.10",
-    title: "로그 심각도 접기",
-    dek: "세미그룹 인스턴스와 IO 액션으로 등급 목록을 한 등급으로 접는다.",
-    minutes: 3,
-    language: "Haskell",
-    prompt: "파일에서 읽은 심각도 등급을 하나로 접는 코드다. 파일이 비어 있으면 무엇이 찍히는지 갈래를 따라 가 보라.",
-    code: `data Severity = Info | Warning | Error deriving (Show, Eq)
-
-instance Semigroup Severity where
-  Info <> s = s
-  s <> Info = s
-  Warning <> Warning = Warning
-  _ <> _ = Error
-
-worst :: [Severity] -> Severity
-worst = foldr (<>) Info
-
-main :: IO ()
-main = do
-  contents <- readFile "alerts.log"
-  let parsed = map readSeverity (lines contents)
-  print (worst parsed)
-
-readSeverity :: String -> Severity
-readSeverity "info" = Info
-readSeverity "warn" = Warning
-readSeverity _ = Error`,
-    annotations: [
-      {
-        find: "deriving (Show, Eq)",
-        title: "파생 선언",
-        body: "Show와 Eq 인스턴스를 컴파일러가 기계적으로 만들어 준다. print가 값을 찍을 수 있는 것도 이 한 줄 덕분이다.",
-        kind: "syntax",
-      },
-      {
-        find: "instance Semigroup Severity where",
-        title: "타입 클래스 인스턴스",
-        body: "Semigroup은 결합 법칙을 만족하는 <> 연산 하나를 요구하는 타입 클래스다. 여기서는 두 등급 중 더 심한 쪽을 고르는 결합으로 정의했다.",
-        kind: "concept",
-      },
-      {
-        find: "Info <> s = s",
-        title: "절마다 패턴",
-        body: "왼쪽이 Info이면 오른쪽이 그대로 결과다. 절은 위에서부터 차례로 시도되고 처음 맞는 것이 쓰인다.",
-        kind: "syntax",
-      },
-      {
-        find: "foldr (<>) Info",
-        title: "폴드로 접기",
-        body: "요소마다 <>를 적용해 목록을 한 값으로 접는다. Info는 빈 목록의 답이 되는 항등원이라 빈 입력에도 안전하다.",
-        kind: "std",
-      },
-      {
-        find: "readFile \"alerts.log\"",
-        title: "파일 읽기 액션",
-        body: "파일 전체를 하나의 String으로 읽는 IO 액션을 돌려준다. 실행 계획일 뿐이고 main의 흐름에 연결돼야 실제로 돈다.",
-        kind: "std",
-      },
-      {
-        find: "<-",
-        title: "IO에서 값 꺼내기",
-        body: "do 블록 안에서 <-는 IO 액션을 실행해 결과를 이름에 묶는다. IO 밖의 순수 코드로 값이 새는 일은 타입 체계가 막는다.",
-        kind: "syntax",
-      },
-      {
-        find: "let parsed = map readSeverity (lines contents)",
-        title: "do 안의 let",
-        body: "IO 흐름 안에서 순수 계산에 이름을 붙인다. <-가 액션을 실행한다면 let은 이름을 붙일 뿐 아무것도 실행하지 않는다.",
-        kind: "syntax",
-      },
-    ],
-    takeaway: "폴드의 시작값은 빈 입력의 답이다 — 항등원을 골라 두면 빈 목록도 안전하다.",
-    check: {
-      question: "alerts.log가 빈 파일이면 print (worst parsed)는 무엇을 찍는가?",
-      options: [
-        "아무것도 찍지 않는다",
-        "Info",
-        "타입 오류로 실행이 죽는다",
-      ],
-      answer: 1,
-      explain: "worst는 foldr (<>) Info이고 빈 목록의 폴드는 시작값 Info를 그대로 돌려준다. Info가 항등원 역할을 하므로 빈 입력도 정상 결과가 나온다. print는 Show 인스턴스 덕분에 Info를 그대로 찍는다.",
-    },
-  },
-  {
-    no: 76,
-    date: "2026.09.10",
-    title: "속성만으로 부분 갱신",
-    dek: "버튼과 검색창이 hx-* 속성만으로 요청을 보내고 HTML 조각을 갈아 끼운다.",
-    minutes: 2,
-    language: "HTML",
-    framework: "HTMX",
-    prompt: "이 페이지에는 자바스크립트가 한 줄도 없다 — 클릭과 입력이 각각 어느 요청으로 이어지는지 따라 가 보라",
-    code: `<button hx-post="/api/cart/items"
-        hx-vals='{"productId": "pen-2", "qty": 1}'
-        hx-target="#cart-badge"
-        hx-swap="outerHTML">
-  담기
-</button>
-
-<span id="cart-badge" class="badge">담은 물건 0개</span>
-
-<input type="search" name="q" placeholder="검색어를 입력하세요"
-       hx-get="/api/search" hx-trigger="keyup changed delay:300ms"
-       hx-target="#results" hx-swap="innerHTML" />
-
-<div id="results"></div>`,
-    annotations: [
-      {
-        find: "hx-post=\"/api/cart/items\"",
-        title: "클릭으로 POST",
-        body: "이 버튼을 누르면 이 주소로 POST 요청을 보낸다. 문서를 새로 불러오지 않고 응답 HTML로 일부만 바꾼다.",
-        kind: "std",
-      },
-      {
-        find: "hx-vals='{\"productId\": \"pen-2\", \"qty\": 1}'",
-        title: "함께 보낼 값",
-        body: "요청에 추가할 파라미터를 적어 둔다. 어떤 상품을 담는지 서버가 알아야 할 때 쓴다.",
-        kind: "std",
-      },
-      {
-        find: "hx-target=\"#cart-badge\"",
-        title: "교체 대상",
-        body: "응답을 적용할 요소를 지정한다. 생략하면 속성을 단 요소 자신이 대상이 된다.",
-        kind: "std",
-      },
-      {
-        find: "hx-swap=\"outerHTML\"",
-        title: "요소째 교체",
-        body: "대상 요소를 응답 HTML로 통째로 바꾼다. 기본값인 innerHTML은 요소를 남기고 안쪽만 채운다.",
-        kind: "std",
-      },
-      {
-        find: "hx-get=\"/api/search\"",
-        title: "입력으로 GET",
-        body: "입력 요소가 이 주소로 GET 요청을 보낸다. name이 있으니 입력 값이 q 파라미터로 실려 나간다.",
-        kind: "std",
-      },
-      {
-        find: "hx-trigger=\"keyup changed delay:300ms\"",
-        title: "발동 조건",
-        body: "키를 뗄 때, 값이 바뀌었을 때만, 마지막 입력 뒤 300ms를 기다려 보낸다. 세 조건이 요청 수를 줄여 준다.",
-        kind: "concept",
-      },
-      {
-        find: "hx-target=\"#results\"",
-        title: "결과 자리",
-        body: "응답이 들어갈 곳을 id로 가리킨다. 결과를 보여 줄 빈 div가 미리 기다리고 있다.",
-        kind: "std",
-      },
-      {
-        find: "hx-swap=\"innerHTML\"",
-        title: "안쪽만 채우기",
-        body: "대상 요소는 그대로 두고 안쪽만 응답으로 채운다. 목록을 새로 그릴 때 흔히 쓴다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "hx-* 속성은 요청·대상·교체 방식을 선언한다 — 자바스크립트 없이 부분 갱신이 끝난다.",
-    check: {
-      question: "hx-swap이 outerHTML일 때 서버가 돌려준 배지 HTML은 어디에 적용되는가?",
-      options: [
-        "#cart-badge 요소 자체가 응답으로 갈아껴진다",
-        "#cart-badge 안쪽에 추가된다",
-        "문서 전체가 응답으로 바뀐다",
-      ],
-      answer: 0,
-      explain: "outerHTML은 대상 요소를 응답 내용으로 통째로 교체한다. innerHTML이었다면 요소는 남고 안쪽만 채워졌을 것이다.",
-    },
-  },
-  {
-    no: 75,
+    no: 58,
     date: "2026.09.10",
     title: "워커 메시징",
     dek: "페이지와 워커가 메시지로 주고받는 흐름을 양쪽 파일로 나눠 읽는다.",
     minutes: 3,
     language: "JavaScript",
     framework: "Web Workers",
+    domain: "프론트엔드",
     prompt: "reduce가 만 개짜리 목록을 만나도 클릭 반응이 멈추지 않는 이유를 두 파일이 나뉜 지점에서 찾아 보라",
     code: `// main.js — 페이지 쪽
 const worker = new Worker("sum-worker.js");
@@ -2685,12 +482,13 @@ self.onmessage = (e) => {
     },
   },
   {
-    no: 74,
+    no: 57,
     date: "2026.09.10",
     title: "fetch와 중단",
     dek: "ok 확인, abort 취소, AbortError 구별까지 요청 하나의 온전한 흐름을 읽는다.",
     minutes: 3,
     language: "JavaScript",
+    domain: "프론트엔드",
     prompt: "취소 버튼이 눌린 순간 대기 중인 요청과 이어지는 코드들이 각각 어떻게 되는지 따라 가 보라",
     code: `const controller = new AbortController();
 
@@ -2770,12 +568,13 @@ loadSummary(42).catch((err) => {
     },
   },
   {
-    no: 73,
+    no: 56,
     date: "2026.09.10",
     title: "최소 렌더 루프",
     dek: "지우고 그리고 예약하는 세 동작이 프레임마다 도는 최소 렌더 루프다.",
     minutes: 2,
     language: "JavaScript",
+    domain: "프론트엔드",
     prompt: "루프가 이어지는 지점이 어디인지, 그리고 없다면 몇 프레임 만에 끝날지 따져 보라",
     code: `const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
@@ -2850,12 +649,13 @@ requestAnimationFrame(frame);`,
     },
   },
   {
-    no: 72,
+    no: 55,
     date: "2026.09.10",
     title: "viewBox와 path",
     dek: "viewBox 좌표계와 path 명령, defs 재료 참조로 아이콘 한 장을 읽는다.",
     minutes: 2,
     language: "SVG",
+    domain: "프론트엔드",
     prompt: "같은 좌표 그림을 width 96으로 키우면 무엇이 함께 커지는지 viewBox와 좌표의 관계에서 찾아 보라",
     code: `<svg viewBox="0 0 24 24" width="48" height="48"
      xmlns="http://www.w3.org/2000/svg" role="img" aria-label="앞으로">
@@ -2930,13 +730,14 @@ requestAnimationFrame(frame);`,
     },
   },
   {
-    no: 71,
+    no: 54,
     date: "2026.09.10",
     title: "커스텀 엘리먼트 콜백",
     dek: "속성 변화와 문서 삽입에 반응하는 콜백이 같은 render로 모이는 구조다.",
     minutes: 3,
     language: "JavaScript",
     framework: "Web Components",
+    domain: "프론트엔드",
     prompt: "value 속성이 바뀌면 화면은 누가 다시 그리는지 콜백의 호출 경로를 따라 가 보라",
     code: `class CountBadge extends HTMLElement {
   static observedAttributes = ["value"];
@@ -3023,12 +824,13 @@ customElements.define("count-badge", CountBadge);`,
     },
   },
   {
-    no: 70,
+    no: 53,
     date: "2026.09.10",
     title: "탭 위젯의 ARIA",
     dek: "role과 aria-* 속성이 탭 위젯의 구조와 선택 상태를 어떻게 알리는지 읽는다.",
     minutes: 3,
     language: "HTML",
+    domain: "프론트엔드",
     prompt: "화면에는 강조색뿐이다 — 스크린 리더는 무엇을 근거로 주간 탭이 선택된 상태임을 아는지 찾아 보라",
     code: `<div class="tabs" role="tablist" aria-label="통계 기간">
   <button role="tab" id="tab-week" aria-selected="true"
@@ -3101,13 +903,14 @@ customElements.define("count-badge", CountBadge);`,
     },
   },
   {
-    no: 69,
+    no: 52,
     date: "2026.09.10",
     title: "유틸리티 조합 패턴",
     dek: "목록 행, 가격 열, 버튼 상태 변형으로 자주 쓰는 유틸리티 조합을 읽는다.",
     minutes: 3,
     language: "HTML",
     framework: "Tailwind CSS",
+    domain: "프론트엔드",
     prompt: "가격 열이 자릿수가 달라져도 흔들리지 않는 이유를 클래스 이름에서 찾아 보라",
     code: `<div class="mx-auto max-w-3xl px-4">
   <h2 class="text-xl font-semibold text-slate-900">주문 내역</h2>
@@ -3184,12 +987,13 @@ customElements.define("count-badge", CountBadge);`,
     },
   },
   {
-    no: 68,
+    no: 51,
     date: "2026.09.10",
     title: "전환과 키프레임",
     dek: "hover 전환과 무한 pulse를 나란히 놓고 두 애니메이션 수단의 경계를 읽는다.",
     minutes: 2,
     language: "CSS",
+    domain: "프론트엔드",
     prompt: "버튼은 마우스를 올릴 때만 움직이고 배지는 멈추지 않는다 — 이 차이를 만드는 줄을 각각 찾아 보라",
     code: `.button {
   background: #2563eb;
@@ -3261,12 +1065,13 @@ customElements.define("count-badge", CountBadge);`,
     },
   },
   {
-    no: 67,
+    no: 50,
     date: "2026.09.10",
     title: "그리드와 컨테이너 쿼리",
     dek: "auto-fill 그리드 위에 컨테이너 쿼리를 얹어 카드 안쪽 배치가 너비를 따라 바뀌게 한다.",
     minutes: 3,
     language: "CSS",
+    domain: "프론트엔드",
     prompt: "카드 자체 너비가 420px를 넘는 순간 어느 규칙이 끼어들어 무엇을 덮어쓰는지 따라 가 보라",
     code: `.card-grid {
   display: grid;
@@ -3348,421 +1153,14 @@ customElements.define("count-badge", CountBadge);`,
     },
   },
   {
-    no: 66,
-    date: "2026.09.10",
-    title: "루아 테이블 관용구",
-    dek: "하나의 테이블이 배열이자 사전으로 쓰이는 자리와 참조 공유를 본다.",
-    minutes: 2,
-    language: "Lua",
-    prompt: "use를 여러 번 부르면 inventory와 byName이 함께 변하는지 따져 보라",
-    code: `local inventory = {
-  { name = "torch", count = 3 },
-  { name = "rope",  count = 1 },
-}
-
-local byName = {}
-for _, item in ipairs(inventory) do
-  byName[item.name] = item
-end
-
-local function use(name)
-  local item = byName[name]
-  if not item or item.count == 0 then
-    return false
-  end
-  item.count = item.count - 1
-  return true
-end
-
-use("torch")`,
-    annotations: [
-      {
-        find: "{ name = \"torch\", count = 3 }",
-        title: "테이블 = 연관 배열",
-        body: "루아의 유일한 자료구조인 테이블은 배열과 사전을 한 몸으로 한다. 이름 = 값 꼴은 문자열 키의 사전 항목이다.",
-        kind: "concept",
-      },
-      {
-        find: "ipairs(inventory)",
-        title: "순서대로 순회",
-        body: "1부터 시작해 빈 자리(nil)를 만날 때까지 정수 키를 따라 간다. 배열처럼 쓴 테이블의 표준 순회다.",
-        kind: "std",
-      },
-      {
-        find: "for _, item in",
-        title: "무시 자리표",
-        body: "밑줄 이름은 쓰지 않을 값을 버리는 관용이다. 인덱스가 필요 없을 때 자리만 지킨다.",
-        kind: "idiom",
-      },
-      {
-        find: "byName[item.name] = item",
-        title: "색인 테이블 만들기",
-        body: "리스트를 이름으로 찾는 사전으로 옮겨 놓는다. 배열과 사전이 같은 테이블이라 이런 재배치가 흔하다.",
-        kind: "idiom",
-      },
-      {
-        find: "if not item or item.count == 0 then",
-        title: "없음 검사",
-        body: "테이블에 없는 키를 읽으면 오류가 아니라 nil이 나온다. not item으로 없음을 먼저 걸러 뒤 조건을 이어 본다.",
-        kind: "idiom",
-      },
-      {
-        find: "item.count = item.count - 1",
-        title: "필드 갱신",
-        body: "테이블 필드 대입은 그 자리의 값을 바꾼다. 테이블은 참조로 공유되므로 byName에 담긴 같은 조각도 함께 변한다.",
-        kind: "syntax",
-      },
-      {
-        find: "return true",
-        title: "진위 결과 돌려주기",
-        body: "성공과 실패를 불리언으로 알려 간단한 프로토콜을 만든다. 호출 쪽은 if use(\"torch\") then으로 바로 쓴다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "루아의 테이블 하나가 배열이자 사전이며, 담을 때는 참조가 간다.",
-    check: {
-      question: "byName에 담긴 torch의 count를 바꾸면 inventory 쪽 목록은 어떻게 되는가?",
-      options: [
-        "그대로다 — byName에는 복사본이 담겼다",
-        "같은 테이블을 가리키므로 함께 바뀐다",
-        "inventory가 nil이 된다",
-      ],
-      answer: 1,
-      explain: "루아 테이블은 값이 아니라 참조로 담긴다. byName[\"torch\"]와 inventory[1]은 같은 테이블 조각을 가리키므로 한쪽의 count 갱신이 양쪽에서 보인다. 복사가 필요하면 필드를 직접 옮겨야 한다.",
-    },
-  },
-  {
-    no: 65,
-    date: "2026.09.10",
-    title: "고닷 노드와 시그널",
-    dek: "@export·@onready로 준비하고 시그널로 이웃과 대화하는 스크립트를 본다.",
-    minutes: 2,
-    language: "GDScript",
-    framework: "Godot",
-    prompt: "take_damage(2) 한 번에 불리는 함수들의 순서를 따라 가 보라",
-    code: `extends Node
-
-signal health_changed(value: int)
-
-@export var max_health: int = 5
-@onready var bar: ProgressBar = $HealthBar
-
-var health := max_health
-
-func _ready() -> void:
-    health_changed.connect(_on_health_changed)
-    take_damage(2)
-
-func take_damage(amount: int) -> void:
-    health = clampi(health - amount, 0, max_health)
-    health_changed.emit(health)
-
-func _on_health_changed(value: int) -> void:
-    bar.value = value`,
-    annotations: [
-      {
-        find: "extends Node",
-        title: "노드 상속",
-        body: "이 스크립트가 노드에 붙는다는 선언이다. 씬은 노드 트리고, 스크립트는 그 한 노드의 행동을 정의한다.",
-        kind: "syntax",
-      },
-      {
-        find: "signal health_changed(value: int)",
-        title: "시그널 선언",
-        body: "이 노드가 내보낼 이벤트와 인자를 선언한다. 보낸 쪽은 누가 듣는지 모르는 관찰자 패턴의 일급 도구다.",
-        kind: "concept",
-      },
-      {
-        find: "@export var max_health: int = 5",
-        title: "에디터 노출",
-        body: "인스펙터에서 값을 바꿀 수 있게 된다. 씬마다 다른 수치를 스크립트 수정 없이 넣는 관용이다.",
-        kind: "std",
-      },
-      {
-        find: "@onready var bar: ProgressBar = $HealthBar",
-        title: "늦은 노드 참조",
-        body: "$경로는 자식 노드를 꺼내고, @onready는 대입을 준비가 끝난 뒤로 미룬다. 자식 노드는 씬이 다 갖춰진 뒤에야 안전하게 꺼낼 수 있다.",
-        kind: "std",
-      },
-      {
-        find: "health_changed.connect(_on_health_changed)",
-        title: "시그널 연결",
-        body: "시그널이 내보내질 때 불릴 함수를 등록한다. 직접 참조 없이 노드 간 반응을 잡아 준다.",
-        kind: "std",
-      },
-      {
-        find: "health_changed.emit(health)",
-        title: "시그널 방출",
-        body: "등록된 콜백들을 즉시 순서대로 부른다. emit의 인자가 시그널 인자로 그대로 전달된다.",
-        kind: "std",
-      },
-      {
-        find: "clampi(health - amount, 0, max_health)",
-        title: "범위 자르기",
-        body: "정수 값을 최소·최대 사이로 자른다. 피해를 반영해도 0 아래나 최대치 위로 벗어나지 않는다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "노드는 트리로 연결하고 시그널로 대화한다 — 스크립트는 한 노드의 행동 명세다.",
-    check: {
-      question: "bar 참조에서 @onready를 빼면 어떤 문제가 생기는가?",
-      options: [
-        "스크립트 초기화 시점에는 자식 노드가 아직 준비 전이라 참조가 실패한다",
-        "아무 차이가 없다",
-        "bar가 자동으로 늦게 대입된다",
-      ],
-      answer: 0,
-      explain: "멤버 변수 초기화는 _ready보다 앞서 이뤄진다. @onready는 대입을 _ready 직후로 미뤄 씬 트리가 다 갖춰진 뒤 $HealthBar를 꺼내게 한다. 표시가 없으면 준비 전 참조가 된다.",
-    },
-  },
-  {
-    no: 64,
-    date: "2026.09.10",
-    title: "유니티 코루틴의 양보",
-    dek: "yield return이 루프를 프레임 시간으로 늘어놓는 방식을 본다.",
-    minutes: 2,
-    language: "C#",
-    framework: "Unity",
-    prompt: "루프가 한 프레임에 다 도는 게 아니라 시간으로 늘어나는 이유를 yield에서 찾아 보라",
-    code: `public class WaveSpawner : MonoBehaviour
-{
-    public GameObject enemyPrefab;
-    public float spawnInterval = 1.5f;
-
-    private void Start()
-    {
-        StartCoroutine(SpawnWave(3));
-    }
-
-    private IEnumerator SpawnWave(int count)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            Instantiate(enemyPrefab, transform.position, Quaternion.identity);
-            yield return new WaitForSeconds(spawnInterval);
-        }
-    }
-}`,
-    annotations: [
-      {
-        find: ": MonoBehaviour",
-        title: "유니티 컴포넌트",
-        body: "씬의 게임 오브젝트에 붙는 스크립트의 기반 클래스다. Start·Update 같은 라이프사이클 메시지를 유니티가 불러 준다.",
-        kind: "concept",
-      },
-      {
-        find: "StartCoroutine(SpawnWave(3))",
-        title: "코루틴 시작",
-        body: "반복기를 유니티 실행기에 등록한다. 메서드 본문이 즉시 끝까지 도는 것이 아니라 yield 지점마다 나뉘어 진행된다.",
-        kind: "std",
-      },
-      {
-        find: "private IEnumerator SpawnWave(int count)",
-        title: "코루틴 본체",
-        body: "반환형 IEnumerator는 지연 실행 시퀀스다. 유니티가 다음 yield까지 진행시키는 것을 반복한다.",
-        kind: "syntax",
-      },
-      {
-        find: "Instantiate(enemyPrefab, transform.position, Quaternion.identity)",
-        title: "오브젝트 생성",
-        body: "프리팹을 씬에 복제해 만든다. Quaternion.identity는 회전 없음을 뜻한다.",
-        kind: "std",
-      },
-      {
-        find: "yield return new WaitForSeconds(spawnInterval)",
-        title: "시간 양보",
-        body: "여기서 실행을 멈추고 지정한 초만큼 게임 시간이 흐른 뒤 이어서 한다. 프레임을 막지 않고 간격을 두는 표준 방법이다.",
-        kind: "std",
-      },
-      {
-        find: "for (int i = 0; i < count; i++)",
-        title: "반복 사이 양보",
-        body: "루프 안의 yield가 루프 전체를 시간으로 늘어놓는다. 루프는 코루틴이 살아 있는 동안 프레임을 건너며 진행된다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "유니티 코루틴은 yield 지점을 프레임 시간으로 나눠 놓은 반복기다.",
-    check: {
-      question: "WaitForSeconds 줄에서 yield를 빼고 return으로 바꾸면 어떻게 되는가?",
-      options: [
-        "컴파일되지 않는다 — 반복기 안의 return은 값과 함께 쓸 수 없다",
-        "간격 없이 적 셋이 한 프레임에 몰아서 생성된다",
-        "1.5초를 기다린 뒤 다음 적을 생성한다",
-      ],
-      answer: 0,
-      explain: "이 메서드는 IEnumerator를 돌려주는 반복기다. 반복기 안에서는 값을 yield return으로만 건넬 수 있고 값과 함께하는 return은 컴파일 오류이다. 간격을 없애려면 yield return null 같은 다른 양보를 쓴다.",
-    },
-  },
-  {
-    no: 63,
-    date: "2026.09.10",
-    title: "Objective-C 메시지와 소유",
-    dek: "대괄호 메시지 보내기와 strong·weak, nil에 보내는 메시지를 본다.",
-    minutes: 3,
-    language: "Objective-C",
-    prompt: "delegate가 이미 사라진 뒤 콜백이 도착하면 이 코드가 어떻게 되는지 따라 가 보라",
-    code: `@interface FeedLoader : NSObject
-@property (nonatomic, strong) NSURLSession *session;
-@property (nonatomic, weak) id<FeedDelegate> delegate;
-- (void)fetchWithURL:(NSURL *)url;
-@end
-
-@implementation FeedLoader
-- (void)fetchWithURL:(NSURL *)url {
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    NSURLSessionDataTask *task =
-        [self.session dataTaskWithRequest:request
-                        completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-            [self.delegate feedLoader:self didFinishWithData:data error:error];
-        }];
-    [task resume];
-}
-@end`,
-    annotations: [
-      {
-        find: "@property (nonatomic, strong)",
-        title: "강한 소유",
-        body: "ARC가 이 프로퍼티가 가리키는 객체를 참조 횟수로 지켜 살려 둔다. 소유하겠다는 명시적 선언이다.",
-        kind: "concept",
-      },
-      {
-        find: "@property (nonatomic, weak) id<FeedDelegate> delegate;",
-        title: "약한 참조",
-        body: "소유하지 않는 참조다. 대상이 사라지면 자동으로 nil이 되며, 대리자처럼 수명이 남의 것인 관계에 쓰는 관용이다.",
-        kind: "concept",
-      },
-      {
-        find: "[NSURLRequest requestWithURL:url]",
-        title: "클래스에 보내는 메시지",
-        body: "대괄호는 수신자에게 메시지를 보내는 문법이다. 수신자가 클래스면 클래스 메서드가 응답해 새 객체를 돌려준다.",
-        kind: "syntax",
-      },
-      {
-        find: "completionHandler:",
-        title: "완료 블록",
-        body: "작업이 끝나면 불리는 블록(클로저)을 인자로 넘긴다. 콜백은 보통 다른 큐에서 불리므로 UI를 만질 때는 큐를 옮겨야 한다.",
-        kind: "std",
-      },
-      {
-        find: "[self.delegate feedLoader:self",
-        title: "nil에 보내는 메시지",
-        body: "Objective-C는 nil에 메시지를 보내도 멈추지 않고 0을 돌려준다. weak delegate가 사라진 상태에서도 이 줄은 조용히 무시된다.",
-        kind: "idiom",
-      },
-      {
-        find: "[task resume]",
-        title: "작업 시작",
-        body: "만든 태스크는 기본적으로 멈춰 있다. resume 메시지를 받아야 네트워크 요청이 나간다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "대괄호는 메시지 보내기고 ARC는 소유를 strong·weak로 선언하게 한다 — nil에 보내도 안전하다.",
-    check: {
-      question: "weak로 선언된 delegate가 해제된 뒤 feedLoader: 메시지를 보내면 어떻게 되는가?",
-      options: [
-        "크래시가 난다",
-        "nil에 보내는 메시지로 조용히 무시된다",
-        "delegate가 자동으로 되살아난다",
-      ],
-      answer: 1,
-      explain: "weak 프로퍼티는 참조 대상이 사라지면 nil로 바뀐다. Objective-C의 nil은 메시지를 받아도 아무 일도 하지 않고 0을 돌려주므로 이 호출은 안전하게 무시된다. strong이었다면 객체가 살아 남아 반응했을 것이다.",
-    },
-  },
-  {
-    no: 62,
-    date: "2026.09.10",
-    title: "React Native 리스트와 스타일",
-    dek: "FlatList의 키·렌더러와 StyleSheet 재사용, 이벤트 화살표 함수를 본다.",
-    minutes: 2,
-    language: "TypeScript",
-    framework: "React Native",
-    prompt: "onPress에 담긴 함수가 언제 불리는지 렌더링 시점과 탭 시점을 나눠 보라",
-    code: `type Item = { id: string; title: string };
-
-type Props = { items: Item[]; onOpen: (id: string) => void };
-
-export function Feed({ items, onOpen }: Props) {
-  return (
-    <FlatList
-      data={items}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <Pressable style={styles.row} onPress={() => onOpen(item.id)}>
-          <Text style={styles.rowText}>{item.title}</Text>
-        </Pressable>
-      )}
-    />
-  );
-}
-
-const styles = StyleSheet.create({
-  row: { flexDirection: "row", padding: 16 },
-  rowText: { fontSize: 16, fontWeight: "600" },
-});`,
-    annotations: [
-      {
-        find: "data={items}",
-        title: "데이터 연결",
-        body: "목록의 원본 배열이다. 배열이 바뀌면 FlatList가 키를 비교해 바뀐 항목만 다시 그린다.",
-        kind: "std",
-      },
-      {
-        find: "keyExtractor={(item) => item.id}",
-        title: "고유 키",
-        body: "각 항목의 안정적인 키를 알려준다. 재조정이 이 키로 항목을 추적해 추가·삭제를 효율적으로 처리한다.",
-        kind: "std",
-      },
-      {
-        find: "renderItem={({ item }) => (",
-        title: "항목 렌더러",
-        body: "필요한 항목을 그릴 때 불리는 콜백이다. FlatList가 보이는 영역을 기준으로 호출 범위를 관리한다.",
-        kind: "std",
-      },
-      {
-        find: "Pressable",
-        title: "탭 입력 컴포넌트",
-        body: "누르기 이벤트를 받는 기본 컴포넌트다. 모양은 style로, 동작은 onPress로 맡긴다.",
-        kind: "std",
-      },
-      {
-        find: "onPress={() => onOpen(item.id)}",
-        title: "이벤트 미루기",
-        body: "화살표 함수로 감싸 item.id를 탭 시점에 넘긴다. 괄호를 붙여 바로 호출하면 렌더마다 실행되어 버린다.",
-        kind: "idiom",
-      },
-      {
-        find: "StyleSheet.create(",
-        title: "스타일 시트",
-        body: "스타일 객체를 한 번 만들어 모듈 상수로 재사용한다. 매 렌더마다 새 스타일 객체를 만들지 않는 관용이다.",
-        kind: "std",
-      },
-      {
-        find: "flexDirection: \"row\"",
-        title: "축 방향",
-        body: "RN의 flexDirection 기본값은 column이고, row로 바꾸면 가로 배치가 된다. 웹 CSS와 기본값이 다른 지점이다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "FlatList는 보이는 만큼만 그리고, 이벤트는 화살표 함수로 탭 시점까지 미뤄 둔다.",
-    check: {
-      question: "onPress={onOpen(item.id)}처럼 괄호를 붙여 호출하면 어떻게 되는가?",
-      options: [
-        "탭할 때만 onOpen이 불린다",
-        "렌더링 도중 항목마다 즉시 불린다",
-        "컴파일되지 않는다",
-      ],
-      answer: 1,
-      explain: "중괄호 안의 식은 렌더 때 그 자리에서 평가된다. 괄호를 붙이면 함수의 반환값이 onPress에 들어가고 항목 수만큼 미리 실행된다. 화살표 함수로 감싸야 탭 시점에 불린다.",
-    },
-  },
-  {
-    no: 61,
+    no: 49,
     date: "2026.09.10",
     title: "플러터 목록과 위젯 트리",
     dek: "ListView.builder가 필요한 항목만 만드는 방식과 const 위젯을 본다.",
     minutes: 3,
     language: "Dart",
     framework: "Flutter",
+    domain: "모바일",
     prompt: "items가 만 개여도 이 목록이 가벼운 이유를 builder에서 찾아 보라",
     code: `class TodoList extends StatelessWidget {
   const TodoList({super.key, required this.items});
@@ -3836,13 +1234,14 @@ const styles = StyleSheet.create({
     },
   },
   {
-    no: 60,
+    no: 48,
     date: "2026.09.10",
     title: "컴포즈 상태 호이스팅",
     dek: "상태는 위에 두고 값만 내리며, 변경은 콜백으로 받는 구조를 본다.",
     minutes: 3,
     language: "Kotlin",
     framework: "Jetpack Compose",
+    domain: "모바일",
     prompt: "count의 원본은 어디에 있고 하위 Counter는 무엇만 받는지 따져 보라",
     code: `@Composable
 fun CounterScreen() {
@@ -3914,13 +1313,14 @@ fun Counter(count: Int, onIncrement: () -> Unit) {
     },
   },
   {
-    no: 59,
+    no: 47,
     date: "2026.09.10",
     title: "코루틴으로 겹쳐 기다리기",
     dek: "async와 await의 위치가 요청을 겹치는지, 하나씩 기다리는지를 가른다.",
     minutes: 3,
     language: "Kotlin",
     framework: "Kotlin Coroutines",
+    domain: "모바일",
     prompt: "async와 await의 위치가 요청을 어떻게 겹치게 하는지 따라 가 보라",
     code: `suspend fun loadDashboard(api: Api): Dashboard =
     coroutineScope {
@@ -3987,13 +1387,14 @@ fun main() = runBlocking {
     },
   },
   {
-    no: 58,
+    no: 46,
     date: "2026.09.10",
     title: "SwiftUI 상태와 바인딩",
     dek: "@State의 원본과 $로 꺼낸 바인딩이 하위 버튼까지 이어지는 흐름을 본다.",
     minutes: 3,
     language: "Swift",
     framework: "SwiftUI",
+    domain: "모바일",
     prompt: "하위 버튼의 count += 1이 상위 화면 갱신까지 이어지는 경로를 따라 가 보라",
     code: `struct CounterRow: View {
     @Binding var count: Int
@@ -4066,12 +1467,13 @@ struct CounterScreen: View {
     },
   },
   {
-    no: 57,
+    no: 45,
     date: "2026.09.10",
     title: "옵셔널과 프로토콜 확장",
     dek: "프로토콜 기본 구현과 ??·옵셔널 체이닝으로 nil을 다루는 짧은 계정 코드다.",
     minutes: 3,
     language: "Swift",
+    domain: "모바일",
     prompt: "nickname이 nil인 계정에서 label과 마지막 print의 값은 각각 무엇인가",
     code: `protocol Named {
     var displayName: String? { get }
@@ -4149,430 +1551,14 @@ print(a.nickname?.count ?? 0)`,
     },
   },
   {
-    no: 56,
-    date: "2026.09.10",
-    title: "Julia 다중 디스패치",
-    dek: "같은 함수 이름에 타입별 메서드를 붙이고 점 하나로 배열에 벌려 쓴다.",
-    minutes: 3,
-    language: "Julia",
-    prompt: "같은 이름의 area 호출이 타입에 따라 어디로 가는지 읽어 본다",
-    code: `abstract type Shape end
-
-struct Circle <: Shape
-    r::Float64
-end
-
-struct Rect <: Shape
-    w::Float64
-    h::Float64
-end
-
-area(c::Circle) = π * c.r^2
-area(r::Rect) = r.w * r.h
-
-areas = area.([Circle(1.0), Rect(2.0, 3.0), Circle(2.5)])
-println(sum(areas))`,
-    annotations: [
-      {
-        find: "abstract type Shape end",
-        title: "추상 타입",
-        body: "하위 타입을 거느릴 수 있는 타입을 선언한다. 인스턴스는 만들 수 없고 타입 계층의 마디 역할을 한다.",
-        kind: "syntax",
-      },
-      {
-        find: "struct Circle <: Shape",
-        title: "하위 타입 선언",
-        body: "<:는 Shape의 하위 타입임을 나타낸다. struct는 필드를 나열해 만드는 기본 불변 값 타입이다.",
-        kind: "syntax",
-      },
-      {
-        find: "r::Float64",
-        title: "필드 타입",
-        body: "필드에 타입을 붙이면 컴파일러가 타입별로 특수화된 코드를 만든다. 성능을 위한 관용 표기다.",
-        kind: "syntax",
-      },
-      {
-        find: "area(c::Circle) = π * c.r^2",
-        title: "타입별 메서드",
-        body: "함수 이름 area에 Circle 전용 메서드를 정의한다. 호출 시 인자 타입을 보고 돌릴 메서드를 고르는 것이 다중 디스패치다.",
-        kind: "concept",
-      },
-      {
-        find: "area(r::Rect) = r.w * r.h",
-        title: "같은 함수, 다른 메서드",
-        body: "이름은 하나지만 메서드는 타입 조합마다 늘어난다. 새 모양을 추가할 때 기존 정의를 고치지 않고 메서드만 붙인다.",
-        kind: "concept",
-      },
-      {
-        find: "area.(",
-        title: "브로드캐스팅",
-        body: "함수 뒤의 점은 컬렉션의 각 요소에 함수를 따로 적용한다. 결과는 각 원소의 area 값이 모인 배열이다.",
-        kind: "concept",
-      },
-      {
-        find: "sum(areas)",
-        title: "전체 합산",
-        body: "배열의 값들을 모두 더하는 표준 함수다. 브로드캐스팅 결과를 한 값으로 접는다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "메서드는 인자 타입 조합마다 붙고 가장 구체적인 것이 이긴다 — 점 하나를 붙이면 그 호출이 요소마다 벌어진다.",
-    check: {
-      question: "area(s::Shape) 메서드를 새로 추가하면 기존 areas 계산은 어떻게 되는가?",
-      options: [
-        "Circle·Rect 값도 Shape 메서드로 돌아간다",
-        "더 구체적인 Circle·Rect 메서드가 그대로 이기고, Shape 메서드는 다른 하위 타입을 받는 자리가 된다",
-        "메서드 정의가 겹쳐 에러가 난다",
-      ],
-      answer: 1,
-      explain: "다중 디스패치는 인자 타입 중 가장 구체적인 메서드를 고른다. Shape용 메서드를 추가해도 Circle·Rect 호출은 그대로다. 타입 계층에 기본 구현을 두고 하위 타입마다 덧대는 것이 관용 패턴이다.",
-    },
-  },
-  {
-    no: 55,
-    date: "2026.09.10",
-    title: "dplyr 파이프 한 줄 읽기",
-    dek: "filter부터 head까지 파이프를 따라 행과 그룹이 바뀌는 지점을 본다.",
-    minutes: 2,
-    language: "R",
-    framework: "dplyr",
-    prompt: "파이프 각 단계에서 행 수와 그룹이 어떻게 되는지 따라 가 본다",
-    code: `library(dplyr)
-
-sales |>
-  filter(region == "APAC", amount > 0) |>
-  mutate(revenue = amount * price, flag = revenue > 1e6) |>
-  group_by(region, product) |>
-  summarise(
-    total = sum(revenue),
-    n = n(),
-    .groups = "drop"
-  ) |>
-  arrange(desc(total)) |>
-  head(5)`,
-    annotations: [
-      {
-        find: "|>",
-        title: "파이프 연산자",
-        body: "왼쪽 결과를 오른쪽 함수의 첫 인자로 넘긴다. 파이프를 위에서 아래로 읽으면 변형 순서가 그대로 읽힌다.",
-        kind: "syntax",
-        line: 3,
-      },
-      {
-        find: "filter(region == \"APAC\", amount > 0)",
-        title: "행 거르기",
-        body: "조건에 맞는 행만 남긴다. 쉼표로 나열한 조건은 모두 AND로 결합된다.",
-        kind: "std",
-      },
-      {
-        find: "mutate(revenue = amount * price, flag = revenue > 1e6)",
-        title: "열 만들기",
-        body: "새 열을 계산해 덧붙인다. 같은 호출 안에서 방금 만든 revenue를 flag가 바로 참조할 수 있다.",
-        kind: "std",
-      },
-      {
-        find: "group_by(region, product)",
-        title: "그룹 나누기",
-        body: "이후 단계가 지역×상품 조합별로 따로 돌게 표시한다. summarise와 짝을 이뤄 그룹별 요약을 만든다.",
-        kind: "concept",
-      },
-      {
-        find: "n()",
-        title: "행수 세기",
-        body: "그룹의 행 수를 세는 함수다. summarise 안에서 조합별 개수가 된다.",
-        kind: "std",
-      },
-      {
-        find: ".groups = \"drop\"",
-        title: "그룹 정리",
-        body: "요약 뒤 남은 그룹 속성을 완전히 푼다. 풀지 않으면 이후 계산이 계속 그룹별로 돌아 의도 밖의 결과가 나올 수 있다.",
-        kind: "std",
-      },
-      {
-        find: "arrange(desc(total))",
-        title: "정렬",
-        body: "total을 내림차순으로 정렬한다. desc를 빼면 오름차순이 기본이다.",
-        kind: "std",
-      },
-      {
-        find: "head(5)",
-        title: "앞부분 자르기",
-        body: "맨 위 5행만 남긴다. 내림차순 정렬 뒤에 두면 상위 5개 조합이다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "dplyr 파이프는 행을 거르고 열을 만들고 그룹별로 접는다 — 그룹 속성이 남는지가 다음 단계를 바꾼다.",
-    check: {
-      question: ".groups = \"drop\"를 지우면 summarise 뒤에 그룹 속성은 어떻게 되는가?",
-      options: [
-        "region·product 모두 그룹으로 남는다",
-        "마지막 수준인 product가 풀리고 region만 그룹으로 남는다",
-        "어떤 수준도 남지 않는다",
-      ],
-      answer: 1,
-      explain: "기본 처리는 마지막 그룹 수준을 하나 풀고 나머지를 유지하는 것이다. region으로 묶인 상태가 이후 계산에 이어져 그룹별 동작이 숨어 들어갈 수 있다. drop은 남는 수준 없이 완전히 푼다.",
-    },
-  },
-  {
-    no: 54,
-    date: "2026.09.10",
-    title: "jq로 배열을 스트림으로",
-    dek: "경로와 []로 JSON을 펼치고 select·객체 조립·@tsv로 표를 뽑는다.",
-    minutes: 2,
-    language: "jq",
-    prompt: "이 필터가 입력을 몇 번 스트림으로 펼치는지 세어 본다",
-    code: `jq -r '
-  def paid: select(.status == "paid");
-
-  .[]
-  | select(.customer.region == "APAC")
-  | paid
-  | .items[]
-  | select(.price > 1000)
-  | {sku: .sku, cost: (.price * .qty)}
-  | select(.cost > 50000)
-  | [.sku, .cost]
-  | @tsv
-' orders.json`,
-    annotations: [
-      {
-        find: "-r",
-        title: "raw 출력",
-        body: "결과 문자열을 따옴표 없이 그대로 찍는 옵션이다. 표 형태로 내보낼 때 붙이는 관용 조합이다.",
-        kind: "std",
-      },
-      {
-        find: "def paid: select(.status == \"paid\");",
-        title: "필터에 이름 붙이기",
-        body: "def는 자주 쓰는 필터에 이름을 붙인다. 콜론 뒤가 몸통이고 세미콜론으로 정의를 닫는다.",
-        kind: "syntax",
-      },
-      {
-        find: ".[]",
-        title: "스트림으로 펼치기",
-        body: "배열을 요소 스트림으로 펼친다. jq 파이프는 값을 하나씩 흘려 보내므로 이후 단계는 요소마다 따로 돈다.",
-        kind: "concept",
-      },
-      {
-        find: "select(.customer.region == \"APAC\")",
-        title: "조건 통과",
-        body: "식이 참인 입력만 통과시키고 거짓이면 아무것도 내보내지 않는다. 스트림에서의 filter 역할이다.",
-        kind: "std",
-      },
-      {
-        find: ".items[]",
-        title: "중첩 배열 펼치기",
-        body: "주문 안의 items 배열을 다시 요소 스트림으로 펼친다. 이 파이프라인은 문서를 두 번에 걸쳐 풀어 놓는다.",
-        kind: "concept",
-      },
-      {
-        find: "{sku: .sku, cost: (.price * .qty)}",
-        title: "객체 조립",
-        body: "필요한 필드만 모은 새 객체를 만든다. 괄호로 묶은 식은 계산 결과가 값으로 들어간다.",
-        kind: "idiom",
-      },
-      {
-        find: "@tsv",
-        title: "탭 구분 출력",
-        body: "입력 배열을 탭으로 구분된 한 줄로 만든다. -r과 함께 쓰면 셸 도구에 바로 넘길 표가 된다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "jq에서 []를 만나는 순간 배열이 스트림으로 풀린다 — 값이 몇 개로 흐르는지가 파이프라인을 결정한다.",
-    check: {
-      question: ".items[]를 .items로 바꾸면 뒤 단계는 무엇을 입력으로 받는가?",
-      options: [
-        "첫 품목 하나만 받는다",
-        "품목 배열 전체가 값 하나로 흘러 들어간다",
-        "달라지지 않는다 — 둘은 같은 표기다",
-      ],
-      answer: 1,
-      explain: "[]는 배열을 요소 스트림으로 펼치는 연산자다. 이를 빼면 품목 배열 통째로가 하나의 값이 되어 select와 계산이 품목별로 나뉘지 않는다. jq를 읽을 때는 값이 스트림인지 배열인지를 먼저 따져야 한다.",
-    },
-  },
-  {
-    no: 53,
-    date: "2026.09.10",
-    title: "bool 쿼리의 네 자리",
-    dek: "must·filter·must_not·should가 점수와 거르기를 나눠 갖는 방식을 본다.",
-    minutes: 3,
-    language: "JSON",
-    framework: "Elasticsearch",
-    prompt: "네 절 중 어디가 점수를 매기고 어디가 거르기만 하는지 읽어 본다",
-    code: `GET /articles/_search
-{
-  "query": {
-    "bool": {
-      "must": [
-        { "match": { "title": "elasticsearch" } }
-      ],
-      "filter": [
-        { "term": { "status": "published" } },
-        { "range": { "views": { "gte": 100 } } }
-      ],
-      "must_not": [
-        { "term": { "tag": "draft" } }
-      ],
-      "should": [
-        { "term": { "tag": "guide" } }
-      ]
-    }
-  }
-}`,
-    annotations: [
-      {
-        find: "GET /articles/_search",
-        title: "검색 요청",
-        body: "articles 인덱스에 검색 요청을 보낸다. 이 표기는 Kibana 개발자 도구 콘솔에서 쓰는 형식이다.",
-        kind: "std",
-      },
-      {
-        find: "\"bool\": {",
-        title: "불리언 결합",
-        body: "여러 절을 조건 조합으로 묶는 상위 쿼리다. must·filter·must_not·should 네 자리를 제공한다.",
-        kind: "concept",
-      },
-      {
-        find: "\"must\": [",
-        title: "점수 있는 AND",
-        body: "모든 절이 맞아야 하고, 각 절이 관련성 점수를 계산해 더한다. 계산 비용이 있으니 본문 검색 같은 조건에 쓴다.",
-        kind: "concept",
-      },
-      {
-        find: "\"match\": { \"title\": \"elasticsearch\" }",
-        title: "전문 검색",
-        body: "검색어를 색인 때와 같은 분석기를 거쳐 토큰으로 맞춰 본다. 점수까지 계산하는 대표 전문 쿼리다.",
-        kind: "std",
-      },
-      {
-        find: "\"filter\": [",
-        title: "점수 없는 AND",
-        body: "맞고 틀림만 따지고 점수를 매기지 않는다. 결과를 캐시할 수 있어 상태·범위 같은 조건의 관용적 자리다.",
-        kind: "concept",
-      },
-      {
-        find: "\"term\": { \"status\": \"published\" }",
-        title: "정확값 일치",
-        body: "분석을 거치지 않은 원래 값과 정확히 비교한다. keyword 필드나 상태 코드 매칭에 쓴다.",
-        kind: "std",
-      },
-      {
-        find: "\"must_not\": [",
-        title: "제외",
-        body: "맞는 문서를 결과에서 뺀다. 절이 놓이는 컨텍스트가 필터라 점수 계산도 없다.",
-        kind: "syntax",
-      },
-      {
-        find: "\"should\": [",
-        title: "가점 절",
-        body: "must·filter와 함께 있을 때는 필수가 아니라 맞으면 점수를 더하는 역할을 한다. should만 있을 때는 하나 이상 맞아야 하는 조건이 된다.",
-        kind: "concept",
-      },
-    ],
-    takeaway: "bool 쿼리에서 점수는 must와 should가 매기고, filter와 must_not은 거르기만 한다.",
-    check: {
-      question: "이 쿼리에서 검색 순위 점수에 실제로 참여하는 절은 무엇인가?",
-      options: [
-        "must와 should",
-        "filter를 포함해 must·should 전부",
-        "must_not을 빼고 전부",
-      ],
-      answer: 0,
-      explain: "must의 match 절과 should 절은 관련성 점수를 계산해 더한다. filter와 must_not은 맞고 틀림만 따지는 필터 컨텍스트라 점수가 없다. 그래서 상태·범위 조건은 filter 쪽이 싸고 캐시도 된다.",
-    },
-  },
-  {
-    no: 52,
-    date: "2026.09.10",
-    title: "애그리게이션 파이프라인",
-    dek: "match·unwind·group 단계를 거쳐 품목별 매출 상위 5개를 만든다.",
-    minutes: 3,
-    language: "JavaScript",
-    framework: "MongoDB",
-    prompt: "주문 문서가 어느 단계에서 품목 수만큼 늘어나는지 따라 가 본다",
-    code: `db.orders.aggregate([
-  { $match: { status: "paid", placedAt: { $gte: ISODate("2026-08-01") } } },
-  { $unwind: "$items" },
-  {
-    $group: {
-      _id: "$items.sku",
-      totalQty: { $sum: "$items.qty" },
-      revenue: { $sum: { $multiply: ["$items.qty", "$items.price"] } },
-    },
-  },
-  { $sort: { revenue: -1 } },
-  { $limit: 5 },
-]);`,
-    annotations: [
-      {
-        find: "$match",
-        title: "문서 거르기",
-        body: "조건에 맞는 문서만 다음 단계로 넘긴다. 문서 수를 가장 싸게 줄이는 단계라 파이프라인 앞쪽에 두는 게 정석이다.",
-        kind: "std",
-      },
-      {
-        find: "$unwind",
-        title: "배열 풀기",
-        body: "items 배열을 요소 하나당 문서 하나로 펼친다. 주문 한 건이 품목 수만큼 복제된다.",
-        kind: "concept",
-      },
-      {
-        find: "$group: {",
-        title: "그룹 접기",
-        body: "지정한 키로 문서를 묶어 그룹마다 하나의 문서로 접는다. 접힌 문서의 필드는 누적 연산자로 만든다.",
-        kind: "std",
-      },
-      {
-        find: "_id: \"$items.sku\"",
-        title: "그룹 키",
-        body: "$가 붙은 문자열은 필드 경로다. 풀어 놓은 품목의 sku 값을 그룹 키로 쓴다.",
-        kind: "syntax",
-      },
-      {
-        find: "totalQty: { $sum: \"$items.qty\" }",
-        title: "합계 누적",
-        body: "누적 연산자 $sum이 그룹에 속한 문서들의 qty를 모아 더한다. 필드 경로는 그룹 내 각 문서를 가리킨다.",
-        kind: "std",
-      },
-      {
-        find: "$multiply",
-        title: "필드끼리 곱하기",
-        body: "배열로 받은 식들을 곱해 수량×단가 매출을 만든다. 연산자 인자는 값이 아니라 식이라 필드 경로가 그대로 들어간다.",
-        kind: "std",
-      },
-      {
-        find: "{ $sort: { revenue: -1 } }",
-        title: "정렬 단계",
-        body: "-1은 내림차순, 1은 오름차순이다. 큰 집합을 정렬하면 비용이 크므로 앞 단계에서 문서 수를 줄여 둔다.",
-        kind: "std",
-      },
-      {
-        find: "{ $limit: 5 }",
-        title: "상위 자르기",
-        body: "정렬 뒤에 두면 매출 상위 5개가 된다. limit 앞뒤 단계 순서를 바꾸면 의미가 달라진다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "애그리게이션은 단계마다 문서를 바꿔 다음으로 넘긴다 — unwind가 늘리고 group이 접는다.",
-    check: {
-      question: "$match를 마지막 단계로 옮기면 무엇이 달라지는가?",
-      options: [
-        "결과는 같고 실행 순서만 달라진다",
-        "status 조건에 맞지 않는 주문까지 풀고 접은 뒤에 걸러 — 같은 결과를 내더라도 훨씬 많은 문서를 처리한다",
-        "실행이 거부된다 — $match는 반드시 첫 단계여야 한다",
-      ],
-      answer: 1,
-      explain: "파이프라인은 단계 순서대로 문서를 흘린다. $match가 뒤로 가면 거르기 전 문서가 unwind·group까지 모두 통과한다. 결과 집합은 같아도 처리량이 크게 늘고 인덱스로 앞서 걸러 줄 기회도 사라진다.",
-    },
-  },
-  {
-    no: 51,
+    no: 44,
     date: "2026.09.10",
     title: "Prisma로 관계 걸러 불러오기",
     dek: "some 조건으로 사용자를 고르고 include의 where로 함께 실어 온 게시물을 자른다.",
     minutes: 3,
     language: "TypeScript",
     framework: "Prisma",
+    domain: "데이터",
     prompt: "사용자를 거르는 조건과 게시물 목록을 자르는 조건이 어디 나뉘는지 본다",
     code: `// schema.prisma
 model User {
@@ -4654,12 +1640,13 @@ const users = await prisma.user.findMany({
     },
   },
   {
-    no: 50,
+    no: 43,
     date: "2026.09.10",
     title: "GraphQL 스키마와 질의",
     dek: "스키마가 가능한 질문의 모양을 정의하고 쿼리가 필요한 필드만 고른다.",
     minutes: 2,
     language: "GraphQL",
+    domain: "데이터",
     prompt: "서버가 응답으로 돌려줄 필드를 어디서 고르는지 읽어 본다",
     code: `# schema
 type Query {
@@ -4740,12 +1727,13 @@ query {
     },
   },
   {
-    no: 49,
+    no: 42,
     date: "2026.09.10",
     title: "updated_at을 채우는 트리거",
     dek: "BEFORE UPDATE 트리거 함수가 행을 고쳐 저장한다. WHEN 절로 값이 그대로인 행의 발동을 막는다.",
     minutes: 2,
     language: "PL/pgSQL",
+    domain: "데이터",
     prompt: "UPDATE가 값을 하나도 바꾸지 않았을 때 이 트리거가 도는지 읽어 본다",
     code: `CREATE OR REPLACE FUNCTION touch_updated_at()
 RETURNS trigger AS $$
@@ -4823,12 +1811,13 @@ EXECUTE FUNCTION touch_updated_at();`,
     },
   },
   {
-    no: 48,
+    no: 41,
     date: "2026.09.10",
     title: "윈도우 프레임으로 이동합계",
     dek: "PARTITION과 ROWS 프레임으로 상품별 최근 3행 합계를 만든다. 창이 나뉘는 두 층을 본다.",
     minutes: 3,
     language: "SQL",
+    domain: "데이터",
     prompt: "같은 행에서 rolling_sum을 만드는 창이 몇 행인지 세어 본다",
     code: `SELECT
     product,
@@ -4895,12 +1884,13 @@ ORDER BY product, sold_at;`,
     },
   },
   {
-    no: 47,
+    no: 40,
     date: "2026.09.10",
     title: "재귀 CTE로 계층 펼치기",
     dek: "직원-상사 테이블을 한 쿼리로 위에서 아래로 펼친다. 앵커와 재귀 멤버가 번갈아 도는 구조를 본다.",
     minutes: 3,
     language: "SQL",
+    domain: "데이터",
     prompt: "재귀 멤버가 새 행을 만들지 못해 반복이 끝나는 순간이 언제인지 읽어 본다",
     code: `WITH RECURSIVE subordinates AS (
     SELECT id, name, manager_id, 1 AS depth
@@ -4967,181 +1957,13 @@ ORDER BY depth, name;`,
     },
   },
   {
-    no: 46,
-    date: "2026.09.10",
-    title: "목표에 성질 붙이기",
-    dek: "target_* 명령과 PUBLIC·PRIVATE 전파를 읽는다.",
-    minutes: 2,
-    language: "CMake",
-    prompt: "viewer의 컴파일러 옵션과 include 경로는 어디서 오는 걸까, 목표 연결을 따라가 보라.",
-    code: `cmake_minimum_required(VERSION 3.20)
-project(scene CXX)
-
-add_library(engine STATIC src/engine.cpp)
-target_include_directories(engine PUBLIC include)
-target_compile_features(engine PUBLIC cxx_std_17)
-target_compile_options(engine PRIVATE -Wall)
-
-add_executable(viewer src/main.cpp)
-target_link_libraries(viewer PRIVATE engine)
-
-enable_testing()
-add_executable(engine_test tests/engine_test.cpp)
-target_link_libraries(engine_test PRIVATE engine)
-add_test(NAME engine_test COMMAND engine_test)`,
-    annotations: [
-      {
-        find: "add_library(engine STATIC",
-        title: "정적 라이브러리 목표",
-        body: "engine이라는 목표(target)를 만든다. 최신 CMake의 설정 단위는 디렉터리 전역이 아니라 목표다.",
-        kind: "std",
-      },
-      {
-        find: "target_include_directories(engine PUBLIC include)",
-        title: "헤더 경로를 목표에",
-        body: "include 경로를 engine 목표에 붙인다. PUBLIC이므로 engine을 링크하는 쪽에도 이 경로가 전파된다.",
-        kind: "std",
-      },
-      {
-        find: "cxx_std_17",
-        title: "표준 요구 선언",
-        body: "C++17을 요구로 기록한다. 컴파일러별 플래그를 직접 고르는 대신 필요한 표준을 선언한다.",
-        kind: "std",
-      },
-      {
-        find: "PRIVATE -Wall",
-        title: "전파하지 않는 옵션",
-        body: "PRIVATE는 이 목표를 컴파일할 때만 적용된다. 경고 옵션은 사용하는 쪽까지 강제할 필요가 없다.",
-        kind: "syntax",
-      },
-      {
-        find: "target_link_libraries(viewer PRIVATE engine)",
-        title: "목표끼리 연결",
-        body: "viewer가 engine을 링크한다. 링크와 함께 engine의 PUBLIC 성질이 viewer로 흘러 들어온다.",
-        kind: "std",
-      },
-      {
-        find: "enable_testing()",
-        title: "테스트 켜기",
-        body: "이 디렉터리에서 CTest 등록을 활성화한다. add_test가 그 아래에서 유효해진다.",
-        kind: "std",
-      },
-      {
-        find: "add_test(NAME",
-        title: "테스트 등록",
-        body: "ctest가 실행할 테스트 이름과 명령을 등록한다. ctest를 돌리면 이 명령의 종료 코드로 합격을 판정한다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "전역 플래그 대신 목표에 성질을 붙이고, PUBLIC·PRIVATE로 전파 범위를 정한다.",
-    check: {
-      question: "viewer 컴파일 때 engine의 include/ 헤더 경로가 적용되는 경로는?",
-      options: [
-        "engine을 링크하며 engine의 PUBLIC include가 전파된다",
-        "viewer가 자기 target_include_directories를 선언해야만 받는다",
-        "최상위 CMakeLists의 전역 설정이 자동으로 더한다",
-      ],
-      answer: 0,
-      explain: "target_link_libraries로 engine을 가져오면 usage requirements가 함께 온다. include 경로는 PUBLIC이라 전파되고 -Wall은 PRIVATE이라 오지 않는다. 목표 단위 선언이 전파 범위를 결정한다.",
-    },
-  },
-  {
-    no: 45,
-    date: "2026.09.10",
-    title: "규칙 하나로 오브젝트 전부",
-    dek: "패턴 규칙과 자동 변수를 읽는다.",
-    minutes: 2,
-    language: "Make",
-    prompt: "새 .c 파일이 생기면 Makefile 어디를 고쳐야 할까, 규칙을 추적해 보라.",
-    code: `CC := cc
-CFLAGS := -O2 -Wall
-
-BUILD := build
-SRCS := $(wildcard src/*.c)
-OBJS := $(SRCS:src/%.c=build/%.o)
-
-build/%.o: src/%.c | $(BUILD)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD):
-	mkdir -p $@
-
-app: $(OBJS)
-	$(CC) $^ -o $@
-
-.PHONY: app clean
-
-clean:
-	rm -rf $(BUILD)`,
-    annotations: [
-      {
-        find: "SRCS := $(wildcard src/*.c)",
-        title: "와일드카드 수집",
-        body: "wildcard 함수가 패턴에 맞는 파일 목록을 빌드 때마다 다시 모은다. 파일을 추가해도 변수를 고칠 필요가 없다.",
-        kind: "std",
-      },
-      {
-        find: "$(SRCS:src/%.c=build/%.o)",
-        title: "치환 참조",
-        body: "변수 값의 각 항목에서 src/%.c 부분을 build/%.o로 바꿔 새 목록을 만든다. 소스 목록을 오브젝트 목록으로 뒤집는 관용구다.",
-        kind: "syntax",
-      },
-      {
-        find: "build/%.o: src/%.c",
-        title: "패턴 규칙",
-        body: "%는 파일 이름 조각에 대한 자리다. 규칙 하나로 모든 .c 파일의 빌드 방법을 정의한다.",
-        kind: "syntax",
-      },
-      {
-        find: "| $(BUILD)",
-        title: "순서만 보장하는 전제",
-        body: "| 뒤의 주문 전용(order-only) 선행조건은 존재 여부만 확인한다. 디렉터리 타임스탬프가 바뀌어도 오브젝트를 다시 빌드하지 않는다.",
-        kind: "syntax",
-      },
-      {
-        find: "$<",
-        title: "첫 선행조건",
-        body: "자동 변수 $<는 콜론 오른쪽 첫 항목, 이 규칙에선 src/%.c 파일을 가리킨다.",
-        kind: "syntax",
-      },
-      {
-        find: "$@",
-        title: "목표 파일",
-        body: "자동 변수 $@는 이 규칙이 만들 대상 이름이다. build/foo.o 규칙에서는 그 경로 자체가 된다.",
-        kind: "syntax",
-      },
-      {
-        find: "$^",
-        title: "모든 선행조건",
-        body: "선행조건 전체를 공백으로 이어 붙여 링커에 넘긴다. 목표와 오브젝트 목록을 두 번 쓰지 않게 한다.",
-        kind: "syntax",
-      },
-      {
-        find: ".PHONY: app clean",
-        title: "파일이 아닌 목표",
-        body: "app과 clean은 파일이 아니라 동작 이름이다. phony로 선언하면 같은 이름의 파일이 있어도 항상 레시피가 실행된다.",
-        kind: "idiom",
-      },
-    ],
-    takeaway: "패턴 규칙과 자동 변수는 파일마다 반복되는 레시피를 규칙 하나로 줄인다.",
-    check: {
-      question: "src/util.c를 새로 추가하면 빌드는?",
-      options: [
-        "OBJS 변수에 직접 한 줄을 더해야 반영된다",
-        "wildcard와 치환 참조가 build/util.o를 목록에 자동으로 넣는다",
-        "app 규칙은 변하지 않으므로 무시된다",
-      ],
-      answer: 1,
-      explain: "SRCS는 wildcard가 빌드 때마다 파일 목록을 다시 모으고 OBJS는 치환 참조로 따라간다. 패턴 규칙이 build/util.o의 레시피를 제공한다. Makefile을 고칠 필요가 없다.",
-    },
-  },
-  {
-    no: 44,
+    no: 39,
     date: "2026.09.10",
     title: "어떻게 끝나도 청소되게",
     dek: "trap과 프로세스 치환으로 임시 자원을 다룬다.",
     minutes: 3,
     language: "Bash",
+    domain: "시스템",
     prompt: "스크립트가 중간에 죽어도 임시 디렉터리가 남지 않는 이유를 찾아 보라.",
     code: `#!/usr/bin/env bash
 set -euo pipefail
@@ -5214,77 +2036,13 @@ echo "scanned $(wc -l < "$tmpdir/hits.txt") lines of hits"`,
     },
   },
   {
-    no: 43,
-    date: "2026.09.10",
-    title: "해제는 할당 바로 아래에",
-    dek: "defer와 에러 유니온으로 실패 경로를 정리한다.",
-    minutes: 3,
-    language: "Zig",
-    prompt: "함수가 여러 지점에서 실패할 때 메모리는 누수되지 않을까, defer 위치에 주목하라.",
-    code: "const std = @import(\"std\");\n\nfn loadLimit(alloc: std.mem.Allocator, text: []const u8) !u16 {\n    const copy = try alloc.dupe(u8, text);\n    defer alloc.free(copy);\n\n    const limit = try std.fmt.parseInt(u16, copy, 10);\n    if (limit < 1024) return error.PrivilegedPort;\n    return limit;\n}\n\npub fn main() !void {\n    const alloc = std.heap.page_allocator;\n    const limit = loadLimit(alloc, \"8080\") catch |err| switch (err) {\n        error.PrivilegedPort => 3000,\n        else => return err,\n    };\n    std.debug.print(\"limit={d}\\n\", .{limit});\n}",
-    annotations: [
-      {
-        find: "!u16",
-        title: "에러 유니온 반환",
-        body: "!는 u16이거나 에러 집합이라는 뜻이다. 예외 대신 실패가 반환 타입에 적혀 있어 호출부가 실패를 무시하기 어렵다.",
-        kind: "syntax",
-      },
-      {
-        find: "try alloc.dupe(u8, text)",
-        title: "try로 오류 전파",
-        body: "dupe는 실패할 수 있는 함수다. try는 에러면 그대로 되돌리고 성공이면 값을 꺼내는 catch의 축약이다.",
-        kind: "syntax",
-      },
-      {
-        find: "defer alloc.free(copy);",
-        title: "스코프 끝에서 해제",
-        body: "defer는 현재 스코프를 벗어나는 모든 경로에서 실행된다. 에러로 중간 반환해도 해제가 보장되어 뒷정리 코드가 흩어지지 않는다.",
-        kind: "concept",
-      },
-      {
-        find: "return error.PrivilegedPort;",
-        title: "에러 값 반환",
-        body: "error.이름은 컴파일 타임에 에러 집합에 추가되는 값이다. 함수는 실패를 예외가 아니라 값으로 돌려준다.",
-        kind: "concept",
-      },
-      {
-        find: "catch |err| switch (err)",
-        title: "에러별 분기",
-        body: "catch로 에러를 잡아 err 이름을 붙이고 switch로 취급을 나눈다. 어떤 에러는 기본값으로, 어떤 에러는 위로 넘긴다.",
-        kind: "idiom",
-      },
-      {
-        find: "error.PrivilegedPort => 3000,",
-        title: "기본값으로 대체",
-        body: "1024 미만 포트는 특권이 필요하다는 실패를 3000으로 대체해 계속 진행한다. 정책을 호출부에 두는 모양이다.",
-        kind: "idiom",
-      },
-      {
-        find: "std.debug.print",
-        title: "디버그 출력",
-        body: "stderr로 형식 출력을 내보낸다. {d}가 정수 자리를 대신한다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "defer가 해제를 할당 옆에 붙여두고, 에러 유니온이 실패를 반환값으로 만든다.",
-    check: {
-      question: "parseInt가 실패해 함수를 중간에 빠져나가면 copy는?",
-      options: [
-        "성공 경로에서만 free되므로 누수된다",
-        "defer 덕에 실패 경로에서도 free된다",
-        "Zig에는 GC가 있어 자동 회수된다",
-      ],
-      answer: 1,
-      explain: "defer는 스코프를 벗어나는 모든 경로에서 실행된다. 에러 반환도 경로의 하나라 해제가 보장된다. 할당 바로 아래 해제를 두는 습관이 실패 경로를 단순하게 만든다.",
-    },
-  },
-  {
-    no: 42,
+    no: 38,
     date: "2026.09.10",
     title: "지우기 전에 모아 두기",
     dek: "erase-remove 관용구와 반복자 범위를 읽는다.",
     minutes: 3,
     language: "C++",
+    domain: "시스템",
     prompt: "remove_if가 돌려주는 반복자는 어디를 가리킬까, 그 뒤의 erase와 이어서 읽어 보라.",
     code: `#include <algorithm>
 #include <numeric>
@@ -5357,12 +2115,13 @@ int adjustedTotal(std::vector<int> loads, int capacity) {
     },
   },
   {
-    no: 41,
+    no: 37,
     date: "2026.09.10",
     title: "파일 핸들을 소유하는 클래스",
     dek: "복사는 지우고 이동으로 소유권을 넘긴다.",
     minutes: 3,
     language: "C++",
+    domain: "시스템",
     prompt: "복사를 막아둔 클래스를 대입하면 무슨 일이 일어날까, 이동의 흐름을 따라 읽어 보라.",
     code: `#include <cstdio>
 #include <utility>
@@ -5443,12 +2202,13 @@ private:
     },
   },
   {
-    no: 40,
+    no: 36,
     date: "2026.09.10",
     title: "파일 한 줄씩 읽어 세기",
     dek: "fgets와 strtol로 텍스트 파일을 처리한다.",
     minutes: 2,
     language: "C",
+    domain: "시스템",
     prompt: "열기·읽기·닫기 각 단계에서 실패를 어떻게 알아채는지 추적해 보라.",
     code: "#include <stdio.h>\n\nint count_large(FILE *fp, long limit) {\n    char line[256];\n    int hits = 0;\n    while (fgets(line, sizeof line, fp) != NULL) {\n        long value = strtol(line, NULL, 10);\n        if (value > limit) hits++;\n    }\n    return hits;\n}\n\nint main(void) {\n    FILE *fp = fopen(\"samples.txt\", \"r\");\n    if (fp == NULL) {\n        perror(\"samples.txt\");\n        return 1;\n    }\n    int hits = count_large(fp, 100);\n    fclose(fp);\n    printf(\"%d hits\\n\", hits);\n}",
     annotations: [
@@ -5508,12 +2268,13 @@ private:
     },
   },
   {
-    no: 39,
+    no: 35,
     date: "2026.09.10",
     title: "노드를 머리에 끼우기",
     dek: "malloc과 이중 포인터로 리스트 앞단을 고친다.",
     minutes: 2,
     language: "C",
+    domain: "시스템",
     prompt: "head를 왜 포인터의 포인터로 받았을까, 호출자 쪽 변수와 함께 읽어 보라.",
     code: `#include <stdlib.h>
 #include <string.h>
@@ -5594,13 +2355,14 @@ void push_front(Node **head, const char *name) {
     },
   },
   {
-    no: 38,
+    no: 34,
     date: "2026.09.10",
     title: "작업 띄워 결과 받기",
     dek: "tokio spawn과 mpsc 채널로 비동기 흐름을 읽는다.",
     minutes: 3,
     language: "Rust",
     framework: "tokio",
+    domain: "시스템",
     prompt: "수신 루프는 언제 끝날까 — 채널이 닫히는 시점에 주목해 읽어 보라.",
     code: `use std::time::Duration;
 use tokio::sync::mpsc;
@@ -5677,12 +2439,13 @@ async fn main() {
     },
   },
   {
-    no: 37,
+    no: 33,
     date: "2026.09.10",
     title: "두 슬라이스 중 긴 쪽",
     dek: "라이프타임 매개변수로 빌린 값의 관계를 표기한다.",
     minutes: 3,
     language: "Rust",
+    domain: "시스템",
     prompt: "반환 참조는 두 입력 중 누구의 수명을 따르게 될까, 표기만 보고 예상해 보라.",
     code: `fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
     if x.len() >= y.len() {
@@ -5759,13 +2522,14 @@ fn main() {
     },
   },
   {
-    no: 36,
+    no: 32,
     date: "2026.09.10",
     title: "기다림은 단언이 한다",
     dek: "sleep 없이 로그인 플로우를 검사한다. locator와 웹 우선 단언의 기다림을 본다.",
     minutes: 2,
     language: "TypeScript",
     framework: "Playwright",
+    domain: "프론트엔드",
     prompt: "이 테스트에는 sleep이 없다 — 대신 무엇이 기다리는가",
     code: `import { test, expect } from "@playwright/test";
 
@@ -5841,13 +2605,14 @@ test("로그인하면 대시보드로 넘어간다", async ({ page }) => {
     },
   },
   {
-    no: 35,
+    no: 31,
     date: "2026.09.10",
     title: "queryKey가 캐시다",
     dek: "할 일 추가 뒤 목록을 다시 읽게 만든다. queryKey와 무효화의 관계를 본다.",
     minutes: 3,
     language: "TypeScript",
     framework: "TanStack Query",
+    domain: "프론트엔드",
     prompt: "할 일이 추가된 뒤 목록 캐시는 어떻게 다시 읽히는가",
     code: `import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -5919,13 +2684,14 @@ export function useAddTodo() {
     },
   },
   {
-    no: 34,
+    no: 30,
     date: "2026.09.10",
     title: "버퍼로 파일 머리 검사하기",
     dek: "파일 앞머리의 바이트를 검사한다. Buffer의 비교·자르기·잇기를 본다.",
     minutes: 2,
     language: "JavaScript",
     framework: "Node.js",
+    domain: "백엔드",
     prompt: "head는 원본 버퍼와 무엇을 공유하는가",
     code: "import { readFile, writeFile, stat } from \"node:fs/promises\";\n\nconst marker = Buffer.from([0xff, 0xd8, 0xff]); // JPEG 시그니처\n\nconst info = await stat(\"sample.bin\");\nconst head = (await readFile(\"sample.bin\")).subarray(0, marker.length);\n\nif (!head.equals(marker)) {\n  const note = Buffer.from(\"not a jpeg: \" + head.toString(\"hex\") + \"\\n\");\n  await writeFile(\"sample.report\", Buffer.concat([note, head]));\n  process.exit(1);\n}\n\nconsole.log(info.size, \"바이트 — JPEG 맞다\");",
     annotations: [
@@ -5985,13 +2751,14 @@ export function useAddTodo() {
     },
   },
   {
-    no: 33,
+    no: 29,
     date: "2026.09.10",
     title: "파이프라인으로 파일 복사하기",
     dek: "파일을 조각으로 읽어 세면서 복사한다. Transform과 pipeline의 역할 분담을 본다.",
     minutes: 3,
     language: "JavaScript",
     framework: "Node.js",
+    domain: "백엔드",
     prompt: "복사 도중에 오류가 나면 누가 무엇을 정리하는가",
     code: `import { createReadStream, createWriteStream } from "node:fs";
 import { Transform } from "node:stream";
@@ -6072,13 +2839,14 @@ console.log("복사가 끝났다");`,
     },
   },
   {
-    no: 32,
+    no: 28,
     date: "2026.09.10",
     title: "검색창 하나로 보는 연산자 체인",
     dek: "입력창 하나에 debounceTime부터 switchMap까지. 체인의 순서가 만드는 동작을 본다.",
     minutes: 3,
     language: "TypeScript",
     framework: "RxJS",
+    domain: "프론트엔드",
     prompt: "타이핑이 이어지는 동안 search는 몇 번 불리는가",
     code: `import {
   fromEvent, of,
@@ -6159,13 +2927,14 @@ fromEvent(input, "input")
     },
   },
   {
-    no: 31,
+    no: 27,
     date: "2026.09.10",
     title: "서버 컴포넌트와 캐시 태그",
     dek: "서버에서 데이터를 읽어 그리는 페이지. fetch 캐시 옵션과 태그 무효화가 만나는 지점을 본다.",
     minutes: 3,
     language: "TypeScript",
     framework: "Next.js",
+    domain: "프론트엔드",
     prompt: "다시 읽기 버튼을 누르면 방문자 숫자는 언제 새 값으로 바뀌는가",
     code: `import { revalidateTag } from "next/cache";
 
@@ -6240,13 +3009,14 @@ export default async function Dashboard() {
     },
   },
   {
-    no: 30,
+    no: 26,
     date: "2026.09.10",
     title: "스토어와 달러 자동 구독",
     dek: "할 일 목록을 스토어로. writable·derived와 마크업의 $ 자동 구독을 본다.",
     minutes: 3,
     language: "JavaScript",
     framework: "Svelte",
+    domain: "프론트엔드",
     prompt: "$remaining의 달러는 무엇을 하고, derived의 $todos는 무엇인가",
     code: `<script>
   import { writable, derived } from "svelte/store";
@@ -6327,13 +3097,14 @@ export default async function Dashboard() {
     },
   },
   {
-    no: 29,
+    no: 25,
     date: "2026.09.10",
     title: "ref·computed·watch의 역할 나누기",
     dek: "채팅 메시지를 불러와 거르는 컴포넌트. ref·computed·watch·onMounted가 각자 맡는 구간을 본다.",
     minutes: 3,
     language: "JavaScript",
     framework: "Vue 3",
+    domain: "프론트엔드",
     prompt: "filter 입력이 바뀌면 visible은 언제 다시 계산되는가",
     code: `<script setup>
 import { ref, computed, watch, onMounted } from "vue";
@@ -6414,13 +3185,14 @@ onMounted(async () => {
     },
   },
   {
-    no: 28,
+    no: 24,
     date: "2026.09.10",
     title: "커스텀 훅의 메모이제이션 경계",
     dek: "검색 필터 훅. useMemo와 useCallback이 무엇을 사고 무엇을 사지 않는지 본다.",
     minutes: 3,
     language: "TypeScript",
     framework: "React",
+    domain: "프론트엔드",
     prompt: "matches와 reload는 각각 언제 새로 만들어지는가",
     code: `function useUserSearch(initial: User[]) {
   const [users, setUsers] = useState(initial);
@@ -6497,12 +3269,13 @@ onMounted(async () => {
     },
   },
   {
-    no: 27,
+    no: 23,
     date: "2026.09.10",
     title: "유틸리티 타입으로 입력 좁히기",
     dek: "일부 필드만 바꾸는 초안 타입과 키를 따라가는 제네릭 함수. 유틸리티 타입을 겹쳐 쓰고 매개변수를 제약하는 모양을 본다.",
     minutes: 3,
     language: "TypeScript",
+    domain: "프론트엔드",
     prompt: "draft에 done을 넘기지 않으면 무엇이 남는지, pluck의 반환 타입은 어디서 정해지는지 따라 읽어 보라",
     code: `type Task = {
   id: string;
@@ -6583,13 +3356,14 @@ const titles = pluck(Object.values(tasks), "title");`,
     },
   },
   {
-    no: 26,
+    no: 22,
     date: "2026.09.10",
     title: "픽스처 주입, 사례 복제",
     dek: "장바구니 합계 테스트에 준비물 주입과 사례 복제를 붙인다. 테스트 함수 하나가 여러 번 돌아가는 구조를 본다.",
     minutes: 3,
     language: "Python",
     framework: "pytest",
+    domain: "백엔드",
     prompt: "이 테스트 함수는 실제로 몇 번 실행되는가",
     code: `import pytest
 
@@ -6670,13 +3444,14 @@ def test_empty(cart):
     },
   },
   {
-    no: 25,
+    no: 21,
     date: "2026.09.10",
     title: "세션이 지켜보는 동안",
     dek: "유료 주문 다섯 건을 관계까지 한 번에 읽고 상태를 바꾼다. 질의가 나가는 시점과 커밋의 역할을 본다.",
     minutes: 3,
     language: "Python",
     framework: "SQLAlchemy",
+    domain: "백엔드",
     prompt: "order.items를 읽는 순간에도 질의가 또 나갈까",
     code: `from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, joinedload
@@ -6756,13 +3531,14 @@ with Session(engine) as session:
     },
   },
   {
-    no: 24,
+    no: 20,
     date: "2026.09.10",
     title: "loc로 고르고 체인으로 접기",
     dek: "판매 표에서 4월 행을 골라 도시별 집계표를 만든다. loc와 iloc가 고르는 기준, 체인이 원본을 안 건드리는 이유를 본다.",
     minutes: 3,
     language: "Python",
     framework: "pandas",
+    domain: "데이터",
     prompt: "loc 괄호 안의 비교식은 무엇을 돌려주는가",
     code: `import pandas as pd
 
@@ -6839,13 +3615,14 @@ print(report)`,
     },
   },
   {
-    no: 23,
+    no: 19,
     date: "2026.09.10",
     title: "무한 수열을 잘라 쓰는 사슬",
     dek: "lru_cache로 재귀를 살리고 count와 takewhile로 무한 수열을 잘라 쓴다. 값이 만들어지는 시점이 필요해지는 시점임을 본다.",
     minutes: 2,
     language: "Python",
     framework: "functools·itertools",
+    domain: "백엔드",
     prompt: "list()를 지우면 무한 루프에 빠지는가",
     code: `from functools import lru_cache
 from itertools import count, takewhile
@@ -6919,13 +3696,14 @@ print(len(limited), fib(90))`,
     },
   },
   {
-    no: 22,
+    no: 18,
     date: "2026.09.10",
     title: "모델 선언이 곧 입력 규격",
     dek: "가입 폼 딕셔너리를 검증 모델에 통과시킨다. 타입 변환·범위·정규식·커스텀 검증기가 한 번에 돈다.",
     minutes: 3,
     language: "Python",
     framework: "pydantic",
+    domain: "백엔드",
     prompt: "문자열로 온 나이는 어느 시점에 숫자가 되는가",
     code: "from pydantic import BaseModel, Field, ValidationError, field_validator\n\nclass SignupForm(BaseModel):\n    email: str = Field(pattern=r\"^[^@\\s]+@[^@\\s]+$\")\n    age: int = Field(ge=14, le=120)\n    nickname: str = Field(min_length=2, max_length=20)\n    marketing: bool = False\n\n    @field_validator(\"nickname\")\n    @classmethod\n    def strip_spaces(cls, v: str) -> str:\n        return v.strip()\n\nraw = {\"email\": \"mina@example.com\", \"age\": \"19\", \"nickname\": \"  민아  \"}\n\ntry:\n    form = SignupForm.model_validate(raw)\n    print(form.nickname, form.age, form.marketing)\nexcept ValidationError as e:\n    print(e.errors())",
     annotations: [
@@ -6985,13 +3763,14 @@ print(len(limited), fib(90))`,
     },
   },
   {
-    no: 21,
+    no: 17,
     date: "2026.09.10",
     title: "코루틴을 겹쳐 돌리기",
     dek: "느린 작업 두 개를 태스크로 만들어 한 번에 기다린다. 만드는 순간 돌기 시작하는 시점과 실패가 섞일 때를 본다.",
     minutes: 2,
     language: "Python",
     framework: "asyncio",
+    domain: "백엔드",
     prompt: "작업 하나가 실패하면 나머지 결과는 어떻게 되는가",
     code: `import asyncio
 
@@ -7069,13 +3848,14 @@ asyncio.run(main())`,
     },
   },
   {
-    no: 20,
+    no: 16,
     date: "2026.09.10",
     title: "의존성 주입으로 검증 분리",
     dek: "페이지 인자와 API 키 검사를 함수로 떼어 내 주입한다. 뷰 시그니처가 곧 요청 규격이 되는 구조를 본다.",
     minutes: 3,
     language: "Python",
     framework: "FastAPI",
+    domain: "백엔드",
     prompt: "size=150 요청은 뷰 본문까지 도달할까",
     code: `from fastapi import Depends, FastAPI, Header, HTTPException, Query
 
@@ -7158,13 +3938,14 @@ async def list_articles(
     },
   },
   {
-    no: 19,
+    no: 15,
     date: "2026.09.10",
     title: "블루프린트와 요청 컨텍스트",
     dek: "주문 라우트를 블루프린트로 묶고 요청마다 장바구니를 준비한다. request와 g가 전역처럼 보이는 이유를 본다.",
     minutes: 3,
     language: "Python",
     framework: "Flask",
+    domain: "백엔드",
     prompt: "request와 g는 진짜 전역 변수일까",
     code: `from flask import Blueprint, abort, current_app, g, jsonify, request
 
@@ -7251,13 +4032,14 @@ def order_detail(order_id):
     },
   },
   {
-    no: 18,
+    no: 14,
     date: "2026.09.10",
     title: "게으른 QuerySet 체인",
     dek: "예약 목록을 조건 걸어 상위 10건을 뽑는다. 체인이 길어도 데이터베이스에 나가는 질의는 마지막 한 번이다.",
     minutes: 3,
     language: "Python",
     framework: "Django",
+    domain: "백엔드",
     prompt: "이 함수에서 SQL이 실제로 나가는 문장은 어디인가",
     code: `from django.db.models import Count, Q
 
@@ -7333,12 +4115,13 @@ def busy_bookings(week):
     },
   },
   {
-    no: 17,
+    no: 13,
     date: "2026.09.10",
     title: "컴프리헨션으로 걸러 모으기",
     dek: "접근 로그에서 느린 요청만 걸러 낸다. 리스트·셋·제너레이터 세 형태의 축약 문법이 한 함수에 나란히 온다.",
     minutes: 2,
     language: "Python",
+    domain: "백엔드",
     prompt: "sum의 인자에서 대괄호를 빼면 무엇이 달라지는가",
     code: `def parse_access_log(path, slow_ms):
     entries = []
@@ -7412,273 +4195,13 @@ def busy_bookings(week):
     },
   },
   {
-    no: 16,
-    date: "2026.09.10",
-    title: "크리스털의 널 가능 타입",
-    dek: "Nil이 섞인 반환 타입과 if가 타입을 좁히는 지점을 본다.",
-    minutes: 3,
-    language: "Crystal",
-    prompt: "entry는 널일 수도 있다 — 널이 아님이 보장되는 범위는 어디까지일까",
-    code: `record Entry, name : String, views : Int32
-
-def find_entry(entries : Array(Entry), name : String) : Entry?
-  entries.find { |e| e.name == name }
-end
-
-def total_views(entries : Array(Entry)) : Int32
-  entries.sum(&.views)
-end
-
-list = [Entry.new("home", 900), Entry.new("about", 40), Entry.new("links", 260)]
-
-if (entry = find_entry(list, "links"))
-  puts "#{entry.name}: #{entry.views}"
-else
-  puts "no such entry"
-end
-
-puts "total: #{total_views(list)}"`,
-    annotations: [
-      {
-        find: "record Entry,",
-        title: "record 매크로",
-        body: "값을 담는 구조체와 생성자, 읽기 메서드를 한 줄로 만드는 매크로다. 컴파일 때 코드가 생성되고 타입이 자리별로 고정된다.",
-        kind: "std",
-      },
-      {
-        find: ": Entry?",
-        title: "널 가능 반환 타입",
-        body: "Entry?는 Entry | Nil의 줄임 표기다. 찾지 못하면 널을 돌려준다는 사실이 시그니처에 적히므로 호출부는 널을 반드시 다뤄야 한다.",
-        kind: "syntax",
-      },
-      {
-        find: "entries.find { |e| e.name == name }",
-        title: "첫 일치 찾기",
-        body: "블록이 참이 되는 첫 원소를 돌려주고, 없으면 널을 돌려준다. 반환 타입이 Entry?인 이유다.",
-        kind: "std",
-      },
-      {
-        find: "entries.sum(&.views)",
-        title: "속성 합산",
-        body: "&.views는 블록 {|e| e.views}의 축약이다. 각 원소에서 값을 뽑아 모두 더한다.",
-        kind: "std",
-      },
-      {
-        find: "Entry.new(\"home\", 900)",
-        title: "구조체 생성",
-        body: "record가 만든 생성자에 자리 순서대로 값을 넣는다. 인자 타입이 맞지 않으면 실행 전인 컴파일에서 걸린다.",
-        kind: "syntax",
-      },
-      {
-        find: "if (entry = find_entry(list, \"links\"))",
-        title: "조건 안의 대입",
-        body: "조회 결과를 조건 안에서 변수에 담는다. 값이 널이 아니어서 참일 때만 본문이 돌고, 그 안에서 entry는 널 아닌 Entry로 취급된다.",
-        kind: "idiom",
-      },
-      {
-        find: "\"#{entry.name}: #{entry.views}\"",
-        title: "문자열 보간",
-        body: "#{} 안의 식을 평가해 자리에 끼워 넣는다. 여기까지 왔다는 건 entry가 널이 아니라는 뜻이므로 필드 읽기가 안전하다.",
-        kind: "syntax",
-      },
-    ],
-    takeaway: "널 가능성은 실행 때가 아니라 컴파일 때 걸린다 — if가 타입을 좁혀 준다.",
-    check: {
-      question: "if 본문이 끝난 뒤 그 아래에서 entry.views를 또 쓰면 어떻게 되는가?",
-      options: [
-        "0이 나온다",
-        "그 스코프에서 entry는 다시 Entry | Nil이라 컴파일이 막는다",
-        "널일 경우 실행 때 예외가 난다",
-      ],
-      answer: 1,
-      explain: "타입 좁히기는 참인 본문 안에서만 유지된다. 밖으로 나오면 entry는 다시 널 가능 타입이라 널일 수 있는 값에 필드를 읽는 코드는 컴파일되지 않는다. 실행 시점이 아니라 컴파일 시점에 널 접근이 걸러진다.",
-    },
-  },
-  {
-    no: 15,
-    date: "2026.09.10",
-    title: "파이프로 흐르는 데이터",
-    dek: "필터·정렬·자르기를 파이프로 잇고, render는 패턴으로 두 절로 갈라진다.",
-    minutes: 3,
-    language: "Elixir",
-    prompt: "render는 절이 두 개다 — 빈 목록이 흘러 들어오면 어느 쪽이 도는가, 무엇이 그렇게 고르는가",
-    code: `defmodule Leaderboard do
-  def top(entries, limit) do
-    entries
-    |> Enum.filter(fn {_name, score} -> score >= 60 end)
-    |> Enum.sort(:desc)
-    |> Enum.take(limit)
-    |> render()
-  end
-
-  defp render([]), do: "조건을 통과한 항목이 없다"
-
-  defp render(entries) do
-    total = entries |> Enum.map(fn {_name, score} -> score end) |> Enum.sum()
-    "count=#{length(entries)} total=#{total}"
-  end
-end`,
-    annotations: [
-      {
-        find: "defmodule Leaderboard do",
-        title: "모듈 정의",
-        body: "관련 함수를 하나의 이름공간으로 묶는다. 엘릭서는 클래스가 없고 모듈 안의 함수들로 구조를 만든다.",
-        kind: "syntax",
-      },
-      {
-        find: "|>",
-        title: "파이프 연산자",
-        body: "왼쪽 식의 결과를 오른쪽 함수의 첫 번째 인자로 넘긴다. entries |> Enum.take(limit)는 Enum.take(entries, limit)와 같은 뜻이라 변환 사슬이 읽기 좋게 늘어선다.",
-        kind: "concept",
-        all: true,
-      },
-      {
-        find: "fn {_name, score} -> score >= 60 end",
-        title: "익명 함수",
-        body: "fn ... end는 익명 함수다. 인자 자리의 {_name, score}가 튜플을 두 이름으로 풀어 주고, 언더스코어는 쓰지 않는 이름의 관용 표기다.",
-        kind: "syntax",
-      },
-      {
-        find: "Enum.sort(:desc)",
-        title: "내림차순 정렬",
-        body: "기본 순서의 반대로 정렬한다. 튜플 목록은 첫 원소부터 차례로 비교하므로 같은 점수에서는 이름이 갈린다.",
-        kind: "std",
-      },
-      {
-        find: "Enum.take(limit)",
-        title: "앞에서 자르기",
-        body: "정렬이 끝난 목록의 앞 n개만 남긴다. 파이프 덕에 단계가 늘어도 인자 나열이 아니라 줄 하나가 추가될 뿐이다.",
-        kind: "std",
-      },
-      {
-        find: "defp render([])",
-        title: "빈 목록 절",
-        body: "빈 리스트 리터럴 []를 인자 패턴으로 받는 절이다. 비었는지 if로 묻는 대신, 비어 있을 때 호출될 함수를 따로 두는 셈이다.",
-        kind: "idiom",
-      },
-      {
-        find: "defp render(entries) do",
-        title: "다중 절 함수",
-        body: "같은 이름의 함수가 절 여럿으로 정의될 수 있다. 호출 시 위에서부터 패턴이 맞는 절이 실행된다 — render는 빈 목록과 나머지를 나눠 받는다.",
-        kind: "concept",
-      },
-      {
-        find: "Enum.sum()",
-        title: "집계",
-        body: "사슬 끝에서 점수들을 모두 더한다. map으로 뽑아낸 수 목록을 한 값으로 접는 자리다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "파이프는 왼쪽 결과를 오른쪽 첫 인자로 넘기고, 함수 절은 맞는 패턴이 받는다.",
-    check: {
-      question: "빈 목록이 top에 들어오면 render의 어느 절이 실행되는가, 그리고 그렇게 고르는 기준은 무엇인가?",
-      options: [
-        "본문의 if가 빈 목록을 검사해 고른다",
-        "위에서부터 인자 패턴이 맞는 절 — []가 맞는 첫 절이 실행된다",
-        "컴파일러가 호출 횟수를 세어 고른다",
-      ],
-      answer: 1,
-      explain: "엘릭서의 함수 절은 위에서부터 패턴 대조를 하고 처음 맞는 절이 실행된다. []는 빈 목록과만 맞고 entries는 어떤 목록이든 받으므로 빈 목록은 첫 절에서 끝난다. 조건문 대신 패턴으로 갈라 놓는 것이 이 언어의 기본형이다.",
-    },
-  },
-  {
-    no: 14,
-    date: "2026.09.10",
-    title: "그레이들 빌드 스크립트 읽기",
-    dek: "플러그인·의존성 구성·작업 등록이 나온 build.gradle. 설정 단계와 실행 단계가 갈리는 지점을 본다.",
-    minutes: 3,
-    language: "Groovy",
-    framework: "Gradle",
-    prompt: "println은 printProps를 실행할 때만 찍힐까, 어떤 빌드를 돌려도 찍힐까",
-    code: `plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.2.0'
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
-}
-
-tasks.register('printProps') {
-    group = 'verification'
-    doLast {
-        println 'main class: ' + project.findProperty('mainClass')
-    }
-}`,
-    annotations: [
-      {
-        find: "plugins {",
-        title: "플러그인 블록",
-        body: "빌드에 기능을 얹는 플러그인을 선언하는 자리다. 여기에 넣은 플러그인은 스크립트의 나머지보다 먼저 적용되어 java 같은 의존성 구성을 만들어 준다.",
-        kind: "concept",
-      },
-      {
-        find: "id 'org.springframework.boot' version '3.2.0'",
-        title: "버전 있는 플러그인",
-        body: "플러그인 포털에서 이름과 버전으로 가져온다. 버전을 여기서 한 번 고정하면 스크립트 다른 곳에서 다시 적용할 필요가 없다.",
-        kind: "std",
-      },
-      {
-        find: "repositories {",
-        title: "저장소 선언",
-        body: "의존성을 어디서 내려받을지 정한다. mavenCentral은 널리 쓰는 공개 저장소다. 라이브러리를 찾는 순서가 여기서 결정된다.",
-        kind: "std",
-      },
-      {
-        find: "implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'",
-        title: "구성과 좌표",
-        body: "구성(implementation)은 의존성을 어디까지 노출할지, 좌표는 그룹:이름:버전을 뜻한다. implementation은 이 빌드를 라이브러리로 쓰는 쪽에 컴파일 의존성을 노출하지 않는다.",
-        kind: "std",
-      },
-      {
-        find: "testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'",
-        title: "검사 전용 구성",
-        body: "테스트 컴파일·실행에만 쓰이는 의존성 구성이다. 운영 코드에서는 보이지 않으니 산출물 크기와 노출이 줄어든다.",
-        kind: "std",
-      },
-      {
-        find: "tasks.register('printProps')",
-        title: "작업 등록",
-        body: "printProps라는 이름의 작업을 만든다. register는 지금 이름만 걸어 두고, 이 작업이 실행될 때가 되어야 본문을 만드는 게으른 등록이다.",
-        kind: "std",
-      },
-      {
-        find: "doLast {",
-        title: "실행 단계 액션",
-        body: "doLast 안은 이 작업이 실제로 실행될 때 돈다. 블록 밖의 코드는 빌드와 무관하게 설정 단계에서 전부 평가되므로 위치가 곧 시점이다.",
-        kind: "concept",
-      },
-      {
-        find: "project.findProperty('mainClass')",
-        title: "프로퍼티 조회",
-        body: "gradle.properties나 -P로 넘긴 값을 이름으로 찾는다. 없으면 널을 돌려주므로 기본값 로직을 곁들이기 좋다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "스크립트에서 어디에 쓰는지가 언제 도는지를 정한다 — 본문은 설정 단계, doLast는 실행 단계.",
-    check: {
-      question: "println을 doLast 밖 — 작업 본문 바로 아래 — 에 두면 언제 찍히는가?",
-      options: [
-        "printProps를 실행할 때만 찍힌다",
-        "빌드 설정 단계에 매번 찍힌다 — 어떤 작업을 돌려도",
-        "mainClass 프로퍼티가 있을 때만 찍힌다",
-      ],
-      answer: 1,
-      explain: "Gradle은 어떤 작업을 실행하든 먼저 모든 스크립트를 설정 단계에서 평가한다. 본문에 바로 둔 println은 그 시점에 찍히고, doLast에 두면 printProps가 실행될 때만 찍힌다. 느린 로직이 설정 단계에 있으면 필요 없는 빌드까지 느려진다.",
-    },
-  },
-  {
-    no: 13,
+    no: 12,
     date: "2026.09.10",
     title: "널일 수도 있는 값에 이름 붙이기",
     dek: "널 가능 수신자의 확장 함수와 안전 호출 사슬. 컴파일러가 널을 좁혀 주는 지점을 본다.",
     minutes: 3,
     language: "Kotlin",
+    domain: "백엔드",
     prompt: "nickname이 널인 회원의 자리에는 무엇이 표시될까 — 널 검사는 어디서 끝나는가",
     code: `fun String?.orDash(): String = if (isNullOrBlank()) "-" else this
 
@@ -7757,97 +4280,6 @@ fun badgeWall(members: List<Member>): List<String> =
     },
   },
   {
-    no: 12,
-    date: "2026.09.10",
-    title: "케이스 클래스와 패턴 매칭",
-    dek: "목록 모양대로 갈라지는 match 절과 groupBy 뒤의 변환 사슬을 본다.",
-    minutes: 3,
-    language: "Scala",
-    prompt: "빈 목록, 원소 하나, 여럿 — 같은 함수가 세 가지 모양을 각각 다르게 받는다면 그 갈림길은 어디일까",
-    code: `case class Purchase(itemId: String, cents: Int, boughtAt: LocalDate)
-
-def summarize(purchases: List[Purchase], itemId: String): String = {
-  val matched = purchases.filter(_.itemId == itemId)
-  matched match {
-    case Nil =>
-      "해당 없음"
-    case only :: Nil =>
-      "1건 " + only.cents + "원"
-    case many =>
-      many.size + "건 " + many.map(_.cents).sum + "원"
-  }
-}
-
-val heavyDays = purchases
-  .groupBy(_.boughtAt)
-  .map { case (day, ps) => day -> ps.map(_.cents).sum }
-  .filter(_._2 > 50000)
-  .keys
-  .toList
-  .sorted`,
-    annotations: [
-      {
-        find: "case class Purchase",
-        title: "케이스 클래스",
-        body: "데이터를 담기 위한 불변 값 타입이다. equals·hashCode·toString·copy가 자동으로 만들어져 비교와 복제가 특별한 코드 없이 된다.",
-        kind: "concept",
-      },
-      {
-        find: "matched match {",
-        title: "패턴 매칭 분기",
-        body: "match는 식이다 — 각 절에서 계산된 값이 match 전체의 값이 된다. 절은 위에서부터 순서대로 검사하고 처음 맞는 곳에서 끝낸다.",
-        kind: "syntax",
-      },
-      {
-        find: "case Nil =>",
-        title: "빈 목록 절",
-        body: "빈 리스트 리터럴 Nil과 모양이 같은가로 검사한다. 길이를 세어 if로 비교하는 대신 값의 모양으로 갈라 놓는다.",
-        kind: "syntax",
-      },
-      {
-        find: "case only :: Nil =>",
-        title: "원소 하나 절",
-        body: "::는 머리와 꼬리를 나누는 연결 패턴이다. 머리 only에 꼬리가 Nil이면 원소가 정확히 하나라는 뜻이고 그 값을 only로 꺼낸다.",
-        kind: "syntax",
-      },
-      {
-        find: "case many =>",
-        title: "나머지 묶기",
-        body: "변수 이름 하나가 어떤 값이든 받는 패턴이 된다. 앞 절에서 걸러지지 않은 두 개 이상 목록이 여기로 온다.",
-        kind: "syntax",
-      },
-      {
-        find: ".groupBy(_.boughtAt)",
-        title: "그룹화",
-        body: "키별로 묶어 Map을 만든다. 값은 같은 날짜의 구매 목록이 된다.",
-        kind: "std",
-      },
-      {
-        find: "day -> ps.map(_.cents).sum",
-        title: "키-값 쌍 만들기",
-        body: "->는 튜플 (day, 합계)를 만든다. Map에 다시 map을 돌려 같은 키로 값을 접어 내리는 형태다.",
-        kind: "idiom",
-      },
-      {
-        find: ".filter(_._2 > 50000)",
-        title: "값 기준 거르기",
-        body: "튜플의 두 번째 자리인 합계로 조건을 건다. _._2는 자주 쓰이지만 이름을 붙인 패턴이 읽기 더 좋다.",
-        kind: "std",
-      },
-    ],
-    takeaway: "match는 값이 아니라 모양을 본다 — 빈 것과 하나뿐인 것과 나머지가 각자의 절을 찾아간다.",
-    check: {
-      question: "목록에 원소가 정확히 하나뿐일 때 그 값을 받는 절은 어느 것인가?",
-      options: [
-        "case Nil =>",
-        "case only :: Nil =>",
-        "case many =>",
-      ],
-      answer: 1,
-      explain: "Nil은 빈 목록만 받고 many는 여기까지 떨어진 나머지 전부를 받는다. only :: Nil은 머리 하나에 꼬리가 빈 목록, 즉 원소가 하나뿐인 모양이고 그 원소를 only로 꺼낸다. 절 순서가 곧 조건 범위가 된다.",
-    },
-  },
-  {
     no: 11,
     date: "2026.09.10",
     title: "라라벨 요청에서 질의까지",
@@ -7855,6 +4287,7 @@ val heavyDays = purchases
     minutes: 3,
     language: "PHP",
     framework: "Laravel",
+    domain: "백엔드",
     prompt: "질의를 조립하는 줄은 여러 개다 — DB에 나가는 실행은 어느 줄에서 일어나는가",
     code: `class OrderController extends Controller
 {
@@ -7945,6 +4378,7 @@ val heavyDays = purchases
     minutes: 3,
     language: "Ruby",
     framework: "Rails",
+    domain: "백엔드",
     prompt: "물음표 하나에 날짜 값이 알아서 들어간다 — 이 값은 SQL 문자열에 어떻게 섞이는가",
     code: `class Shipment < ApplicationRecord
   belongs_to :order
@@ -8029,6 +4463,7 @@ end`,
     dek: "Where부터 ToList까지 이어지는 질의 사슬. 지연 실행이 어디서 끝나는지 본다.",
     minutes: 3,
     language: "C#",
+    domain: "백엔드",
     prompt: "이 사슬에는 orders를 훑는 코드가 없어 보인다 — 목록 순회는 실제로 언제 일어날까",
     code: `public record Order(long Id, long CustomerId, decimal Amount, DateTime PlacedAt);
 
@@ -8113,6 +4548,7 @@ foreach (var x in top)
     minutes: 3,
     language: "Java",
     framework: "Spring",
+    domain: "백엔드",
     prompt: "이 클래스 어디에도 new OrderRepository(...)가 없다 — 생성자의 인자는 누가 채워 넣는가",
     code: `@Service
 public class OrderService {
@@ -8189,6 +4625,7 @@ public class OrderService {
     dek: "작업마다 고루틴을 띄워 결과를 버퍼드 채널에 모은다. WaitGroup이 기다리고 close가 순회를 끝내는 지점을 본다.",
     minutes: 3,
     language: "Go",
+    domain: "백엔드",
     prompt: "열 개짜리 목록을 동시에 긁어 온다고 할 때, 이 함수가 돌아오는 시점은 누가 정하는가",
     code: `func fetchAll(urls []string) []page {
 	pages := make(chan page, len(urls))
@@ -8280,6 +4717,7 @@ public class OrderService {
     dek: "필터와 그룹화로 부서별 인원수를 세는 파이프라인. 중간 연산과 종단 연산이 나뉘는 지점을 본다.",
     minutes: 3,
     language: "Java",
+    domain: "백엔드",
     prompt: "이 파이프라인이 실제로 도는 시점은 언제인가",
     code: `Map<String, Long> countByDept = employees.stream()
     .filter(e -> e.isActive())
@@ -8354,6 +4792,7 @@ countByDept.entrySet().stream()
     dek: "iter()로 이름 목록을 외침 목록으로 바꾼다. 소유권이 움직이는 순간과 남는 순간을 본다.",
     minutes: 3,
     language: "Rust",
+    domain: "시스템",
     prompt: "iter()를 into_iter()로 바꾸면 이 코드는 무엇이 되는가",
     code: `fn main() {
     let names = vec![String::from("연"), String::from("도"), String::from("승")];
@@ -8429,6 +4868,7 @@ countByDept.entrySet().stream()
     dek: "사용자별 합계와 최신 주문 순번을 주문 행 옆에 붙인다. GROUP BY와의 경계를 본다.",
     minutes: 3,
     language: "SQL",
+    domain: "데이터",
     prompt: "GROUP BY user_id로 바꾸면 무엇이 사라지는가",
     code: `SELECT
   user_id,
@@ -8499,6 +4939,7 @@ WHERE created_at >= CURRENT_DATE - INTERVAL '30 days';`,
     dek: "CSV를 덩어리로 내보내는 제너레이터. 함수 상태가 어떻게 남아 있는지 본다.",
     minutes: 3,
     language: "Python",
+    domain: "백엔드",
     prompt: "이 함수를 for문으로 돌리면 메모리에는 무엇이 남는가",
     code: `def read_rows(path, chunk=1000):
     with open(path, newline="") as f:
@@ -8571,6 +5012,7 @@ WHERE created_at >= CURRENT_DATE - INTERVAL '30 days';`,
     minutes: 3,
     language: "TypeScript",
     framework: "React",
+    domain: "프론트엔드",
     prompt: "버튼을 눌렀을 때 이펙트와 정리 함수는 각각 언제 도는가",
     code: `function useHeartbeat(beats: () => void, ms: number) {
   const [on, setOn] = useState(false);
@@ -8644,6 +5086,7 @@ WHERE created_at >= CURRENT_DATE - INTERVAL '30 days';`,
     dek: "2초짜리 데드라인을 걸고 원격 자원을 가져온다. cancel이 왜 반드시 defer여야 하는지 본다.",
     minutes: 3,
     language: "Go",
+    domain: "백엔드",
     prompt: "이 함수가 실패하는 경로를 세 개 찾아 보라",
     code: `func Fetch(ctx context.Context, url string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)

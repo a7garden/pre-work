@@ -51,6 +51,7 @@ const skeleton = Array.from({ length: count }, (_, index) => `
     dek: "목록에 보일 한 줄 소개.",
     minutes: 3,
     language: "언어 표시명",
+    domain: "백엔드|프론트엔드|데이터|시스템|모바일|인프라",
     prompt: "코드를 펼치기 전 던지는 읽기 과제 한 문장.",
     code: \`여기에 코드를 넣는다 — 백틱과 \\\${ 를 쓰지 않는다\`,
     annotations: [

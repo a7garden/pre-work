@@ -45,6 +45,12 @@ npm run new:sprint -- --count 5    # 편수를 지정해서
 
 한 판의 기준:
 
+- **주류 언어와 실무 스택만 다룬다.** Python·TypeScript/JavaScript·Java·Kotlin·C#·
+  Go·Rust·C/C++·Swift·Dart·Ruby·PHP·SQL과 그 메이저 프레임워크, 웹 표준
+  (CSS·HTML·SVG), 주류 인프라 포맷(Terraform·Kubernetes·GitHub Actions·Dockerfile)
+  기본. 학술·니치 언어는 넣지 않는다.
+- **`domain`은 여섯 분야 중 하나다.** 백엔드·프론트엔드·데이터·시스템·모바일·
+  인프라 — 인덱스 필터의 단위다.
 - **코드 12~22줄.** 실무에서 흔한 형태의 관용 코드. 코드에 백틱과 `${` 를 쓰지
   않는다 — 써야 하면 다른 표기로 각색한다.
 - **주석 5~8개.** `find`는 코드의 정확한 한 행 조각이다. 같은 조각이 여러 행에
