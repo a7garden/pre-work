@@ -1,0 +1,13 @@
+---
+/**
+ * 읽기 기록 계산에 필요한 축약 목록을 페이지에 심는다.
+ * 클라이언트 스크립트가 이 JSON을 읽어 localStorage의 읽음 표시와 합친다.
+ */
+import { buildCatalog } from "../lib/record";
+import { issues } from "../data/issues";
+import { sprints } from "../data/sprints";
+
+const catalog = buildCatalog(issues, sprints);
+---
+
+<script type="application/json" is:inline data-record-catalog set:html={JSON.stringify(catalog)} />

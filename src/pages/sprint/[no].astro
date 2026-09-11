@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import Quiz from "../../components/Quiz.astro";
+import RecordData from "../../components/RecordData.astro";
 import SprintCode from "../../components/SprintCode.astro";
 import { sprints } from "../../data/sprints";
 
@@ -91,8 +92,16 @@ if (
         </a>
       ) : <span></span>}
     </nav>
+    <p class="record-note mono" data-pagefind-ignore data-record-note-root data-record-item={`sprint-${sprint.no}`}>
+      <span class="record-note__line">
+        <Icon name="circle-check" size={16} class="record-note__icon" />
+        <span data-record-note>끝까지 읽으면 이 판이 기록에 더해진다</span>
+      </span>
+      <a class="record-note__link" href="/record/">기록 보기</a>
+    </p>
   </article>
 </Layout>
+<RecordData />
 
 <script define:vars={{ no: sprint.no }}>
   /* 끝까지 읽거나 체크에 답하면 이 스프린트를 읽음으로 표시한다 */
@@ -116,6 +125,7 @@ if (
       } catch (e) {}
     }
     window.removeEventListener("scroll", onScroll);
+    document.dispatchEvent(new CustomEvent("pw:marked"));
   };
   const onScroll = () => {
     if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 200) mark();
@@ -128,4 +138,29 @@ if (
 
 <script>
   import "../../scripts/reading";
+</script>
+<script>
+  import { currentRecord, onRecordChange, readIds } from "../../scripts/record";
+
+  const root = document.querySelector<HTMLElement>("[data-record-note-root]");
+  const note = root?.querySelector<HTMLElement>("[data-record-note]");
+
+  const render = () => {
+    const record = currentRecord();
+    if (!record || !root || !note) return;
+    const { stats } = record;
+    const itemId = root.dataset.recordItem;
+    const read = itemId ? readIds().has(itemId) : false;
+    root.dataset.read = String(read);
+    if (read) {
+      const streak = stats.streak.days > 0 ? ` · 연속 ${stats.streak.days}일` : "";
+      note.textContent = `읽음 · 누적 ${stats.itemsRead}판 ${stats.minutes}분 · 레벨 ${stats.level.level}${streak}`;
+    } else {
+      const item = record.catalog.items.find((i) => i.id === itemId);
+      note.textContent = `끝까지 읽거나 체크에 답하면 +${item?.minutes ?? 0}분 — 지금 레벨 ${stats.level.level} · 누적 ${stats.itemsRead}판`;
+    }
+  };
+
+  render();
+  onRecordChange(render);
 </script>

@@ -1,0 +1,145 @@
+---
+/**
+ * 읽기 기록 — 이 브라우저의 읽음 표시에서 파생하는 게이미피케이션 화면.
+ * 숫자는 전부 클라이언트에서 채운다(localStorage는 서버 빌드에 없다).
+ */
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+import RecordData from "../../components/RecordData.astro";
+import { BADGES } from "../../lib/record";
+---
+
+<Layout
+  title="읽기 기록"
+  description="이 브라우저에 쌓이는 읽기 기록. 레벨과 연속 읽기, 배지로 읽기를 이어 간다."
+>
+  <div class="page-head">
+    <h1>읽기 기록</h1>
+    <p class="lede">칼럼과 스프린트를 끝까지 읽을 때마다 기록이 쌓인다. 읽은 분이 레벨이 되고, 발행일을 놓치지 않으면 연속이 이어진다.</p>
+  </div>
+
+  <section class="record-stats" aria-label="기록 요약" data-pagefind-ignore>
+    <div class="record-stat">
+      <p class="record-stat__label mono">레벨 · 누적 읽은 분</p>
+      <p class="record-stat__value tnum" data-record-level>—</p>
+      <div class="record-bar" aria-hidden="true"><i data-record-levelbar></i></div>
+      <p class="record-stat__hint tnum" data-record-levelhint>브라우저 기록을 읽는 중</p>
+    </div>
+    <div class="record-stat">
+      <p class="record-stat__label mono">연속 읽기</p>
+      <p class="record-stat__value tnum"><span data-record-streak>—</span>일</p>
+      <p class="record-stat__hint" data-record-streakhint>최근 발행일부터 하루라도 하나 읽으면 이어진다</p>
+    </div>
+    <div class="record-stat">
+      <p class="record-stat__label mono">완독</p>
+      <p class="record-stat__value tnum"><span data-record-count>—</span>편</p>
+      <p class="record-stat__hint tnum" data-record-counthint></p>
+    </div>
+  </section>
+
+  <section class="record-section" aria-labelledby="record-badges-heading" data-pagefind-ignore>
+    <div class="section-title">
+      <h2 id="record-badges-heading">배지</h2>
+      <span class="section-title__meta tnum" data-record-badgecount></span>
+    </div>
+    <ul class="record-badges">
+      {BADGES.map((badge) => (
+        <li class="record-badge" data-badge={badge.id} data-unlocked="false">
+          <Icon name={badge.icon} size={20} />
+          <span class="record-badge__title">{badge.title}</span>
+          <span class="record-badge__hint">{badge.hint}</span>
+          <span class="sr-only" data-badge-state>미해금</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="record-section" aria-labelledby="record-series-heading" data-pagefind-ignore>
+    <div class="section-title">
+      <h2 id="record-series-heading">시리즈 정주행</h2>
+      <span class="section-title__meta tnum" data-record-seriesmeta></span>
+    </div>
+    <ul class="record-series" data-record-series></ul>
+  </section>
+
+  <p class="record-footnote" data-pagefind-ignore>
+    기록은 이 브라우저에만 저장된다(<code class="mono">pw-read</code> · <code class="mono">pw-sprint-read</code>). 다른 기기나 브라우저와는 합쳐지지 않는다.
+  </p>
+</Layout>
+<RecordData />
+<script>
+  import { evaluateBadges, seriesProgress } from "../../lib/record";
+  import { currentRecord, onRecordChange, readIds } from "../../scripts/record";
+
+  const level = document.querySelector<HTMLElement>("[data-record-level]");
+  const levelBar = document.querySelector<HTMLElement>("[data-record-levelbar]");
+  const levelHint = document.querySelector<HTMLElement>("[data-record-levelhint]");
+  const streak = document.querySelector<HTMLElement>("[data-record-streak]");
+  const streakHint = document.querySelector<HTMLElement>("[data-record-streakhint]");
+  const count = document.querySelector<HTMLElement>("[data-record-count]");
+  const countHint = document.querySelector<HTMLElement>("[data-record-counthint]");
+  const badgeCount = document.querySelector<HTMLElement>("[data-record-badgecount]");
+  const seriesMeta = document.querySelector<HTMLElement>("[data-record-seriesmeta]");
+  const seriesList = document.querySelector<HTMLElement>("[data-record-series]");
+
+  const render = () => {
+    const record = currentRecord();
+    if (!record) return;
+    const { stats } = record;
+
+    if (level) level.textContent = String(stats.level.level);
+    if (levelBar) levelBar.style.transform = `scaleX(${stats.level.progress})`;
+    if (levelHint) levelHint.textContent = `다음 레벨까지 ${stats.level.remaining}분`;
+
+    if (streak) streak.textContent = String(stats.streak.days);
+    if (streakHint) {
+      streakHint.textContent =
+        stats.streak.nextDate === null
+          ? "발행된 날을 모두 읽었다"
+          : stats.streak.days === 0
+            ? `${stats.streak.nextDate} 발행분부터 읽으면 시작된다`
+            : `${stats.streak.nextDate} 발행분까지 이어 읽으면 ${stats.streak.days + 1}일`;
+    }
+
+    if (count) count.textContent = String(stats.itemsRead);
+    if (countHint) {
+      countHint.textContent = `칼럼 ${stats.issuesRead}/${stats.totalIssues} · 스프린트 ${stats.sprintsRead}/${stats.totalSprints} · ${stats.minutes}분`;
+    }
+
+    const badges = evaluateBadges(stats);
+    for (const badge of badges) {
+      const el = document.querySelector<HTMLElement>(`[data-badge="${badge.id}"]`);
+      if (!el) continue;
+      el.dataset.unlocked = String(badge.unlocked);
+      const state = el.querySelector<HTMLElement>("[data-badge-state]");
+      if (state) state.textContent = badge.unlocked ? "해금" : "미해금";
+    }
+    if (badgeCount) badgeCount.textContent = `${badges.filter((b) => b.unlocked).length}/${badges.length}`;
+
+    if (seriesMeta) seriesMeta.textContent = `${stats.seriesDone}/${stats.totalSeries} 완독`;
+    if (seriesList) {
+      seriesList.replaceChildren(
+        ...seriesProgress(record.catalog, readIds()).map((row) => {
+          const li = document.createElement("li");
+          const name = document.createElement("span");
+          name.className = "record-series__name";
+          name.textContent = row.name;
+          const num = document.createElement("span");
+          num.className = "record-series__count tnum";
+          num.textContent = `${row.read}/${row.total}`;
+          const bar = document.createElement("div");
+          bar.className = "record-bar";
+          bar.setAttribute("aria-hidden", "true");
+          const fill = document.createElement("i");
+          fill.style.transform = `scaleX(${row.read / row.total})`;
+          bar.append(fill);
+          li.append(name, num, bar);
+          return li;
+        }),
+      );
+    }
+  };
+
+  render();
+  onRecordChange(render);
+</script>

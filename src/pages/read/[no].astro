@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import Blocks from "../../components/Blocks.astro";
 import RichText from "../../components/RichText.astro";
 import Icon from "../../components/Icon.astro";
+import RecordData from "../../components/RecordData.astro";
 import { issues } from "../../data/issues";
 
 export function getStaticPaths() {
@@ -97,8 +98,16 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
         </a>
       ) : <span></span>}
     </nav>
+    <p class="record-note mono" data-pagefind-ignore data-record-note-root data-record-item={`issue-${issue.no}`}>
+      <span class="record-note__line">
+        <Icon name="circle-check" size={16} class="record-note__icon" />
+        <span data-record-note>끝까지 읽으면 이 편이 기록에 더해진다</span>
+      </span>
+      <a class="record-note__link" href="/record/">기록 보기</a>
+    </p>
   </article>
 </Layout>
+<RecordData />
 
 <script define:vars={{ no: issue.no }}>
   /* 끝까지 읽으면 이 호를 읽음으로 표시한다 */
@@ -120,10 +129,36 @@ const seriesPart = seriesIssues.findIndex((i) => i.no === issue.no) + 1;
       } catch (e) {}
     }
     window.removeEventListener("scroll", mark);
+    document.dispatchEvent(new CustomEvent("pw:marked"));
   };
   window.addEventListener("scroll", mark, { passive: true });
 </script>
 
 <script>
   import "../../scripts/reading";
+</script>
+<script>
+  import { currentRecord, onRecordChange, readIds } from "../../scripts/record";
+
+  const root = document.querySelector<HTMLElement>("[data-record-note-root]");
+  const note = root?.querySelector<HTMLElement>("[data-record-note]");
+
+  const render = () => {
+    const record = currentRecord();
+    if (!record || !root || !note) return;
+    const { stats } = record;
+    const itemId = root.dataset.recordItem;
+    const read = itemId ? readIds().has(itemId) : false;
+    root.dataset.read = String(read);
+    if (read) {
+      const streak = stats.streak.days > 0 ? ` · 연속 ${stats.streak.days}일` : "";
+      note.textContent = `읽음 · 누적 ${stats.itemsRead}편 ${stats.minutes}분 · 레벨 ${stats.level.level}${streak}`;
+    } else {
+      const item = record.catalog.items.find((i) => i.id === itemId);
+      note.textContent = `끝까지 읽으면 +${item?.minutes ?? 0}분 — 지금 레벨 ${stats.level.level} · 누적 ${stats.itemsRead}편`;
+    }
+  };
+
+  render();
+  onRecordChange(render);
 </script>

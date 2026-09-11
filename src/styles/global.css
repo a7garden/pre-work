@@ -1062,3 +1062,55 @@ main { max-width: var(--page-width); padding: var(--space-xl) var(--gutter) var(
   .sprint-desk__lang, .sprint-desk__list .issue-list__read { display: none; }
 }
 .tag-list .lang-chip::before { content: none; }
+
+/* ─── 읽기 기록 — 가벼운 게이미피케이션 ─────────────────── */
+
+/* 홈의 기록 줄 — 조용한 한 행 */
+.record-line { display: flex; align-items: center; gap: var(--space-sm); min-height: 44px; margin-top: var(--space-md); color: var(--color-muted); font-size: var(--text-xs); }
+.record-line .mono { color: var(--color-accent); font-size: 0.66rem; letter-spacing: 0.06em; }
+.record-line:hover { color: var(--color-ink); }
+
+/* 읽기 화면의 기록 줄 — 이전·다음 이동 아래 한 행 */
+.record-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-rule); color: var(--color-muted); font-size: var(--text-xs); }
+.record-note__line { display: inline-flex; align-items: center; gap: var(--space-2xs); }
+.record-note .record-note__icon { display: none; color: var(--color-good); }
+.record-note[data-read="true"] .record-note__icon { display: inline-block; }
+.record-note__link { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-muted); text-decoration: underline; text-underline-offset: 4px; transition: color var(--dur-short) var(--ease-out); }
+.record-note__link:hover { color: var(--color-accent); }
+
+/* 기록 페이지 */
+.record-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-md); }
+.record-stat { padding: var(--space-lg); background: var(--color-paper-2); border-top: 3px solid var(--color-ink); }
+.record-stat__label { color: var(--color-muted); font-size: 0.66rem; letter-spacing: 0.06em; }
+.record-stat__value { margin-top: var(--space-xs); color: var(--color-ink); font-size: var(--text-2xl); font-weight: 650; line-height: 1.1; }
+.record-stat__hint { min-height: 1.2em; margin-top: var(--space-xs); color: var(--color-muted); font-size: var(--text-xs); line-height: 1.5; }
+.record-stat .record-bar { margin-top: var(--space-sm); }
+
+.record-bar { height: 2px; overflow: hidden; background: var(--color-rule); border-radius: 999px; }
+.record-bar i { display: block; width: 100%; height: 100%; background: var(--color-accent); transform: scaleX(0); transform-origin: left; transition: transform var(--dur-short) var(--ease-out); }
+
+.record-section { margin-top: var(--space-2xl); }
+
+.record-badges { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--color-rule); border-left: 1px solid var(--color-rule); }
+.record-badge { display: flex; flex-direction: column; gap: var(--space-3xs); padding: var(--space-md); border-right: 1px solid var(--color-rule); border-bottom: 1px solid var(--color-rule); }
+.record-badge .icon { color: var(--color-neutral); opacity: 0.45; }
+.record-badge[data-unlocked="true"] .icon { color: var(--color-good); opacity: 1; }
+.record-badge__title { color: var(--color-muted); font-size: var(--text-sm); font-weight: 650; }
+.record-badge[data-unlocked="true"] .record-badge__title { color: var(--color-ink); }
+.record-badge__hint { color: var(--color-muted); font-size: var(--text-xs); line-height: 1.5; }
+
+.record-series { display: flex; flex-direction: column; border-top: 1px solid var(--color-rule); }
+.record-series li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2xs) var(--space-md); align-items: baseline; padding-block: var(--space-md); border-bottom: 1px solid var(--color-rule); }
+.record-series__name { color: var(--color-ink); font-size: var(--text-sm); font-weight: 600; }
+.record-series__count { color: var(--color-muted); font-size: var(--text-xs); }
+.record-series .record-bar { grid-column: 1 / -1; }
+
+.record-footnote { margin-top: var(--space-2xl); padding-top: var(--space-md); border-top: 1px solid var(--color-rule); color: var(--color-muted); font-size: var(--text-xs); }
+.record-footnote code { color: var(--color-neutral); }
+
+@media (max-width: 60rem) {
+  .record-badges { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 48rem) {
+  .record-stats { grid-template-columns: 1fr; }
+}
